@@ -632,7 +632,8 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
         drawSunburst(nutrient, ageSexGroup);
         drawTable(nutrient, ageSexGroup);
     }
-
+    
+    // Source: https://observablehq.com/@d3/zoomable-sunburst
     function drawSunburst(nutrient, ageSexGroup){
 
         lowerGraphSunburst.selectAll("g").remove();
