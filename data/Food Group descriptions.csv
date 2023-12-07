@@ -1,0 +1,128 @@
+Food Group Name_Level 1,Food Group Name_Level 2,Food Group Name_Level 3,Description of the Contents of the Food Groups and Sub-groups
+Baby Foods,,,"Commercial baby foods, infant and toddler cereals and snacks and infant formulas"
+,Baby Food Products,,"Commercial baby foods, teething biscuits, dry infant cereals and toddler cereals and snacks"
+,Infant Formula,,"Infant formulas, all types"
+Beverages (Excluding Milks),,,"Alcohol, coffee, tea, energy drinks, fruit juice and drinks, soft drinks, sport drinks, vegetable juice, and water"
+,Alcohol,,"Wine, beer, spirits, liqueurs and coolers. Cocktails are broken down to ingredient level. "
+,Coffee & Tea,,Brewed and instant coffee and tea
+,,Coffee,"Brewed coffee, instant coffee and coffee substitute"
+,,Tea,"Brewed tea, instant tea and iced tea"
+,Energy Drinks,,"Energy drinks and energy drink shots, sugar free and regular."
+,Fruit Drinks,,"Juice drinks, fruit punches, cranberry cocktail and lemonade."
+,Fruit Juice,,"Pure juice only, fresh, ready to drink and from frozen concentrate, includes nectars"
+,Other Beverages,,"Coconut water, milk shakes, smoothies, hot chocolate and chocolate flavored beverages mixes"
+,Soft Drinks,,"Soft drink (regular and diet), tonic water, club soda"
+,Sport Drinks,,Sport drinks regular and low calorie
+,Tomato and Vegetable Juice,,"Tomato juice, vegetable juice and carrot juice"
+,Vitamin Water,,Vitamin water regular and low calorie
+,Waters,,"Municipal, well, bottled (plain and fruit flavored) and sparkling water"
+Dairy & Plant-Based Beverages,,,"Milks, plant-based beverages, cheese and yogurts. "
+,Cheeses (all nutrients),,All type of cheeses
+,Milks & Plant-Based Beverages (all nutrients excluding total sugars and carbohydrates),,"Milk, cream and plant-based beverages. Human milk excluded from the analysis"
+,,1% Milk,1% M.F milk and ready-to drink chocolate milk
+,,2% Milk,"2% M.F milk and ready-to drink chocolate milk, includes dry and evaporated milk "
+,,Skim Milk,"Skim milk and  ready-to drink chocolate milk, includes dry and evaporated milk "
+,,Whole Milk,"Whole milk and ready-to drink chocolate milk, includes dry milk "
+,,Cream & Other Types of Milk,"All types of creams, sour cream, goat and sheep milk, sweetened condensed milk, buttermilk, and powdered cream substitute. "
+,,Plant-Based Beverages,"Almond, soy,  rice, coconut and cashew  beverages, all flavours regular and sweetened"
+,Milks & Plant-Based Beverages (total sugars and carbohydrates only),,"Milk, cream and plant-based beverages. Human milk excluded from the analysis"
+,,Plain Milk,"All % M.F milk, includes dry and evaporated milk"
+,,Flavoured Milk,Chocolate milk
+,Yogurts (all nutrients),,"All types of yogurts (e.g. plain, flavored, drinkable, Greek, fat free) "
+,,Plain Yogurt (total sugars and carbohydrates only),All % M.F. plain yogurt. 
+,,Flavoured Yogurt (total sugars and carbohydrates only),All % M.F. flavoured yogurt.
+Fats & Oils,,,"Animal fats, butter, margarines, salad dressings, shortening and vegetable oils"
+,Animal Fats,,"Animal fat from beef, pork, poultry, meat drippings, suet"
+,Butter,,"All types of butters includes light, salted and unsalted"
+,Margarines,,All types of margarines
+,Salad Dressings,,Mayonnaise and mayonnaise types spreads and all types of salad dressings. 
+,Shortening,,All types of shortenings
+,Vegetable Oils,,All types of vegetable oils and oil-based cooking sprays
+Fish & Seafood,,,"Fish and shellfish, fresh, canned or smoked, includes breaded and fried products"
+,Fish,,"All types of fish, fresh, smoked and canned, includes breaded and fried fish and fish sticks "
+,Shellfish,,"All types of shellfish, fresh and canned, includes breaded and fried shellfish and imitation shellfish   "
+Fruits & Vegetables,,,"Fruits and vegetables, fresh, canned, frozen and dried "
+,Fruits (all nutrients),,"Fresh, canned, frozen and dried fruits. "
+,,Apple,Fresh and dried apples and applesauce
+,,Banana,Fresh and dehydrated bananas
+,,Berries,"Fresh, canned and frozen berries "
+,,Cherries,"Fresh, canned, dried and frozen cherries"
+,,Citrus Fruits,All types of citrus fruits fresh and canned
+,,Grapes & Raisins,Grapes and raisins
+,,Melons,"All types of melons, fresh and frozen"
+,,Peaches & Nectarines,"Fresh, canned, dried and frozen peaches and nectarines"
+,,Pears,Fresh and canned pears
+,,Pineapples,"Fresh, canned and dried pineapples"
+,,Plums & Prunes,"Fresh, canned and dried plums and prunes"
+,,Other Fruits,"All other fresh, canned, dried and frozen fruits (e.g. kiwi, pomegranate, date, papaya, apricot, fruit cocktail)"
+,Vegetables Including Potatoes (all nutrients excluding sodium),,"Vegetables, fresh, canned and frozen. Excludes vegetable juices"
+,,Dark Green Vegetables,"Fresh, canned and frozen dark green vegetables (e.g. Broccoli, green pepper, asparagus, green peas, kale and romaine)"
+,,Deep Yellow or Orange Vegetables,"Fresh, canned and frozen deep yellow or orange vegetables (e.g. carrots, winter squashes, red sweet pepper)"
+,,Starchy Vegetables,"Fresh, canned and frozen starchy vegetables (e.g. white potato, corn, sweet potato), includes French fries"
+,,Other Vegetables,"All other fresh, canned and frozen vegetables (e.g. celery, tomato, cauliflower, mushroom, onions, hot peppers) "
+,Vegetables Including Potatoes (sodium only),,"Vegetables, fresh, canned, frozen and pickled. Excludes vegetable juices"
+,,Fresh & Frozen Vegetables,Fresh and frozen vegetables raw or cooked
+,,Canned Vegetables,Canned vegetables including tomato sauce
+,,Fried Potatoes & Potato Mixes,"French fries, hash browns and dry potato mixes"
+,,Pickled Vegetables,"Pickles, olives and other pickled vegetables"
+Grain Products,,,"Breads and rolls, crackers, breakfast cereals, cakes, cookies and other pastries, flour, pasta, rice and other grains"
+,Breads,,"Breads, rolls, crackers and other bread products such as bagels, tortillas and pancakes"
+,,White Breads & Rolls,"White breads and rolls, includes Italian, sourdough, garlic bread."
+,,Whole Grain & Whole Wheat Breads & Rolls,"Whole wheat, whole grain and multigrain breads and rolls, and other types of bread like rye, pumpernickel, spelt."
+,,Crackers & Crispbreads,"All types of crackers, crispbreads, rusks, bread sticks"
+,,Other Bread Products,"Bagels, tortillas, pitas, English muffins and croissants. Most pancakes and waffles are broken down to ingredient level."
+,Breakfast Cereals,,Ready to eat and hot cereals
+,,Whole Grain - Oats & High Fibre Breakfast Cereals,"Whole grain, oats and high fiber, ready to eat and hot cereals."
+,,Breakfast Cereal (Other),"Breakfast and hot cereal that are not whole grain, high fiber or oats."
+,Cookies - Cakes - Pies - Biscuits & Granola Bars,,"Cookies, cakes, pies, biscuits, granola bars and other pastries"
+,,Biscuits,"Biscuit, plain or buttermilk. Most biscuits are broken down to ingredient level."
+,,Cakes,Brownie and cake mixes. Most cakes are broken down to ingredient level. 
+,,Cookies,All types of cookies and breakfast bars. Homemade cookies are broken down to ingredient level.
+,,Granola Bars,"All type of granola and cereals bars (chewy, crunchy, coated)"
+,,Muffins & Quick Breads,"Muffin bars, muffins and quick breads are broken down to ingredient level"
+,,Danishes - Doughnuts & Other Pastries,"Doughnuts, sweet rolls, Danish pastries and other puff pastries. Most of these items are broken down to ingredient level."
+,Pasta - Rice - Grains & Flours,,"Pasta, rice, grains and flours"
+,,Pasta,"All types of pasta, wheat and non-wheat (e.g. corn, rice, buckwheat, Japanese)"
+,,Rice,"All types of rice, white (instant, parboiled, regular), brown and wild"
+,,Grains & Flours,"Flour from all grains, beans, seeds or vegetables; grains such as quinoa, millet and bulgur. "
+Nutritional Beverages & Bars,,,"Energy bars, protein bars, nutrition beverages, meal replacements and protein powders and shakes"
+,Nutritional Bars,,Energy and protein bars
+,Meal Replacements & Nutritional Beverages,,"Nutritional beverages, meal replacements (powder and ready to drink), protein powder and shakes"
+Meat &  Poultry,,,"Meat, processed meats and poultry"
+,Red Meat,,"Beef, lamb, veal, games meats, fresh pork, liver and offal's"
+,,Beef,Includes ground beef and most cuts of beef. 
+,,Lamb - Veal & Game Meats,"Includes most cuts of veal, lamb and game meats, includes ground meats. "
+,,Offal - Liver & Pates,"All types of liver (beef, chicken, game meats), liver pate and all other types of offal (kidney, gizzard, heart)"
+,,Pork - Fresh,Includes ground pork and most cuts of fresh pork
+,Processed Meats,,"Bacon, ham, luncheon meats and sausages"
+,,Bacon,"Pork cured bacon, bacon bits, turkey bacon"
+,,Pork - Cured,"Pork cured, ham and flaked ham"
+,,Luncheon Meat,All types of canned or cold cut luncheon meat and meat spreads.
+,,Sausages,"Fresh or cured sausages, wieners, made from all types of meat"
+,Poultry ,,"Chicken, turkey and other poultry"
+,,Chicken,Includes ground chicken and most cuts of chicken
+,,Turkey & Other Poultry,Includes ground turkey and most cuts of turkey and other poultry
+Meat Alternatives,,,"Eggs, Legumes, Nuts and seeds, tofu and meatless products "
+,Eggs,,"All poultry (chicken, duck, goose, turkey) eggs, egg whites and egg yolks"
+,Legumes,,"Dry and canned beans, peas, legumes, hummus, baked beans and refried beans"
+,Nuts - Seeds & Peanut Butter,,"Nuts, seeds and nut butters (almond, cashew, peanut, sesame and sunflower) "
+,Tofu & Meatless Products,,"Tofu, tempeh, meatless products (such as meatless sausages and soy burger patties)"
+Soups - Sauces - Spices & Other Ingredients,,,"Soups, sauces, gravies, spices, seasoning, pickled vegetables and baking products "
+,Sauces & Gravies (all nutrients),,"Condiments, soy sauce, salsa, white and cheese sauces, ready-to-serve, canned and dehydrated gravy"
+,Soups (all nutrients),,"All commercial soups, ready-to-serve, condensed, and dehydrated. Homemade soups are broken down to ingredient level."
+,Spices - Seasonings & Other Ingredients (all nutrients excluding sodium),,"Herbs, spices, salt, pickled vegetables, coffee whitener, vinegar, leaving agent, cocoa, and vanilla extract"
+,Spices - Seasonings & Other Ingredients (sodium only),,"Herbs, spices, salt, coffee whitener, vinegar, leaving agent, cocoa, and vanilla extract"
+Sweets - Sugars & Savoury Snacks,,,"Confectionary, frozen desserts, sugars, syrups and savoury snacks"
+,Confectionary,,"Candies, chocolate candies and bars, jello and puddings"
+,,Candies,"Frosting, chewing gum, marshmallow, fudge, fruit leather, licorice and all kinds of candies"
+,,Jello - Dessert Toppings & Puddings,"Pudding and gelatin desserts ready to eat and from mixes, dessert toppings and whipped cream substitutes"
+,,Chocolate - Candies & Bars,"Chocolate, chocolate candy bars and chocolate chips"
+,Frozen Desserts,,"Popsicles, sherbet and other frozen dairy products and analogues"
+,,Popsicles & Sherbet,"All varieties of iced desserts: pops, bars, sherbets"
+,,Frozen Dairy Products & Analogues,"Ice cream, frozen yogurt, ice cream and ice milk novelties "
+,Savoury Snacks,,"Popcorn, rice cakes, pretzels, potato and tortilla chips, corn based puff and cone snacks, jerky and trail mix"
+,Sugars - Syrups & Preserves ,,"Sugar, sugar substitutes, syrups, jams and jellies"
+,,Sugars,"Sugar, white, brown, turbinado"
+,,Jams - Jellies & Marmalade,"Jams, jellies and marmalade regular and dietetic"
+,,Other Sugars & Syrups,"Syrup (corn, maple, chocolate, malt, etc.), honey, molasses and toppings"
+,,Sugar Substitutes,All types of artificial sweeteners
