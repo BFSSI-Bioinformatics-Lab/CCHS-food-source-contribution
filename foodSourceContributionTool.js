@@ -89,6 +89,9 @@ async function setupTool(){
     }
 
     updateTool();
+
+    // only make the graphs visible once everything is set up 
+    d3.select("#foodSourceContributionTool").style("visibility", "visible");
 }
 
 async function loadNutrientData(){
