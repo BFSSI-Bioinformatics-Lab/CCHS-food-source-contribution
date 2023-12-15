@@ -9,6 +9,6 @@ function registerTranslation(resources){
     i18next.changeLanguage();
 }
 
-function translateText (key, args){
+function translateText(key, args){
     return i18next.t(key, args)
 }

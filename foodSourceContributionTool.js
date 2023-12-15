@@ -63,6 +63,7 @@ window.addEventListener("load", () => {
     setupTool();
 })
 
+/* Calls loading of data and sets up the selector to call the chart update functions on change */
 async function setupTool(){
     const [expandedTableData, upperLayerData, fullyNestedData]  = await loadNutrientData();
     const foodGroupDescriptionsData = await loadFoodGroupDescriptionData(); 
@@ -140,6 +141,7 @@ async function loadFoodGroupDescriptionData(){
     return fullyNestedDataByFoodLevel;  
 }
 
+/* Returns selected option given a select html tag selector */
 function getSelector(id) {
     return d3.select(id)
         .property("value");
@@ -174,7 +176,6 @@ const dims = Object.freeze({
     legendSquareSize: 12,
     legendRowHeight: 20,
     tableSectionBorderLeft: "1px solid black",
-
 })
 
 const graphColours = {
@@ -193,7 +194,7 @@ const graphColours = {
 }
 
 function upperGraph(data, foodGroupDescriptions){
-
+    /* Create svg components */
     const upperGraphSvg = d3.select("#upperGraph")
         .append("svg")
         .attr("width", dims.upperGraphWidth + dims.upperGraphLeft + dims.upperGraphRight)
@@ -234,6 +235,7 @@ function upperGraph(data, foodGroupDescriptions){
     const upperGraphLegend = upperGraphSvg.append("g")
         .attr("transform", `translate(${dims.upperGraphLeft + dims.upperGraphWidth}, ${dims.upperGraphTop})`);
 
+    /* Sets up alternator between graph types (percentage vs number) */
     const typeIterator = getGraphType();
     let graphType = typeIterator.next().value;
 
@@ -244,6 +246,7 @@ function upperGraph(data, foodGroupDescriptions){
 
     const upperGraphSwitchTypeButton = d3.select("#upperGraphSwitchType");
     
+    /* Food group description elements changed on hover */
     const upperGraphInfoBox = upperGraphSvg.append("g")
         .attr("transform", `translate(${dims.upperGraphLeft + dims.upperGraphWidth},${dims.upperGraphTop + dims.upperGraphHeight - dims.upperGraphInfoBoxHeight})`);
 
@@ -261,9 +264,12 @@ function upperGraph(data, foodGroupDescriptions){
     const upperGraphBarHoverDetect = upperGraphSvg.append("g")
         .attr("transform", `translate(${dims.upperGraphLeft}, 0)`);
 
+    /* Draw colour legend */
     drawGraphLegend(upperGraphLegend, graphColours);
 
+    /* Update bar graph given a specific nutrient */
     return async function updateGraph(nutrient){
+        /* graphType is updated by the getGraphType function */
         let type = graphType;
 
         const xAxisValues = Object.keys(data[nutrient]);
@@ -274,6 +280,7 @@ function upperGraph(data, foodGroupDescriptions){
         
         const nutrientData = data[nutrient];
         let maxAccumulatedAmount = 0;
+        /* If graph type is number, get data from "Amount" col, otherwise use "Percentage" */
         const keyName = type === "number" ? "Amount" : "Percentage"
         // calculate the total amount by nutrient per age-sex group
         const groupedAmount = Object.keys(nutrientData).reduce((obj, ageSexGroup) => {
@@ -321,6 +328,7 @@ function upperGraph(data, foodGroupDescriptions){
                         drawUpperGraphStackedBars(upperGraphBars, d, xAxisTicks.nodes()[i].getAttribute("transform"), () => updateGraph(nutrient), i + 1)  
                 )         
         }
+
         upperGraphBars.selectAll("g")
             .data(Object.values(groupedAmount))
             .enter()
@@ -339,6 +347,7 @@ function upperGraph(data, foodGroupDescriptions){
         // switch type button
         upperGraphSwitchTypeButton.text(translateText(`upperGraph.${type}.switchTypeButton`))
             .on("click", () => {
+                /* Iterator returns either percentage or number */
                 graphType = typeIterator.next().value;
                 updateGraph(nutrient);
             });
@@ -375,6 +384,8 @@ function upperGraph(data, foodGroupDescriptions){
                 .attr("fill", d => graphColours[d[0]]);
         
         accumulatedHeight = dims.upperGraphHeight + dims.upperGraphTop;
+        
+        /* Since tool tips cover the bars, use another transparent layer on top of everything with the shape of the bars to detect hover positions */
         upperGraphBarHoverDetect.append("g")
             .attr("transform", transform)
             .selectAll("rect")
@@ -403,13 +414,12 @@ function upperGraph(data, foodGroupDescriptions){
                 .on("click", onClick);
     }
 
+    /* Set the opacity of the hovered bar's info to be 1 */
     function onBarHover(d, i){
-        console.log(d)
         updateInfoBox(d);
 
         const mousePos = d3.mouse(upperGraphSvg.node());
-        console.log(mousePos)
-        console.log(d3.select(`#barHover${i}`));
+
         const element = d3.select(`#barHover${i}`);
 
         if (element.attr("opacity") === "0") {
@@ -420,13 +430,13 @@ function upperGraph(data, foodGroupDescriptions){
 
     }
 
+    /* Set the opacity of the previously hovered bar's info to be 0 */
     function onBarUnHover(d, i){
         d3.select(`#barHover${i}`).attr("opacity", 0);
     }
 
-
+    /* Creates tooltip for hovering over bars */
     function hoverTooltip(d, i){
-        console.log("HOVERETOTOOTKSDL")
         const colour = graphColours[d[0]];
             const card = upperGraphTooltips.append("g")
                 .attr("id", `barHover${i}`)
@@ -449,6 +459,7 @@ function upperGraph(data, foodGroupDescriptions){
                 name: d[0]
             });
             
+            /* Create the text elements of the tooltip */
             let width = dims.upperGraphTooltipMinWidth;
             lines.map((line, lineNum) => {
                 const text = card.append("text")
@@ -461,7 +472,9 @@ function upperGraph(data, foodGroupDescriptions){
             cardRect.attr("width", width);
     }
 
+    /* Update food group description box */
     function updateInfoBox(d){
+        /* d = [food group name, amount] */
         upperGraphInfoBoxRect.attr("stroke", graphColours[d[0]]);
         const desc = foodGroupDescriptions[d[0]]["Description of the Contents of the Food Groups and Sub-groups"];
         let numLines = [];
@@ -483,6 +496,8 @@ function upperGraph(data, foodGroupDescriptions){
         const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
 
         const nutrientAgeGroups = Object.keys(nutrientData);
+
+        /* Create top-level heading */
         upperGraphTableHeading.selectAll("tr").remove();
         upperGraphTableHeading.append("tr")
             .selectAll("th")
@@ -495,6 +510,7 @@ function upperGraph(data, foodGroupDescriptions){
                 .attr("colspan", (d, i) => i === 0 ? 1 : headingsPerSexAgeGroup.length)
                 .text(d => translateText(d));
 
+        /* Create subheading columns */
         const subHeadingColumns = Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat();
         upperGraphTableHeading.append("tr")
             .selectAll("td")
@@ -509,7 +525,7 @@ function upperGraph(data, foodGroupDescriptions){
         
         upperGraphTableBody.selectAll("tr").remove();
         const tableRows = {};
-        
+        /* Create rows */
         Object.entries(nutrientData).map((entry) => {
             const [ageSexGroup, foodLevelGroup] = entry;            
             Object.entries(foodLevelGroup).map(foodLevelGroupEntry => {
@@ -539,6 +555,7 @@ function upperGraph(data, foodGroupDescriptions){
         upperGraphTableTitle.text(translateText("upperGraph.tableTitle", { amountUnit: getNutrientUnit(nutrient), nutrient }))
     }
 
+    /* Draw the food group colour legend */
     function drawGraphLegend(element, titleToColours){
         Object.entries(titleToColours).forEach((entry, i) => {
             const [title, colour] = entry;
@@ -563,6 +580,7 @@ function upperGraph(data, foodGroupDescriptions){
         return Object.values(Object.values(data[nutrient])[0])[0][0]["Unit"];
     }
 
+    /* This generator function is used to set the value for the "graphType" and "type" variable */
     function *getGraphType(){
         while(true){
             yield "number";
@@ -584,7 +602,6 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
         .attr("overflow", "visible")
         .attr("width", width)
         .attr("height", height)
-        //.attr("viewBox", [-width, -height / 2, width, width])
         .style("font", "10px sans-serif");
 
     const lowerGraphChartHeading = lowerGraphSvg.append("g")
@@ -617,7 +634,9 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
     const lowerGraphTableBody = lowerGraphTable.append("tbody");
     const lowerGraphTableTitle = d3.select("#lowerGraphTableTitle");
 
+    /* Draws table, sunburst, and updates age-sex selector */
     async function drawGraph(nutrient){
+
         ageSexSelector.on("change", () => drawGraph(nutrient))
             .selectAll("option")
             .data(Object.keys(data[nutrient]))
@@ -636,12 +655,14 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
         drawTable(nutrient, ageSexGroup);
     }
     
-    // Source: https://observablehq.com/@d3/zoomable-sunburst
+    // Source reference: https://observablehq.com/@d3/zoomable-sunburst
     function drawSunburst(nutrient, ageSexGroup){
 
         lowerGraphSunburst.selectAll("g").remove();
 
         const nutrientData = data[nutrient];
+
+        /* Group data into the form of { name, value, row, children } for d3.hierarchy() */
         const groupedPercentages = Object.keys(nutrientData[ageSexGroup]).reduce((objLevel1, foodLevel1) => {
             const foodLevel1Group = nutrientData[ageSexGroup][foodLevel1];
             objLevel1.children.push(Object.keys(nutrientData[ageSexGroup][foodLevel1]).filter(d => d).reduce((objLevel2, foodLevel2) => {
@@ -665,7 +686,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
                 return objLevel2;
             }, { 
                 name: foodLevel1, 
-                value: foodLevel1Group[""][""]["Amount"], 
+                value: foodLevel1Group[""][""]["Amount"], // key "" represents the overall group including all subgroups
                 row: foodLevel1Group[""][""], 
                 children: []
             }));
@@ -680,6 +701,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
         const root = d3.partition()
             .size([2 * Math.PI, hierarchy.height + 1])
             (hierarchy);
+
         root.each(d => d.current = d);
 
         // Create the arc generator.
@@ -691,7 +713,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             .innerRadius(d => d.y0 * radius)
             .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1))
         
-        // Append the arcs.
+        // Append the arcs and pass in the data
         const path = lowerGraphSunburst.append("g")
             .selectAll("path")
             .data(root.descendants().slice(1))
@@ -701,10 +723,12 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             .property("id", (d, i) => `arcPath${i}`)
             .attr("d", d => arc(d.current))
 
+        /* Update title of each individual arc, which appears when hovering over label */
         const format = d3.format(",d");
         path.append("title")
             .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${format(d.value)}`);
 
+        /* Name of each arc */
         const label = lowerGraphSunburst.append("g")
             .attr("pointer-events", "none")
             .style("user-select", "none")
@@ -714,13 +738,13 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             .attr("dy", radius / 2)
             .attr("font-size", dims.lowerGraphArcLabelFontSize)
             .attr("fill-opacity", d => +labelVisible(d.current))
-                .append("textPath")
+                .append("textPath") // make the text following the shape of the arc
                 .attr("id", (d, i) => `arcLabel${i}`)
                 .attr("href", (d, i) => `#arcPath${i}`);
         
         label.each(labelTextFit);
 
-
+        // TODO: check what this does, copied from the reference 
         const parent = lowerGraphSunburst.append("circle")
             .datum(root.descendants())
             .attr("r", radius)
@@ -743,7 +767,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             .attr("pointer-events", "auto")
             .attr("d", d => arc(d.current))
         
-        // Make them clickable if they have children.
+        // Make the arcs clickable if they have children.
         hoverPath.style("cursor", "pointer")
             .on("click", (e, i) => {
                 if (root.descendants().slice(1)[i].children) clicked(e,i + 1);
@@ -756,14 +780,17 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
         
         filterAllFoodGroups();
 
+        /* Make the opacity of tooltip 1 */
         function arcHover(d, i){
             d3.select(`#arcHover${i}`).attr("opacity", 1);
             updateInfoBox(d);
         }
+        /* Make the opacity of tooltip 0 */
         function arcUnHover(d, i){
             d3.select(`#arcHover${i}`).attr("opacity", 0);
         }
 
+        /* Reverse to original arc positions */
         function filterAllFoodGroups(){
             root.each(d => d.target = {
                 depth: d.depth,
@@ -778,8 +805,11 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             lowerGraphFilterGroupsButton.text(translateText("lowerGraph.seeLevel2Groups"));
             lowerGraphFilterGroupsButton.on("click", filterOnLevel2Groups)
         }
+
+        /* Display only level 2 groups */
         function filterOnLevel2Groups(){
             let acc = 0;
+            /* Sort level 2 arcs by value amount */
             const sortedGroups = root.descendants().slice(1).sort((a, b) => d3.descending(a.value, b.value));
             sortedGroups.forEach((d, i) => {
                 root.descendants().find(r => r.data.name === d.data.name).target = {
@@ -802,7 +832,6 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
 
             const children = root.descendants();
             parent.datum(children[i] ?? root);
-            //const p = children[i] ? children[i].parent ?? children[i] : children
             const p = children[i] ?? children;
 
             /* Transition only if the clicked arc does not already span a full circle */
@@ -824,10 +853,12 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             }
         }
 
+        /* Updates the arcs */
         function transitionArcs(duration = 750){
             const t = lowerGraphSunburst.transition().duration(duration);
             const s = lowerGraphSunburst.transition().duration(duration * 1.5);
 
+            /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
             label.attr("href", (d, i) => arcVisible(d.target) ? `#arcPath${i}` : "none" )
                 .call((d) => d.attr("fill-opacity", 0))
                 .each((d, i) => labelTextFit(d.target, i));
@@ -862,17 +893,21 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
                 .attrTween("d", d => () => arc(d.current))
         }
 
+        /* Shows arc only when the arc has a depth between 1-3 and a nonzero angle */
         function arcVisible(d) {
             return d.y1 <= 4 && d.y0 >= 1 && d.x1 > d.x0;
         }
 
+        /* Shows label only when the arc has an angle over 0.05 */
         function labelVisible(d) {
             return d.x1 - d.x0 > 0.05
         }
 
+        /* Make label appear in the middle of the arc */
         function labelTransform() {
             return `translate(${30},0)`;
         }
+
 
         function labelAvailableLength(d){
             const outerRadius = d.y1 * radius;
@@ -881,6 +916,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             return arcLength;
         }
 
+        /* Truncates the label based on the arc's width, replaces letters with ellipsis if too long */
         function labelTextFit(d, i){
             const element = d3.select(`#arcLabel${i}`);
             if (!element.node()) return;
@@ -897,6 +933,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             }
         }
 
+        /* Creation of tooltip */
         function hoverCard(d, root, i, nutrient){
             const arcColour = d3.select(`#arcPath${i}`).attr("fill");
             const card = root.append("g")
@@ -913,6 +950,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
                 .attr("x", 0)
                 .attr("y", 0);
             
+            /* Content of tooltip */
             const lines = translateText("lowerGraph.infoBoxLevel", { 
                 returnObjects: true, 
                 context: d.depth,
@@ -936,11 +974,13 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
             positionHoverCard(card, d);
         }
 
+        /* Positions tool tip according to arc position */
         function positionHoverCard(element, d){
             const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
             element.attr("transform", `translate(${dims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1)}, ${dims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)})`);
         }
 
+        /* Update food group description box */
         function updateInfoBox(d){
             lowerGraphInfoBoxRect.attr("stroke", graphColours[d.data.row["Food group_level1"]]);
             lowerGraphInfoBoxText.selectAll("tspan").remove();
@@ -957,9 +997,11 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
         /** TODO: Create the lower graph table here **/
     }
 
+    /* Return function defined above that updates the graph */
     return drawGraph;
 }
 
+/* Create tspan elements to fit text into a given width */
 function splitTextWidth(textElement, text, width, fontSize, x, y, numLines = [0]){
     const words = text ? text.split(" ") : textElement.text().split(" ");
         words.reduce((arr, word) => {
