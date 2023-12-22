@@ -65,34 +65,37 @@ window.addEventListener("load", () => {
 
 /* Calls loading of data and sets up the selector to call the chart update functions on change */
 async function setupTool(){
-    const [expandedTableData, upperLayerData, fullyNestedData]  = await loadNutrientData();
-    const foodGroupDescriptionsData = await loadFoodGroupDescriptionData(); 
-    const nutrientOptions = Object.keys(upperLayerData);
+    Promise.all([loadNutrientData(), loadFoodGroupDescriptionData()])
+        .then((files) => {
+            const [[expandedTableData, upperLayerData, fullyNestedData], foodGroupDescriptionsData] = files;
 
-    const nutrientSelector = d3.select("#upperGraphNutrientSelect")
-        .on("change", updateTool)
-        .selectAll("option")
-        .data(nutrientOptions)
-        .enter()
-        .append("option")
-            .attr("title", d => d)
-            .property("value", d => d)
-            .text(d => d);
-            
-    const updateUpperGraph = upperGraph(upperLayerData, foodGroupDescriptionsData);
-    const updateLowerGraph = lowerGraph(fullyNestedData, foodGroupDescriptionsData, expandedTableData);
-
-
-    function updateTool(){
-        const nutrient = getSelector("#upperGraphNutrientSelect");
-        updateUpperGraph(nutrient);
-        updateLowerGraph(nutrient);
-    }
-
-    updateTool();
-
-    // only make the graphs visible once everything is set up 
-    d3.select("#foodSourceContributionTool").style("visibility", "visible");
+            const nutrientOptions = Object.keys(upperLayerData);
+        
+            const nutrientSelector = d3.select("#upperGraphNutrientSelect")
+                .on("change", updateTool)
+                .selectAll("option")
+                .data(nutrientOptions)
+                .enter()
+                .append("option")
+                    .attr("title", d => d)
+                    .property("value", d => d)
+                    .text(d => d);
+                    
+            const updateUpperGraph = upperGraph(upperLayerData, foodGroupDescriptionsData);
+            const updateLowerGraph = lowerGraph(fullyNestedData, foodGroupDescriptionsData, expandedTableData);
+        
+        
+            function updateTool(){
+                const nutrient = getSelector("#upperGraphNutrientSelect");
+                updateUpperGraph(nutrient);
+                updateLowerGraph(nutrient);
+            }
+        
+            updateTool();
+        
+            // only make the graphs visible once everything is set up 
+            d3.select("#foodSourceContributionTool").style("visibility", "visible");
+        });
 }
 
 async function loadNutrientData(){
@@ -214,7 +217,8 @@ function upperGraph(data, foodGroupDescriptions){
 
     const upperGraphXAxis = upperGraphAxes.append("g")
     const upperGraphXAxisLine = upperGraphXAxis.append("g")
-        .attr("transform", `translate(${dims.upperGraphLeft}, ${dims.upperGraphTop + dims.upperGraphHeight})`)
+        .attr("transform", `translate(${dims.upperGraphLeft}, ${dims.upperGraphTop + dims.upperGraphHeight})`);
+        
     const upperGraphXAxisScale = d3.scaleBand()
         .range([0, dims.upperGraphWidth])
     const upperGraphXAxisLabel = upperGraphXAxis.append("text")
@@ -691,7 +695,7 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
                 children: []
             }));
             return objLevel1;
-        }, { name: "data", children: []});
+        }, { name: "data", children: [] });
 
         // Compute the layout.
         const hierarchy = d3.hierarchy(groupedPercentages)
