@@ -1,63 +1,10 @@
-const translationObj = {
-    en: {
-        translation: {
-            "upperGraph": {
-                "number": {
-                    "graphTitle": "Daily {{ nutrient }} intake per person ({{ amountUnit }}/d) provided by 12 food groups.",
-                    "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
-                    "switchTypeButton": "Switch to Percentage"
-                },
-                "percentage": {
-                    "graphTitle": "Percentage of total {{ nutrient }} intake provided by 12 food groups.",
-                    "yAxisTitle": "% of total {{nutrient}} intake",
-                    "switchTypeButton": "Switch to Numbers"
-                },
-                "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of 12 food groups to daily {{nutrient}} intake",   
-                "infoBox_number": [
-                    "{{- name }}",
-                    "Amount: {{amount}}"
-                ],
-                "infoBox_percentage": [
-                    "{{- name }}",
-                    "{{ percentage }}% of total {{ nutrient }} intake."
-                ]
-            },
-            "lowerGraph": {
-                "graphTitle": "Food groups and sub-groups contribution to {{ nutrient }} intake in Canadian {{ ageSexGroup }}",
-                "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of food groups and sub-groups to daily {{nutrient}} intake in Canadian {{ ageSexGroup }}, 2015",
-                "seeLevel2Groups": "Filter on level 2 groups",
-                "seeAllGroups": "See all food groups",
-                "infoBoxLevel_1": [
-                    "{{- name }}",
-                    "{{ percentage }}% of total {{ nutrient }} intake."
-                ],
-                "infoBoxLevel_2": [
-                    "{{- name }}",
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }} group: {{ parentPercentage }}%"
-                ],
-                "infoBoxLevel_3": [
-                    "{{- name }}",
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }}: {{ parentPercentage }}%"
-                ],
-                /* If the context number is not between 1-3 */
-                "hoverBoxLevel_other": [ 
-                    "{{ name }}",
-                    "{{ percentage }}% of total {{ nutrient }} intake."
-                ],
-            }
-        }
-    },
-    fr: { 
-        translation: {} 
-    }
-}
+import { graphColours } from '../assets/colours/graphColours.js'
+import { dims } from '../assets/dimensions/graphDimensions.js'
+import {translationObj } from '../assets/strings/translations.js'
+import { Model } from '../model/model.js'
 
+
+// register translations for text
 window.addEventListener("load", () => {
     registerTranslation(translationObj);
     setupTool();
@@ -65,11 +12,13 @@ window.addEventListener("load", () => {
 
 /* Calls loading of data and sets up the selector to call the chart update functions on change */
 async function setupTool(){
-    Promise.all([loadNutrientData(), loadFoodGroupDescriptionData()])
-        .then((files) => {
-            const [[expandedTableData, upperLayerData, fullyNestedData], foodGroupDescriptionsData] = files;
+    const model = new Model("data/Food Group descriptions.csv", "data/FSCT data_Food_ingredients CCHS 2015 all nutrients_Infobase.csv");
 
-            const nutrientOptions = Object.keys(upperLayerData);
+    Promise.all([model.loadNutrientsData(), model.loadFoodGroupDescriptionData()])
+        .then((files) => {
+            const [nutrientsData, foodGroupDescriptionsData] = files;
+
+            const nutrientOptions = Object.keys(nutrientsData.dataGroupedByNutrientAndDemo);
         
             const nutrientSelector = d3.select("#upperGraphNutrientSelect")
                 .on("change", updateTool)
@@ -80,9 +29,13 @@ async function setupTool(){
                     .attr("title", d => d)
                     .property("value", d => d)
                     .text(d => d);
+
+            console.log("A1: ", nutrientsData.dataGroupedByNutrientAndDemoList);
+            console.log("A2: ", nutrientsData.dataGroupedByNutrientAndDemo);
+            console.log("A3: ", nutrientsData.fullyNestedDataByFoodGroup);
                     
-            const updateUpperGraph = upperGraph(upperLayerData, foodGroupDescriptionsData);
-            const updateLowerGraph = lowerGraph(fullyNestedData, foodGroupDescriptionsData, expandedTableData);
+            const updateUpperGraph = upperGraph(nutrientsData, foodGroupDescriptionsData.data);
+            const updateLowerGraph = lowerGraph(nutrientsData.fullyNestedDataByFoodGroup, foodGroupDescriptionsData.data, nutrientsData.dataGroupedByNutrientAndDemoList);
         
         
             function updateTool(){
@@ -98,117 +51,32 @@ async function setupTool(){
         });
 }
 
-async function loadNutrientData(){
-    const data = await d3.csv("data/FSCT data_Food_ingredients CCHS 2015 all nutrients_Infobase.csv")
-    // convert all numeric fields into floats:
-    data.forEach(d => {
-        Object.keys(d).forEach(key => d[key] = isNaN(d[key]) ? d[key] : parseFloat(d[key]))
-    });
-    const dataGroupedByNutrientAndDemoList = Object.freeze(d3.nest()
-                                    .key(d => d.Nutrient)
-                                    .key(d => d["Age-sex group (*: excludes pregnant or breastfeeding)"])
-                                    .object(data));
-    const dataGroupedByNutrientAndDemo = Object.freeze(d3.nest()
-                                    .key(d => d.Nutrient)
-                                    .key(d => d["Age-sex group (*: excludes pregnant or breastfeeding)"])
-                                    .key(d => d["Food group_level1"])
-                                    .object(data));
-    const fullyNestedDataByFoodGroup = Object.freeze(d3.nest()
-                                        .key(d => d.Nutrient)
-                                        .key(d => d["Age-sex group (*: excludes pregnant or breastfeeding)"])
-                                        .key(d => d["Food group_level1"])
-                                        .key(d => Number.isNaN(d["Food group_level2"]) ? "" : d["Food group_level2"] )
-                                        .key(d => Number.isNaN(d["Food group_level3"]) ? "" : d["Food group_level3"] )
-                                        .rollup(d => d[0])
-                                        .object(data));
-    return [dataGroupedByNutrientAndDemoList, dataGroupedByNutrientAndDemo, fullyNestedDataByFoodGroup];
-}
-
-async function loadFoodGroupDescriptionData(){
-    const data = await d3.csv("data/Food Group descriptions.csv")
-    // convert all numeric fields into floats:
-    data.forEach(d => {
-        Object.keys(d).forEach(key => d[key] = isNaN(d[key]) ? d[key] : parseFloat(d[key]))
-    });
-
-    const fullyNestedDataByFoodLevel = Object.freeze(d3.nest()
-                                        .key(d => 
-                                            Number.isNaN(d["Food Group Name_Level 3"]) ? 
-                                                Number.isNaN(d["Food Group Name_Level 2"]) ? 
-                                                    d["Food Group Name_Level 1"]
-                                                    : d["Food Group Name_Level 2"]
-                                                : d["Food Group Name_Level 3"]
-                                        )
-                                        .rollup(d => d[0])
-                                        .object(data));
-    return fullyNestedDataByFoodLevel;  
-}
-
 /* Returns selected option given a select html tag selector */
 function getSelector(id) {
     return d3.select(id)
         .property("value");
 }
 
-const dims = Object.freeze({
-    upperGraphWidth: 800,
-    upperGraphHeight: 600,
-    upperGraphLeft: 60,
-    upperGraphRight: 400,
-    upperGraphTop: 60,
-    upperGraphBottom: 60,
-    upperGraphTooltipMinWidth: 140,
-    upperGraphInfoBoxWidth: 240,
-    upperGraphInfoBoxHeight: 200,
-    upperGraphInfoBoxFontSize: 12,
-    upperGraphChartHeadingFontSize: 20,
-    lowerGraphWidth: 700,
-    lowerGraphHeight: 700,
-    lowerGraphLeft: 60,
-    lowerGraphRight: 400,
-    lowerGraphTop: 60,
-    lowerGraphBottom: 60,
-    lowerGraphArcRadius: 70,
-    lowerGraphTooltipMinWidth: 140,
-    lowerGraphInfoBoxWidth: 240,
-    lowerGraphInfoBoxHeight: 200,
-    lowerGraphArcLabelFontSize: 12,
-    lowerGraphChartHeadingFontSize: 20,    
-    lowerGraphInfoBoxFontSize: 12,
-    legendFontSize: 12,
-    legendSquareSize: 12,
-    legendRowHeight: 20,
-    tableSectionBorderLeft: "1px solid black",
-})
-
-const graphColours = {
-    "Baby Foods": "#BAABDA",
-    "Beverages (Excluding Milks)": "#F8CB2E",
-    "Dairy & Plant-Based Beverages": "#39B7E3",
-    "Fats & Oils": "#D8B384",
-    "Fish & Seafood": "#FF6969",
-    "Fruits & Vegetables": "#3CCF4E",
-    "Grain Products": "#EF5B0C",
-    "Meat & Poultry": "#BB2525",
-    "Meat Alternatives": "#482121",
-    "Nutritional Beverages & Bars": "#84F1CD",
-    "Soups - Sauces - Spices & Other Ingredients": "#005DD0",
-    "Sweets - Sugars & Savoury Snacks": "#824BD0"
-}
-
 function upperGraph(data, foodGroupDescriptions){
+    const upperGraphSvgWidth = dims.upperGraphWidth + dims.upperGraphLeft + dims.upperGraphRight;
+    const upperGraphSvgHeight = dims.upperGraphHeight + dims.upperGraphTop + dims.upperGraphBottom;
+
+    console.log("BELLO: ", foodGroupDescriptions);
+
     /* Create svg components */
     const upperGraphSvg = d3.select("#upperGraph")
         .append("svg")
-        .attr("width", dims.upperGraphWidth + dims.upperGraphLeft + dims.upperGraphRight)
-        .attr("height", dims.upperGraphHeight + dims.upperGraphTop + dims.upperGraphBottom);
+            .attr("width", upperGraphSvgWidth)
+            .attr("height", upperGraphSvgHeight)
+            .attr("viewBox", [0, 0, upperGraphSvgWidth, upperGraphSvgHeight])
+            .attr("style", "max-width: 100%; height: auto;");
 
     const upperGraphHeading = upperGraphSvg.append("g")
         .append("text")
             .attr("text-anchor", "middle")
             .attr("font-size", dims.upperGraphChartHeadingFontSize)
             .attr("x", dims.upperGraphLeft + dims.upperGraphWidth / 2)
-            .attr("y", dims.upperGraphTop - dims.upperGraphChartHeadingFontSize * 1.25);
+            .attr("y", dims.upperGraphTop - dims.upperGraphChartHeadingFontSize * 1.25)
 
     const upperGraphBars = upperGraphSvg.append("g")
     .attr("transform", `translate(${dims.upperGraphLeft}, 0)`)
@@ -276,28 +144,17 @@ function upperGraph(data, foodGroupDescriptions){
         /* graphType is updated by the getGraphType function */
         let type = graphType;
 
-        const xAxisValues = Object.keys(data[nutrient]);
+        const nutrientData = data.getNutrientData(nutrient);
+
+        const xAxisValues = Object.keys(nutrientData);
         upperGraphXAxisScale.domain(xAxisValues)
         upperGraphXAxisLine.call(d3.axisBottom(upperGraphXAxisScale));
 
         const xAxisTicks = upperGraphXAxisLine.selectAll(".tick");
-        
-        const nutrientData = data[nutrient];
-        let maxAccumulatedAmount = 0;
-        /* If graph type is number, get data from "Amount" col, otherwise use "Percentage" */
-        const keyName = type === "number" ? "Amount" : "Percentage"
-        // calculate the total amount by nutrient per age-sex group
-        const groupedAmount = Object.keys(nutrientData).reduce((obj, ageSexGroup) => {
-            obj[ageSexGroup] = Object.keys(nutrientData[ageSexGroup]).reduce((innerObj, foodLevelGroup) => {
-                innerObj[foodLevelGroup] = nutrientData[ageSexGroup][foodLevelGroup].reduce((amount, dataRow) => {
-                    // we want only the overall amounts for each food group, so ignore the rows representing subgroups
-                    return amount + (isNaN(dataRow[keyName]) || dataRow["Food group_level2"] || dataRow["Food group_level3"] ? 0 : dataRow[keyName])
-                }, 0);
-                return innerObj;
-            }, {})
-            maxAccumulatedAmount = Math.max(maxAccumulatedAmount, Object.values(obj[ageSexGroup]).reduce((sum, cur) => sum + cur, 0))
-            return obj;
-        }, {})  
+
+        const nutrientTotalByAgeSexGroup = data.findNutrientTotalAmtPerAgeSexGroup(nutrientData, type);
+        const groupedAmount = nutrientTotalByAgeSexGroup.groupedAmount;
+        const maxAccumulatedAmount = nutrientTotalByAgeSexGroup.maxAccumulatedAmount;
 
         upperGraphYAxisScale.domain([0, type === "number" ? Math.round(maxAccumulatedAmount * 1.2 / 10) * 10 : 100])
         upperGraphYAxisLine.call(d3.axisLeft(upperGraphYAxisScale));
@@ -362,7 +219,7 @@ function upperGraph(data, foodGroupDescriptions){
         //  sort the [food group, intake] pairs in decreasing order by intake
         groupEntries.sort((a, b) => b[1]- a[1]);
         let accumulatedHeight = dims.upperGraphHeight + dims.upperGraphTop;
-        
+
         groupEntries.forEach((d, i) => hoverTooltip(d, mult * 100 + i));
 
         element.append("g")
@@ -460,8 +317,12 @@ function upperGraph(data, foodGroupDescriptions){
                 returnObjects: true, 
                 context: graphType,
                 amount: d[1],
-                name: d[0]
+                name: d[0],
+                percentage: d[1],
+                nutrient: d[0]
             });
+
+            //console.log("DATAATTATAT: ", d);
             
             /* Create the text elements of the tooltip */
             let width = dims.upperGraphTooltipMinWidth;
@@ -487,8 +348,7 @@ function upperGraph(data, foodGroupDescriptions){
     }
 
     function drawTable(nutrient){
-        
-        const nutrientData = data[nutrient];
+        const nutrientData = data.getNutrientData(nutrient);
         const ageSexGroupHeadings = [
             "Population age 1+", 
             "Children 1 to 8 y", 
@@ -581,7 +441,8 @@ function upperGraph(data, foodGroupDescriptions){
     }
 
     function getNutrientUnit(nutrient){
-        return Object.values(Object.values(data[nutrient])[0])[0][0]["Unit"];
+        const nutrientData = data.getNutrientData(nutrient);
+        return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
     }
 
     /* This generator function is used to set the value for the "graphType" and "type" variable */
@@ -606,6 +467,8 @@ function lowerGraph(data, foodGroupDescriptions, tableData){
         .attr("overflow", "visible")
         .attr("width", width)
         .attr("height", height)
+        .attr("viewBox", [0, 0, width, height])
+        .attr("style", "max-width: 100%; height: auto;")
         .style("font", "10px sans-serif");
 
     const lowerGraphChartHeading = lowerGraphSvg.append("g")
