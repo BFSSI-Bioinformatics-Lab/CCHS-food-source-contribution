@@ -1,4 +1,4 @@
-export const translationObj = {
+export const TranslationObj = {
     en: {
         translation: {
             "upperGraph": {
@@ -45,9 +45,15 @@ export const translationObj = {
                     "Total {{ nutrient }} intake: {{ percentage }}%",
                     "{{- parentGroup }}: {{ parentPercentage }}%"
                 ],
-                /* If the context number is not between 1-3 */
+                "infoBoxLevel_4": [
+                    "{{- name }}",
+                    "Contribution to:",
+                    "Total {{ nutrient }} intake: {{ percentage }}%",
+                    "{{- parentGroup }}: {{ parentPercentage }}%"
+                ],
+                /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    "{{ name }}",
+                    "{{- name }}",
                     "{{ percentage }}% of total {{ nutrient }} intake."
                 ],
             }

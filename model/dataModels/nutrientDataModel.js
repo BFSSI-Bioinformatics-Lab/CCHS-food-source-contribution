@@ -33,4 +33,43 @@ export class NutrientDataModel extends CSVDataModel {
 
         return {"groupedAmount": groupedAmount, "maxAccumulatedAmount": maxAccumulatedAmount};
     }
+
+    buildSunBurstTree(nutrient, ageSexGroup) {
+        const nutrientData = this.fullyNestedDataByFoodGroup[nutrient];
+
+        /* Group data into a tree where each node has the form of { name, value, row, children } for d3.hierarchy() */
+        let groupedPercentages = Object.keys(nutrientData[ageSexGroup]).reduce((objLevel1, foodLevel1) => {
+            const foodLevel1Group = nutrientData[ageSexGroup][foodLevel1];
+
+            objLevel1.children.push(Object.keys(nutrientData[ageSexGroup][foodLevel1]).filter(d => d).reduce((objLevel2, foodLevel2) => {
+                const foodLevel2Group = foodLevel1Group[foodLevel2];
+                objLevel2.value -= foodLevel2Group[""]["Amount"];
+                const newChild = {
+                    name: foodLevel2,
+                    value: foodLevel2Group[""]["Amount"],
+                    row: foodLevel2Group[""]
+                };
+                newChild.children = Object.keys(foodLevel2Group).filter(d => d).map((foodLevel3) => {
+                    const foodLevel3Group = foodLevel2Group[foodLevel3];
+                    newChild.value -= foodLevel3Group["Amount"];
+                    return {
+                        name: foodLevel3,
+                        value: foodLevel3Group["Amount"],
+                        row: foodLevel3Group
+                    }
+                })
+                objLevel2.children.push(newChild);
+                return objLevel2;
+            }, { 
+                name: foodLevel1, 
+                value: foodLevel1Group[""][""]["Amount"], // key "" represents the overall group including all subgroups
+                row: foodLevel1Group[""][""], 
+                children: []
+            }));
+            return objLevel1;
+        }, { name: "All Items", row: {Percentage: 100}, children: [] });
+
+        groupedPercentages = {name: "data", children: [groupedPercentages]}
+        return groupedPercentages;
+    }
 }
