@@ -11,6 +11,8 @@ export class barGraph extends Component {
         super();
         this.data = data;
         this.foodGroupDescriptions = foodGroupDescriptions;
+        
+        this.focusedFoodGroup = null;
     }
 
     draw() {
@@ -18,6 +20,7 @@ export class barGraph extends Component {
     }
 
     upperGraph(data, foodGroupDescriptions){
+        const self = this;
         const upperGraphSvgWidth = GraphDims.upperGraphWidth + GraphDims.upperGraphLeft + GraphDims.upperGraphRight;
         const upperGraphSvgHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom;
     
@@ -122,6 +125,8 @@ export class barGraph extends Component {
                 upperGraphTooltips.selectAll("g").remove();
     
                 const category = dt[0];
+                self.focusedFoodGroup = dt;
+
                 const barData = Object.values(groupedAmount).map(g => {
                     const obj = {};
                     obj[category] = g[category];
@@ -138,8 +143,16 @@ export class barGraph extends Component {
                     .enter()
                     .each(
                         (d, i) => 
-                            drawUpperGraphStackedBars(upperGraphBars, d, xAxisTicks.nodes()[i].getAttribute("transform"), () => updateGraph(nutrient), i + 1)  
+                            drawUpperGraphStackedBars(upperGraphBars, d, xAxisTicks.nodes()[i].getAttribute("transform"), 
+                            () => {
+                                self.focusedFoodGroup = null;
+                                updateGraph(nutrient);
+                            }, i + 1)  
                     )         
+            }
+
+            if (self.focusedFoodGroup !== null) {
+                barOnClick(self.focusedFoodGroup);
             }
     
             upperGraphBars.selectAll("g")
@@ -280,7 +293,7 @@ export class barGraph extends Component {
                     const text = card.append("text")
                         .attr("x", 10)
                         .attr("y", (lineNum + 1) * 10)
-                        .attr("font-size", GraphDims.upperGraphInfoBoxFontSize)
+                        .attr("font-size", GraphDims.upperGraphTooltipFontSize)
                         .text(line);
                     width = Math.max(text.node().getComputedTextLength() + 20, width);
                 })
@@ -371,6 +384,11 @@ export class barGraph extends Component {
         function drawGraphLegend(element, titleToColours){
             Object.entries(titleToColours).forEach((entry, i) => {
                 const [title, colour] = entry;
+
+                if (title == "All Items") {
+                    return;
+                }
+
                 const groupElement = element.append("g");
                 groupElement.append("rect")
                     .attr("y", i * GraphDims.legendRowHeight + (GraphDims.legendRowHeight - GraphDims.legendSquareSize ) / 2)

@@ -10,11 +10,22 @@ import { TranslationTools } from "../../../tools/translationTools.js";
 export class sunBurst extends Component {
     constructor(data, foodGroupDescriptions, tableData) {
         super();
-        this.data = data
-        this.foodGroupDescriptions = foodGroupDescriptions
-        this.tableData = tableData
+        this.data = data;
+        this.foodGroupDescriptions = foodGroupDescriptions;
+        this.tableData = tableData;
 
         this.selectedNode = null;
+        this.root = null;
+        this.treeHeight = null;
+        this.radius = null;
+        
+        // individual components within the sunBurst
+        this.lowerGraphFilterGroupsButton = null;
+        this.lowerGraphSunburst = null;
+        this.label = null;
+        this.hoverPath = null;
+        this.path = null;
+        this.arc = null;
     }
 
     draw() {
@@ -38,6 +49,164 @@ export class sunBurst extends Component {
         return foundColour;
     }
 
+    // setFilterButton(translationKey, onClickAction): Changes the state of the filter button
+    //  based on 'translationKey' and 'onClickAction'
+    setFilterButton(translationKey, onClickAction) {
+        this.lowerGraphFilterGroupsButton.text(TranslationTools.translateText(translationKey));
+        this.lowerGraphFilterGroupsButton.on("click", onClickAction);
+    }
+
+    setFilterButtonToLevel2Groups() {
+        return this.setFilterButton("lowerGraph.seeLevel2Groups", () => this.filterOnLevel2Groups());
+    }
+
+    setFilterButtonToAllGroups() {
+        return this.setFilterButton("lowerGraph.seeAllGroups", () => this.filterAllFoodGroups());
+    }
+
+    /* Shows arc only when the arc has a depth between 1-4 and a nonzero angle */
+    arcVisible(d) {
+        return d.depth <= this.treeHeight && d.depth >= 1 && d.x1 > d.x0;
+    }
+
+    // labelAvailableLength(d): Retrieves the length of available space in a particular arc 'd'
+    labelAvailableLength(d){
+        const outerRadius = d.y1 * this.radius;
+        const angle = d.x1 - d.x0;
+        const arcLength = outerRadius * angle - 2 * GraphDims.lowerGraphArcPadding;
+        return arcLength;
+    }
+
+    /* Make label appear in the middle of the arc */
+    labelTransform() {
+        return `translate(${30},0)`;
+    }
+
+    /* Truncates the label based on the arc's width, replaces letters with ellipsis if too long */
+    labelTextFit(d, i){
+        const element = d3.select(`#arcLabel${i}`);
+        if (!element.node()) return;
+        const elementNode = element.node();
+        const availableLength = this.labelAvailableLength(d); 
+        let text = d.data.name;
+        element.text(text);
+        let textLength = elementNode.getComputedTextLength();
+        let textTruncated = false;
+
+        while (textLength > availableLength && text){
+            text = text.slice(0, text.length - 1);
+            element.text(`${text}...`);
+            textLength = elementNode.getComputedTextLength();
+            textTruncated = true;
+        }
+
+        // center text only if the text is not truncated
+        let textX = 0;
+        if (!textTruncated && (d.x1 - d.x0) < 2 * Math.PI) {
+            textX = (d.x1 - d.x0) / 2 * d.y1 * this.radius - elementNode.getComputedTextLength() / 2;
+        }
+
+        element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
+    }
+
+    /* Shows label only when the arc has an angle over 0.05 */
+    labelVisible(d) {
+        return d.x1 - d.x0 > 0.05
+    }
+
+    /* Positions tool tip according to arc position */
+    positionHoverCard(element, d){
+        const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
+        element.attr("transform", `translate(${GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1)}, ${GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)})`);
+    }
+
+    // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
+    transitionArcs(duration = 750){
+        const self = this
+        const t = this.lowerGraphSunburst.transition().duration(duration);
+        const s = this.lowerGraphSunburst.transition().duration(duration * 1.5);
+
+        /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
+        this.label.attr("href", (d, i) => this.arcVisible(d.target) ? `#arcPath${i}` : "none" )
+            .call((d) => d.attr("fill-opacity", 0))
+            .each((d, i) => this.labelTextFit(d.target, i));
+
+        this.label.filter(function(d) {
+            return +this.getAttribute("fill-opacity") || self.labelVisible(d.target);
+        }).transition(s)
+            .attr("fill-opacity", (d) => +this.arcVisible(d.target))
+            .attrTween("transform", d => () => this.labelTransform(d.current))
+            .attr("fill", d => {
+                if (this.selectedNode !== null && this.selectedNode.target.data.name == d.target.data.name) {
+                    return "white";
+                }
+
+                return "black";
+            });
+
+        // Transition the data on all arcs, even the ones that aren’t visible,
+        // so that if this transition is interrupted, entering arcs will start
+        // the next transition from the desired position.
+        this.path.each((d,i) => this.positionHoverCard(d3.select(`#arcHover${i}`), d.target))
+            .transition(t)
+            .tween("data", d => {
+            const i = d3.interpolate(d.current, d.target);
+            return t => d.current = i(t);
+            })
+        .filter(function(d) {
+            return +this.getAttribute("fill-opacity") || self.arcVisible(d.target);
+        })
+            .attr("fill-opacity", d => this.arcVisible(d.target) ? 1 : 0)
+            .attr("pointer-events", d => this.arcVisible(d.target) ? "auto" : "none") 
+            .attrTween("d", d => () => this.arc(d.current));
+            
+        this.hoverPath.transition(t)
+            .tween("data", d => {
+            const i = d3.interpolate(d.current, d.target);
+            return t => d.current = i(t);
+            })
+            .attrTween("d", d => () => self.arc(d.current))
+    }
+
+    // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
+    filterAllFoodGroups() {
+        this.root.each(d => d.target = {
+            depth: d.depth,
+            data: d.data,
+            value: d.value,
+            x0: d.x0,
+            x1: d.x1,
+            y0: d.y0,
+            y1: d.y1,
+        });
+
+        this.transitionArcs(0);
+        this.setFilterButtonToLevel2Groups();
+    }
+
+    // filterOnLevel2Groups(): Display only level 2 groups of the Sun Burst Graph
+    filterOnLevel2Groups(){
+        const highestDepth = 3;
+        let acc = 0;
+
+        /* Sort level 2 arcs by value amount */
+        const sortedGroups = this.root.descendants().slice(1).sort((a, b) => d3.descending(a.value, b.value));
+        sortedGroups.forEach((d, i) => {
+            this.root.descendants().find(r => r.data.name === d.data.name).target = {
+                depth: d.depth,
+                data: d.data,
+                value: d.value,
+                x0: d.depth === highestDepth ? acc : 0,
+                x1: d.depth === highestDepth ? acc + (d.x1 - d.x0) : 0,
+                y0: d.y0,
+                y1: d.y1
+            }
+            acc += d.depth === highestDepth ? (d.x1 - d.x0) : 0;
+        });
+        this.transitionArcs(0);
+        this.setFilterButtonToAllGroups();
+    }
+
     lowerGraph(nutrientsData, foodGroupDescriptions){
         const self = this;
         const data = nutrientsData.fullyNestedDataByFoodGroup;
@@ -46,7 +215,7 @@ export class sunBurst extends Component {
         // Specify the chart’s dimensions.
         const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
         const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
-        const radius = GraphDims.lowerGraphArcRadius;
+        self.radius = GraphDims.lowerGraphArcRadius;
     
         const ageSexSelector = d3.select("#lowerGraphAgeSexSelect");
     
@@ -65,10 +234,10 @@ export class sunBurst extends Component {
         .attr("x", width / 2)
         .attr("y", GraphDims.lowerGraphTop - GraphDims.lowerGraphChartHeadingFontSize * 0.75);
     
-        const lowerGraphSunburst = lowerGraphSvg.append("g")
+        self.lowerGraphSunburst = lowerGraphSvg.append("g")
         .attr("transform", `translate(${GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2})`)
     
-        const lowerGraphFilterGroupsButton = d3.select("#lowerGraphFilterGroupsButton");
+        self.lowerGraphFilterGroupsButton = d3.select("#lowerGraphFilterGroupsButton");
 
         const lowerGraphInfoBox = new Infobox(lowerGraphSvg, GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth, GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight, 
                                               GraphDims.lowerGraphInfoBoxWidth, GraphDims.lowerGraphInfoBoxHeight, GraphDims.lowerGraphInfoBoxFontSize, GraphDims.lowerGraphInfoBoxBorderWidth,
@@ -104,7 +273,7 @@ export class sunBurst extends Component {
     
         // Source reference: https://observablehq.com/@d3/zoomable-sunburst
         function drawSunburst(nutrient, ageSexGroup){
-            lowerGraphSunburst.selectAll("g").remove();
+            self.lowerGraphSunburst.selectAll("g").remove();
             const groupedPercentages = nutrientsData.buildSunBurstTree(nutrient, ageSexGroup);
         
             // Compute the layout.
@@ -112,89 +281,89 @@ export class sunBurst extends Component {
                 .sum(d => d.value)
                 .sort((a, b) => b.value - a.value);
 
-            const treeHeight = hierarchy.height;
+            self.treeHeight = hierarchy.height;
         
-            const root = d3.partition()
+            self.root = d3.partition()
                 .size([2 * Math.PI, hierarchy.height + 1])
                 (hierarchy);
         
-            root.each(d => d.current = d);
+            self.root.each(d => d.current = d);
         
             // Create the arc generator.
-            const arc = d3.arc()
+            self.arc = d3.arc()
                 .startAngle(d => d.x0)
                 .endAngle(d => d.x1)
                 .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
-                .padRadius(radius * 1.5)
-                .innerRadius(d => d.y0 * radius)
-                .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1))
+                .padRadius(self.radius * 1.5)
+                .innerRadius(d => d.y0 * self.radius)
+                .outerRadius(d => Math.max(d.y0 * self.radius, d.y1 * self.radius - 1))
         
             // Append the arcs and pass in the data
-            const path = lowerGraphSunburst.append("g")
+            self.path = self.lowerGraphSunburst.append("g")
                 .selectAll("path")
-                .data(root.descendants().slice(1))
+                .data(self.root.descendants().slice(1))
                 .join("path")
                 .attr("fill", d => self.getArcColour(d))
-                .attr("fill-opacity", d => arcVisible(d.current) ? 1 : 0)
+                .attr("fill-opacity", d => self.arcVisible(d.current) ? 1 : 0)
                 .property("id", (d, i) => `arcPath${i}`)
-                .attr("d", d => arc(d.current))
+                .attr("d", d => self.arc(d.current))
         
             /* Update title of each individual arc, which appears when hovering over label */
             const format = d3.format(",d");
-            path.append("title")
+            self.path.append("title")
                 .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${format(d.value)}`);
-        
+            
             /* Name of each arc */
-            const label = lowerGraphSunburst.append("g")
+            self.label = self.lowerGraphSunburst.append("g")
                 .attr("pointer-events", "none")
                 .style("user-select", "none")
                 .selectAll("text")
-                .data(root.descendants().slice(1))
+                .data(self.root.descendants().slice(1))
                 .join("text")
-                .attr("dy", radius / 2)
+                .attr("dy", self.radius / 2)
                 .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
-                .attr("fill-opacity", d => +labelVisible(d.current))
+                .attr("fill-opacity", d => +self.labelVisible(d.current))
                     .append("textPath") // make the text following the shape of the arc
                     .attr("id", (d, i) => `arcLabel${i}`)
                     .attr("href", (d, i) => `#arcPath${i}`);
         
-            label.each(labelTextFit);
+            self.label.each((d, i) => self.labelTextFit(d, i));
         
             // TODO: check what this does, copied from the reference 
-            const parent = lowerGraphSunburst.append("circle")
-                .datum(root.descendants())
-                .attr("r", radius)
+            const parent = self.lowerGraphSunburst.append("circle")
+                .datum(self.root.descendants())
+                .attr("r", self.radius)
                 .attr("fill", "none")
                 .attr("pointer-events", "all");
         
             // filter on level 2 groups on button click
-            lowerGraphFilterGroupsButton.on("click", filterOnLevel2Groups);
+            self.lowerGraphFilterGroupsButton.on("click", self.filterOnLevel2Groups);
         
-            const mouseOverBoxes = lowerGraphSunburst.append("g");
+            const mouseOverBoxes = self.lowerGraphSunburst.append("g");
         
-            root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i));
+            self.root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i));
         
             /* Create invisible arc paths on top of graph in order to detect hovering */
-            const hoverPath = lowerGraphSunburst.append("g")
+            self.hoverPath = self.lowerGraphSunburst.append("g")
                 .selectAll("path")
-                .data(root.descendants().slice(1))
+                .data(self.root.descendants().slice(1))
                 .join("path")
                 .attr("fill-opacity", 0)
                 .attr("pointer-events", "auto")
-                .attr("d", d => arc(d.current))
+                .attr("d", d => self.arc(d.current))
         
             // Make the arcs clickable.
-            hoverPath.style("cursor", "pointer")
+            self.hoverPath.style("cursor", "pointer")
                 .on("click", (e, i) => {
                     clicked(e,i + 1);
                 });
         
-            hoverPath.on("mousemove", arcHover);
-            hoverPath.on("mouseenter", arcHover);
-            hoverPath.on("mouseover", arcHover);
-            hoverPath.on("mouseout", arcUnHover);
+            self.hoverPath.on("mousemove", arcHover);
+            self.hoverPath.on("mouseenter", arcHover);
+            self.hoverPath.on("mouseover", arcHover);
+            self.hoverPath.on("mouseout", arcUnHover);
         
-            filterAllFoodGroups();
+            self.filterAllFoodGroups();
         
             /* Make the opacity of tooltip 1 */
             function arcHover(d, i){
@@ -205,58 +374,21 @@ export class sunBurst extends Component {
             function arcUnHover(d, i){
                 d3.select(`#arcHover${i}`).attr("opacity", 0);
             }
-        
-            /* Reverse to original arc positions */
-            function filterAllFoodGroups(){
-                root.each(d => d.target = {
-                    depth: d.depth,
-                    data: d.data,
-                    value: d.value,
-                    x0: d.x0,
-                    x1: d.x1,
-                    y0: d.y0,
-                    y1: d.y1,
-                });
-                transitionArcs(0);
-                lowerGraphFilterGroupsButton.text(TranslationTools.translateText("lowerGraph.seeLevel2Groups"));
-                lowerGraphFilterGroupsButton.on("click", filterOnLevel2Groups)
-            }
-        
-            /* Display only level 2 groups */
-            function filterOnLevel2Groups(){
-                const highestDepth = 3;
-                let acc = 0;
 
-                /* Sort level 2 arcs by value amount */
-                const sortedGroups = root.descendants().slice(1).sort((a, b) => d3.descending(a.value, b.value));
-                sortedGroups.forEach((d, i) => {
-                    root.descendants().find(r => r.data.name === d.data.name).target = {
-                        depth: d.depth,
-                        data: d.data,
-                        value: d.value,
-                        x0: d.depth === highestDepth ? acc : 0,
-                        x1: d.depth === highestDepth ? acc + (d.x1 - d.x0) : 0,
-                        y0: d.y0,
-                        y1: d.y1
-                    }
-                    acc += d.depth === highestDepth ? (d.x1 - d.x0) : 0;
-                });
-                transitionArcs(0);
-                lowerGraphFilterGroupsButton.text(TranslationTools.translateText("lowerGraph.seeAllGroups"));
-                lowerGraphFilterGroupsButton.on("click", filterAllFoodGroups);
-            }
             // Handle zoom on click.
             function clicked(event, i) {
         
-                const children = root.descendants();
-                parent.datum(children[i] ?? root);
+                const children = self.root.descendants();
+                parent.datum(children[i] ?? self.root);
 
                 // the node that has been clicked
                 const p = children[i] ?? children;
+
+                const isTransitionArc = (!p.target || (p.target.x1 - p.target.x0) < 2 * Math.PI || self.selectedNode != p);
         
                 /* Transition only if the clicked arc does not already span a full circle or the arc has not been already selected */
-                if (!p.target || (p.target.x1 - p.target.x0) < 2 * Math.PI || self.selectedNode != p) {
-                    root.each(d => {
+                if (isTransitionArc) {
+                    self.root.each(d => {
                         if (d.data.row)
                             d.target = {
                                 depth: d.depth,
@@ -268,91 +400,16 @@ export class sunBurst extends Component {
                                 y1: d.y1
                             }
                     });
-        
-                    transitionArcs();
                 }
 
                 self.selectedNode = p;
-            }
-        
-            /* Updates the arcs */
-            function transitionArcs(duration = 750){
-                const t = lowerGraphSunburst.transition().duration(duration);
-                const s = lowerGraphSunburst.transition().duration(duration * 1.5);
-        
-                /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
-                label.attr("href", (d, i) => arcVisible(d.target) ? `#arcPath${i}` : "none" )
-                    .call((d) => d.attr("fill-opacity", 0))
-                    .each((d, i) => labelTextFit(d.target, i));
-        
-                label.filter(function(d) {
-                    return +this.getAttribute("fill-opacity") || labelVisible(d.target);
-                }).transition(s)
-                    .attr("fill-opacity", (d) => +arcVisible(d.target))
-                    .attrTween("transform", d => () => labelTransform(d.current));
-        
-                // Transition the data on all arcs, even the ones that aren’t visible,
-                // so that if this transition is interrupted, entering arcs will start
-                // the next transition from the desired position.
-                path.each((d,i) => positionHoverCard(d3.select(`#arcHover${i}`), d.target))
-                    .transition(t)
-                    .tween("data", d => {
-                    const i = d3.interpolate(d.current, d.target);
-                    return t => d.current = i(t);
-                    })
-                .filter(function(d) {
-                    return +this.getAttribute("fill-opacity") || arcVisible(d.target);
-                })
-                    .attr("fill-opacity", d => arcVisible(d.target) ? 1 : 0)
-                    .attr("pointer-events", d => arcVisible(d.target) ? "auto" : "none") 
-                    .attrTween("d", d => () => arc(d.current));
-                    
-                hoverPath.transition(t)
-                    .tween("data", d => {
-                    const i = d3.interpolate(d.current, d.target);
-                    return t => d.current = i(t);
-                    })
-                    .attrTween("d", d => () => arc(d.current))
-            }
-        
-            /* Shows arc only when the arc has a depth between 1-4 and a nonzero angle */
-            function arcVisible(d) {
-                return d.depth <= treeHeight && d.depth >= 1 && d.x1 > d.x0;
-            }
-        
-            /* Shows label only when the arc has an angle over 0.05 */
-            function labelVisible(d) {
-                return d.x1 - d.x0 > 0.05
-            }
-        
-            /* Make label appear in the middle of the arc */
-            function labelTransform() {
-                return `translate(${30},0)`;
-            }
-        
-        
-            function labelAvailableLength(d){
-                const outerRadius = d.y1 * radius;
-                const angle = d.x1 - d.x0;
-                const arcLength = outerRadius * angle;
-                return arcLength;
-            }
-        
-            /* Truncates the label based on the arc's width, replaces letters with ellipsis if too long */
-            function labelTextFit(d, i){
-                const element = d3.select(`#arcLabel${i}`);
-                if (!element.node()) return;
-                const elementNode = element.node();
-                const availableLength = labelAvailableLength(d); 
-                let text = d.data.name;
-                element.text(text);
-                let textLength = elementNode.getComputedTextLength();
-        
-                while (textLength > availableLength && text){
-                    text = text.slice(0, text.length - 1);
-                    element.text(`${text}...`);
-                    textLength = elementNode.getComputedTextLength();
+
+                if (isTransitionArc) {
+                    self.transitionArcs();
                 }
+
+                // set the correct state for the filter button
+                self.setFilterButtonToLevel2Groups();
             }
         
             /* Creation of tooltip */
@@ -393,13 +450,7 @@ export class sunBurst extends Component {
                 })
                 cardRect.attr("width", width);
         
-                positionHoverCard(card, d);
-            }
-        
-            /* Positions tool tip according to arc position */
-            function positionHoverCard(element, d){
-                const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
-                element.attr("transform", `translate(${GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1)}, ${GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)})`);
+                self.positionHoverCard(card, d);
             }
         
             /* Update food group description box */
