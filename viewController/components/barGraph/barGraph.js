@@ -80,7 +80,8 @@ export class barGraph extends Component {
         const upperGraphSwitchTypeButton = d3.select("#upperGraphSwitchType");
         
         /* Food group description elements changed on hover */
-        const upperGraphInfoBox = new Infobox(upperGraphSvg, GraphDims.upperGraphLeft + GraphDims.upperGraphWidth, GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
+        const upperGraphInfoBox = new Infobox(upperGraphSvg, GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin, 
+                                              GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
                                               GraphDims.upperGraphInfoBoxWidth, GraphDims.upperGraphInfoBoxHeight, GraphDims.upperGraphInfoBoxFontSize, GraphDims.upperGraphInfoBoxBorderWidth, 
                                               GraphDims.upperGraphInfoBoxPaddingLeft, GraphDims.upperGraphInfoBoxLineSpacing, 
                                               GraphDims.upperGraphInfoBoxBorderWidth - GraphDims.upperGraphInfoBoxWidth / 2, GraphDims.upperGraphInfoBoxBorderWidth);
@@ -291,8 +292,8 @@ export class barGraph extends Component {
                 let width = GraphDims.upperGraphTooltipMinWidth;
                 lines.map((line, lineNum) => {
                     const text = card.append("text")
-                        .attr("x", 10)
-                        .attr("y", (lineNum + 1) * 10)
+                        .attr("x", GraphDims.upperGraphTooltipLeftPadding)
+                        .attr("y", (lineNum + 1) * GraphDims.upperGraphTooltipTopPadding)
                         .attr("font-size", GraphDims.upperGraphTooltipFontSize)
                         .text(line);
                     width = Math.max(text.node().getComputedTextLength() + 20, width);

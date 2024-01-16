@@ -18,6 +18,8 @@ export class sunBurst extends Component {
         this.root = null;
         this.treeHeight = null;
         this.radius = null;
+        this.centerOuterRadius = null;
+        this.radiusDiffFromCenterArc = null;
         
         // individual components within the sunBurst
         this.lowerGraphFilterGroupsButton = null;
@@ -49,6 +51,68 @@ export class sunBurst extends Component {
         return foundColour;
     }
 
+
+    // getRadius(treeNode): Retrieves the dimensions for the radius
+    //  of the arc of a particular tree node
+    getRadius(treeNode) {
+        let radius = this.radius;
+        if (treeNode.depth <= 1) {
+            radius = GraphDims.lowerGraphCenterArcRadius;
+        }
+        
+        return radius;
+    }
+
+    computeArcOuterRadius(treeNode, radius) {
+        return Math.max(treeNode.y0 * radius, treeNode.y1 * radius - 1);
+    }
+
+    computeArcInnerRadius(treeNode, radius) {
+        return treeNode.y0 * radius;
+    }
+
+    // getArcOuterRadius(treeNode): Retrieves the dimensions for the outer radius
+    //  of the arc of a particular tree node
+    getArcOuterRadius(treeNode) {
+        const radius = this.getRadius(treeNode);
+        let result = this.computeArcOuterRadius(treeNode, radius);
+
+        if (treeNode.depth <= 1) {
+            this.centerOuterRadius = result;
+        } else {
+            result -= this.radiusDiffFromCenterArc;
+        }
+
+        return result;
+    }
+
+    // getArcInnerRadius(treeNode): Retrives the dimensions for the inner radius
+    //  of the arc of a particular tree node
+    getArcInnerRadius(treeNode) {
+        const radius = this.radius;
+        let result = treeNode.y0 * radius;
+        let beforeResult = result;
+
+        if (treeNode.depth == 2 && this.radiusDiffFromCenterArc === null) {
+            this.radiusDiffFromCenterArc = result - this.centerOuterRadius - GraphDims.lowerGraphCenterArcMargin;
+        }
+
+        if (treeNode.depth > 1) {
+            result -= this.radiusDiffFromCenterArc;
+        }
+
+        return result;
+    }
+
+    // getArcMiddleRadius(treeNode): Retrives the dimensions for the middle radius
+    //   of the arc of a particular tree node
+    getArcMiddleRadius(treeNode) {
+        const outerRadius = this.getArcOuterRadius(treeNode);
+        const innerRadius = this.getArcInnerRadius(treeNode);
+
+        return innerRadius + (outerRadius - innerRadius) / 2;
+    }
+
     // setFilterButton(translationKey, onClickAction): Changes the state of the filter button
     //  based on 'translationKey' and 'onClickAction'
     setFilterButton(translationKey, onClickAction) {
@@ -70,10 +134,9 @@ export class sunBurst extends Component {
     }
 
     // labelAvailableLength(d): Retrieves the length of available space in a particular arc 'd'
-    labelAvailableLength(d){
-        const outerRadius = d.y1 * this.radius;
+    labelAvailableLength(d, midRadius, ){
         const angle = d.x1 - d.x0;
-        const arcLength = outerRadius * angle - 2 * GraphDims.lowerGraphArcPadding;
+        const arcLength = midRadius * angle - 2 * GraphDims.lowerGraphArcPadding;
         return arcLength;
     }
 
@@ -82,28 +145,50 @@ export class sunBurst extends Component {
         return `translate(${30},0)`;
     }
 
+    // Add some extra tolerance length to the computed text length due to
+    //  the inaccuracy of the getComputedTextLength on different browsers
+    getArcTextLength(elementNode, text) {
+        return elementNode.getComputedTextLength() + 3.2 * text.length;
+    }
+
     /* Truncates the label based on the arc's width, replaces letters with ellipsis if too long */
     labelTextFit(d, i){
+        const midRadius = this.getArcMiddleRadius(d);
         const element = d3.select(`#arcLabel${i}`);
         if (!element.node()) return;
         const elementNode = element.node();
-        const availableLength = this.labelAvailableLength(d); 
+        const availableLength = this.labelAvailableLength(d, midRadius); 
         let text = d.data.name;
+
+        element.attr("startOffset", 0);
         element.text(text);
-        let textLength = elementNode.getComputedTextLength();
+        let textLength = this.getArcTextLength(elementNode, text);
         let textTruncated = false;
 
         while (textLength > availableLength && text){
             text = text.slice(0, text.length - 1);
             element.text(`${text}...`);
-            textLength = elementNode.getComputedTextLength();
+            textLength = this.getArcTextLength(elementNode, text);
             textTruncated = true;
+        }
+
+        if (textLength > availableLength) {
+            element.text("");
         }
 
         // center text only if the text is not truncated
         let textX = 0;
-        if (!textTruncated && (d.x1 - d.x0) < 2 * Math.PI) {
-            textX = (d.x1 - d.x0) / 2 * d.y1 * this.radius - elementNode.getComputedTextLength() / 2;
+        if ((d.x1 - d.x0) < 2 * Math.PI) {
+            textX = (d.x1 - d.x0) / 2 * midRadius - elementNode.getComputedTextLength() / 2;
+        }
+
+        if (textX < 0) {
+            textX = 0;
+        }
+
+        if (availableLength > 0) {
+            console.log("NAME: ", d.data.name, " AND TEXT: ", element.text(), "AVAILA: ", availableLength, "CURRENT LEN: ", this.getArcTextLength(elementNode, text), " Y0: ", d.y0, " AND Y1: ", d.y1, " AND TEXT X: ", textX, " AND TRUNCATED: ", textTruncated);
+            console.log("MID: ", (d.x1 - d.x0) / 2, " AND ", elementNode.getComputedTextLength() / 2, " AND ", (d.x1 - d.x0) / 2 * midRadius - elementNode.getComputedTextLength() / 2);
         }
 
         element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
@@ -126,11 +211,6 @@ export class sunBurst extends Component {
         const t = this.lowerGraphSunburst.transition().duration(duration);
         const s = this.lowerGraphSunburst.transition().duration(duration * 1.5);
 
-        /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
-        this.label.attr("href", (d, i) => this.arcVisible(d.target) ? `#arcPath${i}` : "none" )
-            .call((d) => d.attr("fill-opacity", 0))
-            .each((d, i) => this.labelTextFit(d.target, i));
-
         this.label.filter(function(d) {
             return +this.getAttribute("fill-opacity") || self.labelVisible(d.target);
         }).transition(s)
@@ -143,6 +223,11 @@ export class sunBurst extends Component {
 
                 return "black";
             });
+
+        /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
+        this.label.attr("href", (d, i) => this.arcVisible(d.target) ? `#arcPath${i}` : "none" )
+            .call((d) => d.attr("fill-opacity", 0))
+            .each((d, i) => this.labelTextFit(d.target, i));
 
         // Transition the data on all arcs, even the ones that aren’t visible,
         // so that if this transition is interrupted, entering arcs will start
@@ -295,8 +380,8 @@ export class sunBurst extends Component {
                 .endAngle(d => d.x1)
                 .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
                 .padRadius(self.radius * 1.5)
-                .innerRadius(d => d.y0 * self.radius)
-                .outerRadius(d => Math.max(d.y0 * self.radius, d.y1 * self.radius - 1))
+                .innerRadius(d => self.getArcInnerRadius(d))
+                .outerRadius(d => self.getArcOuterRadius(d));
         
             // Append the arcs and pass in the data
             self.path = self.lowerGraphSunburst.append("g")
@@ -320,7 +405,7 @@ export class sunBurst extends Component {
                 .selectAll("text")
                 .data(self.root.descendants().slice(1))
                 .join("text")
-                .attr("dy", self.radius / 2)
+                .attr("dy", d => self.getRadius(d) / 2)
                 .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
                 .attr("fill-opacity", d => +self.labelVisible(d.current))
                     .append("textPath") // make the text following the shape of the arc
@@ -332,7 +417,7 @@ export class sunBurst extends Component {
             // TODO: check what this does, copied from the reference 
             const parent = self.lowerGraphSunburst.append("circle")
                 .datum(self.root.descendants())
-                .attr("r", self.radius)
+                .attr("r", d => self.getRadius(d))
                 .attr("fill", "none")
                 .attr("pointer-events", "all");
         
