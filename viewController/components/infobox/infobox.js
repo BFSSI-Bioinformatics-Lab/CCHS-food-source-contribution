@@ -1,87 +1,57 @@
-import { svgComponent } from "../svgComponent.js";
+import { TextBox } from "../textbox/textBox.js";
 import { DefaultDims } from "../../../assets/dimensions/defaultDimensions.js";
+import { DefaultAttributes } from "../../../assets/strings/defaultAttributes.js";
+import { Colours } from "../../../assets/colours/colours.js";
 
-export class Infobox extends svgComponent{
-    constructor(parent, x = DefaultDims.pos, y = DefaultDims.pos, width = DefaultDims.length, height = DefaultDims.length, 
-                fontSize = DefaultDims.fontSize, borderWidth = DefaultDims.borderWidth, paddingLeft = DefaultDims.paddingSize,
-                lineSpacing = DefaultDims.lineSpacing, textX = DefaultDims.paddingSize, textY = DefaultDims.paddingSize) {
-        super(parent, x, y, width, height);
-        this.fontSize = fontSize;
+export class Infobox extends TextBox {
+    constructor({parent = null, 
+                 x = DefaultDims.pos, 
+                 y = DefaultDims.pos, 
+                 width = DefaultDims.length, 
+                 height = DefaultDims.length, 
+                 text = "",
+                 fontSize = DefaultDims.fontSize, 
+                 borderWidth = DefaultDims.borderWidth, 
+                 padding = 0, 
+                 margin = 0,
+                 lineSpacing = DefaultDims.lineSpacing, 
+                 textAlign = DefaultAttributes.textAnchor, 
+                 fontWeight = DefaultAttributes.fontWeight, 
+                 borderColour = Colours.None, 
+                 textWrap = DefaultAttributes.textWrap, 
+                 id = null, 
+                 opacity = DefaultAttributes.opacity} = {}) {
+
+        super({parent: parent, x: x, y: y, width: width, height: height, text: text, fontSize: fontSize, 
+               padding: padding, margin: margin, lineSpacing: lineSpacing, textAlign: textAlign, fontWeight: fontWeight, 
+               textWrap: textWrap, id: id, opacity: opacity});
         this.borderWidth = borderWidth;
-        this.lineSpacing = lineSpacing;
-        this.paddingLeft = paddingLeft;
-        this.textX = textX;
-        this.textY = textY;
+        this.borderColour = borderColour;
+        this.textX = this.borderWidth + this.paddingLeft;
         
         // different individual parts of the component drawn
         this.highlight = null;
-        this.text = null;
     }
 
-    draw() {
-        super.draw();
-        this.highlight = this.group.append("line")
-                        .attr("visibility", "hidden")
-                        .attr("x1", 0)
-                        .attr("y1", 0)
-                        .attr("x2", 0)
-                        .attr("y2", this.height)
-                        .attr("stroke-width", this.borderWidth);
-
-        this.text = this.group.append("text")
-                        .attr("font-size", this.fontSize);
+    // getTextAvailableWidth(): Retrieves the text width available for the textbox
+    getTextAvailableWidth() {
+        return this.width - this.paddingLeft - this.paddingRight - this.borderWidth;
     }
 
-
-    // getTspanXPos(): Retrieves the x-coordinate position for the tspan text
-    getTSpanXPos() {
-        return this.textX + (this.width - this.borderWidth) / 2 + this.paddingLeft;
+    setup() {
+        super.setup();
+        this.highlight = this.group.append("line");
     }
 
-    // drawText(text, numLines):
-    //   Draws the text to be wrapped around the textbox by creating
-    //      tspan elements to fit text into a given width
-    drawText(text, numLines = [0]) {
-        let width = this.width - this.borderWidth;
-        const words = text ? text.split(" ") : this.text.text().split(" ");
-        const tspanXPos = this.getTSpanXPos();
+    redraw(opts = {}) {
+        super.redraw(opts);
+        this.highlight.attr("y2", this.height)
+                      .attr("stroke-width", this.borderWidth);
 
-        words.reduce((arr, word) => {
-            let textNode = arr[arr.length - 1];
-            let line = textNode.text().split(" ");
-            line.push(word);
-            textNode.text(line.join(" "));
-            if (textNode.node().getComputedTextLength() > width) {
-                line.pop();
-                textNode.text(line.join(" "));
-                textNode = this.text.append("tspan")
-                    .attr("x", tspanXPos)
-                    .attr("y", this.textY + (arr.length + 1) * this.fontSize + arr.length * this.lineSpacing)
-                    .text(word);
-                arr.push(textNode);
-                numLines[0]++;
-                numLines.push(textNode.text().length)
-            } else {
-                textNode.text(line.join(" "));
-                arr[arr.length - 1] = textNode;
-            }
-            return arr;
-        }, [this.text.append("tspan").attr("x", tspanXPos).attr("y", this.textY + this.fontSize)]);  
-        numLines[0]++; 
-        numLines.push(words.pop().length);
-    }
-
-    // updateText(newText, newColour): Updates the text within the textboxs
-    updateText(newText, newColour = null) {
-        if (newColour !== null) {
+        if (this.borderColour !== null) {
             this.highlight
                 .attr("visibility", "visible")
-                .attr("stroke", newColour);
+                .attr("stroke", this.borderColour);
         }
-
-        this.text.selectAll("tspan").remove();
-
-        let numLines = [];
-        this.drawText(newText, numLines);
     }
 }

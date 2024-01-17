@@ -1,8 +1,10 @@
 import { GraphColours } from "../../../assets/colours/graphColours.js";
 import { GraphDims } from "../../../assets/dimensions/graphDimensions.js";
 import { FoodGroupDescDataColNames } from "../../../assets/strings/columnNames.js";
+import { TextWrap } from "../../../assets/strings/attributes.js";
 import { Component } from "../component.js";
 import { Infobox } from "../infobox/infobox.js";
+import { ToolTip } from "../toolTip/toolTip.js";
 import { TranslationTools } from "../../../tools/translationTools.js";
 
 
@@ -13,6 +15,12 @@ export class barGraph extends Component {
         this.foodGroupDescriptions = foodGroupDescriptions;
         
         this.focusedFoodGroup = null;
+        this.hoverToolTips = {};
+    }
+
+    // getToolTipId(num): Retrieves the key id for a particular id
+    getToolTipId(num) {
+        return `barHover${num}`
     }
 
     draw() {
@@ -80,11 +88,15 @@ export class barGraph extends Component {
         const upperGraphSwitchTypeButton = d3.select("#upperGraphSwitchType");
         
         /* Food group description elements changed on hover */
-        const upperGraphInfoBox = new Infobox(upperGraphSvg, GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin, 
-                                              GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
-                                              GraphDims.upperGraphInfoBoxWidth, GraphDims.upperGraphInfoBoxHeight, GraphDims.upperGraphInfoBoxFontSize, GraphDims.upperGraphInfoBoxBorderWidth, 
-                                              GraphDims.upperGraphInfoBoxPaddingLeft, GraphDims.upperGraphInfoBoxLineSpacing, 
-                                              GraphDims.upperGraphInfoBoxBorderWidth - GraphDims.upperGraphInfoBoxWidth / 2, GraphDims.upperGraphInfoBoxBorderWidth);
+        const upperGraphInfoBox = new Infobox({parent: upperGraphSvg, 
+                                               x: GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin, 
+                                               y: GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
+                                               width: GraphDims.upperGraphInfoBoxWidth, 
+                                               height: GraphDims.upperGraphInfoBoxHeight, 
+                                               fontSize: GraphDims.upperGraphInfoBoxFontSize, 
+                                               borderWidth: GraphDims.upperGraphInfoBoxBorderWidth, 
+                                               padding: GraphDims.upperGraphInfoBoxPaddingLeft,
+                                               lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing});
 
         upperGraphInfoBox.draw();
     
@@ -102,7 +114,7 @@ export class barGraph extends Component {
     
             const nutrientData = data.getNutrientData(nutrient);
     
-            const xAxisValues = Object.keys(nutrientData);
+            const xAxisValues = data.ageSexGroupHeadings;
             upperGraphXAxisScale.domain(xAxisValues)
             upperGraphXAxisLine.call(d3.axisBottom(upperGraphXAxisScale));
     
@@ -244,17 +256,12 @@ export class barGraph extends Component {
         /* Set the opacity of the hovered bar's info to be 1 */
         function onBarHover(d, i){
             updateInfoBox(d);
-    
+
+            const toolTipId = self.getToolTipId(i);
             const mousePos = d3.mouse(upperGraphSvg.node());
-    
-            const element = d3.select(`#barHover${i}`);
-    
-            if (element.attr("opacity") === "0") {
-                element.attr("opacity", 1);
-            }
-    
-            element.attr("transform", `translate(${mousePos[0]}, ${mousePos[1]})`);
-    
+
+            const toolTip = self.hoverToolTips[toolTipId];
+            toolTip.update({atts: {opacity: 1, x: mousePos[0], y: mousePos[1]}, opts: {"redrawText": false}});
         }
     
         /* Set the opacity of the previously hovered bar's info to be 0 */
@@ -264,41 +271,33 @@ export class barGraph extends Component {
     
         /* Creates tooltip for hovering over bars */
         function hoverTooltip(d, i){
+            const toolTipId = self.getToolTipId(i);
             const colour = GraphColours[d[0]];
-                const card = upperGraphTooltips.append("g")
-                    .attr("id", `barHover${i}`)
-                    .attr("fill", colour)
-                    .attr("opacity", 0);
-    
-                const cardRect = card.append("rect")
-                    .attr("height", 50)
-                    .attr("fill", "white")
-                    .attr("stroke-linejoin", "round")
-                    .attr("stroke-width", 3)
-                    .attr("stroke", colour)
-                    .attr("x", 0)
-                    .attr("y", 0);
-                
-                const lines = TranslationTools.translateText("upperGraph.infoBox", { 
-                    returnObjects: true, 
-                    context: graphType,
-                    amount: d[1],
-                    name: d[0],
-                    percentage: d[1],
-                    nutrient: d[0]
-                });
-                
-                /* Create the text elements of the tooltip */
-                let width = GraphDims.upperGraphTooltipMinWidth;
-                lines.map((line, lineNum) => {
-                    const text = card.append("text")
-                        .attr("x", GraphDims.upperGraphTooltipLeftPadding)
-                        .attr("y", (lineNum + 1) * GraphDims.upperGraphTooltipTopPadding)
-                        .attr("font-size", GraphDims.upperGraphTooltipFontSize)
-                        .text(line);
-                    width = Math.max(text.node().getComputedTextLength() + 20, width);
-                })
-                cardRect.attr("width", width);
+            const lines = TranslationTools.translateText("upperGraph.infoBox", { 
+                returnObjects: true, 
+                context: graphType,
+                amount: d[1],
+                name: d[0],
+                percentage: d[1],
+                nutrient: d[0]
+            });
+
+            const toolTip = new ToolTip({parent: upperGraphTooltips, 
+                                         width: GraphDims.upperGraphTooltipMinWidth, 
+                                         height : 50,
+                                         padding: [GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding],
+                                         id: toolTipId, 
+                                         text: lines,
+                                         fontSize: GraphDims.upperGraphTooltipFontSize, 
+                                         borderWidth: 3, 
+                                         borderColour: colour,
+                                         opacity: 0, 
+                                         textWrap: TextWrap.NoWrap, 
+                                         fill: "white",
+                                         lineSpacing: GraphDims.upperGraphTooltipLineSpacing});
+
+            self.hoverToolTips[toolTipId] = toolTip;
+            toolTip.draw();
         }
     
         /* Update food group description box */
@@ -306,18 +305,14 @@ export class barGraph extends Component {
             /* d = [food group name, amount] */
             const desc = foodGroupDescriptions[d[0]][FoodGroupDescDataColNames.description];
 
-            upperGraphInfoBox.updateText(desc, GraphColours[d[0]]);
+            upperGraphInfoBox.text = desc;
+            upperGraphInfoBox.borderColour = GraphColours[d[0]];
+            upperGraphInfoBox.update();
         }
     
         function drawTable(nutrient){
             const nutrientData = data.getNutrientData(nutrient);
-            const ageSexGroupHeadings = [
-                "Population age 1+", 
-                "Children 1 to 8 y", 
-                "Youth & adolescents 9 to 18 y",
-                "Adult males 19 y +",
-                "Adult females* 19 y +"
-            ];
+            const ageSexGroupHeadings = data.ageSexGroupHeadings;
             const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
             const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
     

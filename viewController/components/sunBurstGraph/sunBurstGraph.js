@@ -1,10 +1,14 @@
 import { GraphColours } from "../../../assets/colours/graphColours.js";
 import { GraphDims } from "../../../assets/dimensions/graphDimensions.js";
+import { TextAnchor, FontWeight, TextWrap } from "../../../assets/strings/attributes.js";
 import { FoodGroupDescDataColNames, NutrientDataColNames } from "../../../assets/strings/columnNames.js";
 import { viewTools } from "../../tools/viewTools.js";
 import { Infobox } from "../infobox/infobox.js";
 import { Component } from "../component.js";
 import { TranslationTools } from "../../../tools/translationTools.js";
+import { TextBox } from "../textbox/textBox.js";
+import { ToolTip } from "../toolTip/toolTip.js";
+import { SunBurstStates } from "../../enums/sunBurstStates.js";
 
 
 export class sunBurst extends Component {
@@ -20,6 +24,7 @@ export class sunBurst extends Component {
         this.radius = null;
         this.centerOuterRadius = null;
         this.radiusDiffFromCenterArc = null;
+        this.graphState = SunBurstStates.AllDisplayed;
         
         // individual components within the sunBurst
         this.lowerGraphFilterGroupsButton = null;
@@ -28,10 +33,16 @@ export class sunBurst extends Component {
         this.hoverPath = null;
         this.path = null;
         this.arc = null;
+        this.hoverToolTips = {};
     }
 
     draw() {
         return this.lowerGraph(this.data, this.foodGroupDescriptions, this.tableData);
+    }
+
+    // getToolTipId(num): Retrieves the key id for a particular id
+    getToolTipId(num) {
+        return `arcHover${num}`
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
@@ -91,7 +102,6 @@ export class sunBurst extends Component {
     getArcInnerRadius(treeNode) {
         const radius = this.radius;
         let result = treeNode.y0 * radius;
-        let beforeResult = result;
 
         if (treeNode.depth == 2 && this.radiusDiffFromCenterArc === null) {
             this.radiusDiffFromCenterArc = result - this.centerOuterRadius - GraphDims.lowerGraphCenterArcMargin;
@@ -131,6 +141,14 @@ export class sunBurst extends Component {
     /* Shows arc only when the arc has a depth between 1-4 and a nonzero angle */
     arcVisible(d) {
         return d.depth <= this.treeHeight && d.depth >= 1 && d.x1 > d.x0;
+    }
+
+    getLabelDY(treeNode) {
+        if (treeNode.depth > 1) {
+            return this.radius / 2;
+        }
+
+        return (this.radius - GraphDims.lowerGraphCenterArcRadius) / 2 + 5;
     }
 
     // labelAvailableLength(d): Retrieves the length of available space in a particular arc 'd'
@@ -187,8 +205,8 @@ export class sunBurst extends Component {
         }
 
         if (availableLength > 0) {
-            console.log("NAME: ", d.data.name, " AND TEXT: ", element.text(), "AVAILA: ", availableLength, "CURRENT LEN: ", this.getArcTextLength(elementNode, text), " Y0: ", d.y0, " AND Y1: ", d.y1, " AND TEXT X: ", textX, " AND TRUNCATED: ", textTruncated);
-            console.log("MID: ", (d.x1 - d.x0) / 2, " AND ", elementNode.getComputedTextLength() / 2, " AND ", (d.x1 - d.x0) / 2 * midRadius - elementNode.getComputedTextLength() / 2);
+            // console.log("NAME: ", d.data.name, " AND TEXT: ", element.text(), "AVAILA: ", availableLength, "CURRENT LEN: ", this.getArcTextLength(elementNode, text), " Y0: ", d.y0, " AND Y1: ", d.y1, " AND TEXT X: ", textX, " AND TRUNCATED: ", textTruncated);
+            // console.log("MID: ", (d.x1 - d.x0) / 2, " AND ", elementNode.getComputedTextLength() / 2, " AND ", (d.x1 - d.x0) / 2 * midRadius - elementNode.getComputedTextLength() / 2);
         }
 
         element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
@@ -200,9 +218,10 @@ export class sunBurst extends Component {
     }
 
     /* Positions tool tip according to arc position */
-    positionHoverCard(element, d){
+    positionHoverCard(toolTip, d){
         const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
-        element.attr("transform", `translate(${GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1)}, ${GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)})`);
+        toolTip.update({atts: {x: GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1), y: GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)},
+                        opts: {"redrawText": false}});
     }
 
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
@@ -232,7 +251,7 @@ export class sunBurst extends Component {
         // Transition the data on all arcs, even the ones that aren’t visible,
         // so that if this transition is interrupted, entering arcs will start
         // the next transition from the desired position.
-        this.path.each((d,i) => this.positionHoverCard(d3.select(`#arcHover${i}`), d.target))
+        this.path.each((d,i) => this.positionHoverCard(self.hoverToolTips[self.getToolTipId(i)], d.target))
             .transition(t)
             .tween("data", d => {
             const i = d3.interpolate(d.current, d.target);
@@ -255,6 +274,7 @@ export class sunBurst extends Component {
 
     // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
     filterAllFoodGroups() {
+        this.graphState = SunBurstStates.AllDisplayed;
         this.root.each(d => d.target = {
             depth: d.depth,
             data: d.data,
@@ -271,6 +291,7 @@ export class sunBurst extends Component {
 
     // filterOnLevel2Groups(): Display only level 2 groups of the Sun Burst Graph
     filterOnLevel2Groups(){
+        this.graphState = SunBurstStates.FilterOnlyLevel2;
         const highestDepth = 3;
         let acc = 0;
 
@@ -324,10 +345,15 @@ export class sunBurst extends Component {
     
         self.lowerGraphFilterGroupsButton = d3.select("#lowerGraphFilterGroupsButton");
 
-        const lowerGraphInfoBox = new Infobox(lowerGraphSvg, GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth, GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight, 
-                                              GraphDims.lowerGraphInfoBoxWidth, GraphDims.lowerGraphInfoBoxHeight, GraphDims.lowerGraphInfoBoxFontSize, GraphDims.lowerGraphInfoBoxBorderWidth,
-                                              GraphDims.lowerGraphInfoBoxPaddingLeft, GraphDims.lowerGraphInfoBoxLineSpacing, 
-                                              GraphDims.lowerGraphInfoBoxBorderWidth - GraphDims.lowerGraphInfoBoxWidth / 2, GraphDims.lowerGraphInfoBoxBorderWidth);
+        const lowerGraphInfoBox = new Infobox({parent: lowerGraphSvg, 
+                                               x: GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth, 
+                                               y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight, 
+                                               width: GraphDims.lowerGraphInfoBoxWidth,
+                                               height: GraphDims.lowerGraphInfoBoxHeight,
+                                               fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
+                                               borderWidth: GraphDims.lowerGraphInfoBoxBorderWidth,
+                                               padding: GraphDims.lowerGraphInfoBoxPaddingLeft, 
+                                               lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing});
     
         lowerGraphInfoBox.draw();
     
@@ -340,7 +366,7 @@ export class sunBurst extends Component {
         async function drawGraph(nutrient){
             ageSexSelector.on("change", () => drawGraph(nutrient))
                 .selectAll("option")
-                .data(Object.keys(data[nutrient]))
+                .data(nutrientsData.ageSexGroupHeadings)
                 .enter()
                 .append("option")
                     .property("value", d => d)
@@ -405,7 +431,7 @@ export class sunBurst extends Component {
                 .selectAll("text")
                 .data(self.root.descendants().slice(1))
                 .join("text")
-                .attr("dy", d => self.getRadius(d) / 2)
+                .attr("dy", d => self.getLabelDY(d))
                 .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
                 .attr("fill-opacity", d => +self.labelVisible(d.current))
                     .append("textPath") // make the text following the shape of the arc
@@ -413,6 +439,19 @@ export class sunBurst extends Component {
                     .attr("href", (d, i) => `#arcPath${i}`);
         
             self.label.each((d, i) => self.labelTextFit(d, i));
+
+            // add the nutrient title in the middle of the sunburst
+            const nutrientTextBox = new TextBox({parent: self.lowerGraphSunburst, 
+                                                 y: -GraphDims.lowerGraphCenterArcRadius,
+                                                 width: GraphDims.centerOuterRadius, 
+                                                 height: GraphDims.centerOuterRadius, 
+                                                 fontSize: GraphDims.lowerGraphCenterFontSize,  
+                                                 textAlign: TextAnchor.Middle, 
+                                                 fontWeight: FontWeight.Bold });
+            nutrientTextBox.draw();
+
+            nutrientTextBox.text = nutrient;
+            nutrientTextBox.update();
         
             // TODO: check what this does, copied from the reference 
             const parent = self.lowerGraphSunburst.append("circle")
@@ -447,8 +486,12 @@ export class sunBurst extends Component {
             self.hoverPath.on("mouseenter", arcHover);
             self.hoverPath.on("mouseover", arcHover);
             self.hoverPath.on("mouseout", arcUnHover);
-        
-            self.filterAllFoodGroups();
+            
+            if (self.graphState == SunBurstStates.AllDisplayed) {
+                self.filterAllFoodGroups();
+            } else {
+                self.filterOnLevel2Groups();
+            }
         
             /* Make the opacity of tooltip 1 */
             function arcHover(d, i){
@@ -499,7 +542,40 @@ export class sunBurst extends Component {
         
             /* Creation of tooltip */
             function hoverCard(d, root, i, nutrient){
+                let width = GraphDims.lowerGraphTooltipMinWidth;
                 const arcColour = d3.select(`#arcPath${i}`).attr("fill");
+
+                /* Content of tooltip */
+                const lines = TranslationTools.translateText("lowerGraph.infoBoxLevel", { 
+                    returnObjects: true, 
+                    context: d.depth,
+                    name: d.data.name,
+                    percentage: d.data.row.Percentage,
+                    parentGroup: d.depth > 1 ? d.parent.data.name : "",
+                    parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
+                    nutrient
+                });
+
+                const toolTipId = self.getToolTipId(i);
+                const toolTip = new ToolTip({parent: root, 
+                                             width: width, 
+                                             height: 50,
+                                             padding: [5, 2],
+                                             fontSize: GraphDims.lowerGraphTooltipFontSize,
+                                             id: toolTipId, 
+                                             text: lines,
+                                             borderWidth: 3, 
+                                             borderColour: arcColour, 
+                                             textWrap: TextWrap.NoWrap, 
+                                             opacity: 0, 
+                                             fill: "white"});
+                
+                toolTip.draw();
+                self.hoverToolTips[toolTipId] = toolTip;
+
+
+
+                /*
                 const card = root.append("g")
                     .attr("id", `arcHover${i}`)
                     .attr("fill", arcColour)
@@ -514,17 +590,6 @@ export class sunBurst extends Component {
                     .attr("x", 0)
                     .attr("y", 0);
                 
-                /* Content of tooltip */
-                const lines = TranslationTools.translateText("lowerGraph.infoBoxLevel", { 
-                    returnObjects: true, 
-                    context: d.depth,
-                    name: d.data.name,
-                    percentage: d.data.row.Percentage,
-                    parentGroup: d.depth > 1 ? d.parent.data.name : "",
-                    parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
-                    nutrient
-                });
-                
                 let width = GraphDims.lowerGraphTooltipMinWidth;
                 lines.map((line, lineNum) => {
                     const text = card.append("text")
@@ -533,9 +598,9 @@ export class sunBurst extends Component {
                         .text(line);
                     width = Math.max(text.node().getComputedTextLength() + 20, width);
                 })
-                cardRect.attr("width", width);
+                cardRect.attr("width", width);*/
         
-                self.positionHoverCard(card, d);
+                self.positionHoverCard(toolTip, d);
             }
         
             /* Update food group description box */
@@ -549,7 +614,9 @@ export class sunBurst extends Component {
 
                 }
 
-                lowerGraphInfoBox.updateText(desc, colour);
+                lowerGraphInfoBox.text = desc
+                lowerGraphInfoBox.borderColour = colour
+                lowerGraphInfoBox.update();
             }
     
         }

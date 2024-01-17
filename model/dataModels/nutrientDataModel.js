@@ -1,4 +1,7 @@
 import { CSVDataModel } from "./csvDataModel.js";
+import { AgeSexGroupOrder } from "../enums/ageSexGroupOrder.js";
+
+const SortedAgeSexGroupHeadings = Object.keys(AgeSexGroupOrder).sort((a,b) => {return AgeSexGroupOrder[a] - AgeSexGroupOrder[b]});
 
 export class NutrientDataModel extends CSVDataModel {
     constructor(data, dataGroupedByNutrientAndDemoList, dataGroupedByNutrientAndDemo, fullyNestedDataByFoodGroup) {
@@ -6,6 +9,8 @@ export class NutrientDataModel extends CSVDataModel {
         this.dataGroupedByNutrientAndDemoList = dataGroupedByNutrientAndDemoList;
         this.dataGroupedByNutrientAndDemo = dataGroupedByNutrientAndDemo;
         this.fullyNestedDataByFoodGroup = fullyNestedDataByFoodGroup;
+
+        this.ageSexGroupHeadings = SortedAgeSexGroupHeadings;
     }
 
     getNutrientData(nutrient) {
