@@ -23,7 +23,11 @@ export class sunBurst extends Component {
         this.radius = null;
         this.centerOuterRadius = null;
         this.radiusDiffFromCenterArc = null;
+
+        // state of the display for the sunburst graph
         this.graphState = SunBurstStates.AllDisplayed;
+
+        this.mouseOverFoodGroupName = null;
         
         // individual components within the sunBurst
         this.lowerGraphFilterGroupsButton = null;
@@ -219,8 +223,7 @@ export class sunBurst extends Component {
     /* Positions tool tip according to arc position */
     positionHoverCard(toolTip, d){
         const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
-        toolTip.update({atts: {x: GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1), y: GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)},
-                        opts: {"redrawText": false}});
+        toolTip.update({atts: {x: GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1), y: GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)}});
     }
 
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
@@ -579,14 +582,26 @@ export class sunBurst extends Component {
             function updateInfoBox(d){
                 let colour = GraphColours[d.data.row[NutrientDataColNames.foodGroupLv1]];
 
+                let foodGroupName = d.data.name;
+                if (self.mouseOverFoodGroupName !== null && self.mouseOverFoodGroupName == foodGroupName) {
+                    return;
+                }
+
+                self.mouseOverFoodGroupName = foodGroupName;
+
+                /* XXX TO FILL XXX
                 let desc = "";
                 try {
                     desc = foodGroupDescriptions[d.data.name][FoodGroupDescDataColNames.description];
                 } catch {
 
+                }*/
+
+                if (foodGroupName == "All Items") {
+                    foodGroupName = "";
                 }
 
-                lowerGraphInfoBox.text = desc
+                lowerGraphInfoBox.text = foodGroupName;
                 lowerGraphInfoBox.borderColour = colour
                 lowerGraphInfoBox.update();
             }

@@ -14,6 +14,7 @@ export class BarGraph extends Component {
         this.foodGroupDescriptions = foodGroupDescriptions;
         
         this.focusedFoodGroup = null;
+        this.mouseOverFoodGroupName = null;
         this.hoverToolTips = {};
     }
 
@@ -261,7 +262,7 @@ export class BarGraph extends Component {
             const mousePos = d3.mouse(upperGraphSvg.node());
 
             const toolTip = self.hoverToolTips[toolTipId];
-            toolTip.update({atts: {opacity: 1, x: mousePos[0], y: mousePos[1]}, opts: {"redrawText": false}});
+            toolTip.update({atts: {opacity: 1, x: mousePos[0], y: mousePos[1]}});
         }
     
         /* Set the opacity of the previously hovered bar's info to be 0 */
@@ -303,10 +304,16 @@ export class BarGraph extends Component {
         /* Update food group description box */
         function updateInfoBox(d){
             /* d = [food group name, amount] */
-            const desc = foodGroupDescriptions[d[0]][FoodGroupDescDataColNames.description];
+            const foodGroupName = d[0];
+            if (self.mouseOverFoodGroupName !== null && self.mouseOverFoodGroupName == foodGroupName) {
+                return;
+            }
+
+            self.mouseOverFoodGroupName = foodGroupName;
+            const desc = foodGroupDescriptions[foodGroupName][FoodGroupDescDataColNames.description];
 
             upperGraphInfoBox.text = desc;
-            upperGraphInfoBox.borderColour = GraphColours[d[0]];
+            upperGraphInfoBox.borderColour = GraphColours[foodGroupName];
             upperGraphInfoBox.update();
         }
     
