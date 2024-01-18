@@ -1,7 +1,6 @@
-import { DefaultDims } from "../../../assets/dimensions/defaultDimensions.js";
-import { DefaultAttributes } from "../../../assets/strings/defaultAttributes.js";
+import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
 import { Colours } from "../../../assets/colours/colours.js";
-import { TextWrap } from "../../../assets/strings/attributes.js";
+import { TextWrap, DefaultAttributes } from "../../../assets/strings/strings.js";
 import { TextBox } from "../textbox/textBox.js";
 
 export class ToolTip extends TextBox {

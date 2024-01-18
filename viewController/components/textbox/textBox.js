@@ -1,7 +1,6 @@
-import { svgComponent } from "../svgComponent.js";
-import { DefaultDims } from "../../../assets/dimensions/defaultDimensions.js";
-import { TextWrap } from "../../../assets/strings/attributes.js";
-import { DefaultAttributes } from "../../../assets/strings/defaultAttributes.js";
+import { svgComponent } from "../component.js";
+import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
+import { TextWrap, DefaultAttributes } from "../../../assets/strings/strings.js";
 import { Colours } from "../../../assets/colours/colours.js";
 
 export class TextBox extends svgComponent {
@@ -158,7 +157,7 @@ export class TextBox extends svgComponent {
                 arr[arr.length - 1] = textNode;
             }
             return arr;
-        }, [this.textGroup.append("tspan").attr("x", tspanXPos).attr("y", textY + this.fontSize)]);  
+        }, [this.textGroup.append("tspan").attr("x", tspanXPos).attr("y", textY + this.fontSize)]);
         numLines[0]++; 
         numLines.push(words.pop().length);
     }

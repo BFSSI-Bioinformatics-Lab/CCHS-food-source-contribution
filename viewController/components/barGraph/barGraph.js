@@ -1,14 +1,13 @@
-import { GraphColours } from "../../../assets/colours/graphColours.js";
-import { GraphDims } from "../../../assets/dimensions/graphDimensions.js";
-import { FoodGroupDescDataColNames } from "../../../assets/strings/columnNames.js";
-import { TextWrap } from "../../../assets/strings/attributes.js";
+import { GraphColours } from "../../../assets/colours/colours.js";
+import { GraphDims } from "../../../assets/dimensions/dimensions.js";
+import { TextWrap, FoodGroupDescDataColNames } from "../../../assets/strings/strings.js";
 import { Component } from "../component.js";
 import { Infobox } from "../infobox/infobox.js";
 import { ToolTip } from "../toolTip/toolTip.js";
 import { TranslationTools } from "../../../tools/translationTools.js";
 
 
-export class barGraph extends Component {
+export class BarGraph extends Component {
     constructor(data, foodGroupDescriptions) {
         super();
         this.data = data;

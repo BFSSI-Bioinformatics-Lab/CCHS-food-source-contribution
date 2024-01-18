@@ -1,14 +1,13 @@
-import { GraphColours } from "../../../assets/colours/graphColours.js";
-import { GraphDims } from "../../../assets/dimensions/graphDimensions.js";
-import { TextAnchor, FontWeight, TextWrap } from "../../../assets/strings/attributes.js";
-import { FoodGroupDescDataColNames, NutrientDataColNames } from "../../../assets/strings/columnNames.js";
+import { GraphColours } from "../../../assets/colours/colours.js";
+import { GraphDims } from "../../../assets/dimensions/dimensions.js";
+import { TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames } from "../../../assets/strings/strings.js";
 import { viewTools } from "../../tools/viewTools.js";
 import { Infobox } from "../infobox/infobox.js";
 import { Component } from "../component.js";
 import { TranslationTools } from "../../../tools/translationTools.js";
 import { TextBox } from "../textbox/textBox.js";
 import { ToolTip } from "../toolTip/toolTip.js";
-import { SunBurstStates } from "../../enums/sunBurstStates.js";
+import { SunBurstStates } from "../../../enums/enums.js";
 
 
 export class sunBurst extends Component {
@@ -573,33 +572,6 @@ export class sunBurst extends Component {
                 toolTip.draw();
                 self.hoverToolTips[toolTipId] = toolTip;
 
-
-
-                /*
-                const card = root.append("g")
-                    .attr("id", `arcHover${i}`)
-                    .attr("fill", arcColour)
-                    .attr("opacity", 0);
-        
-                const cardRect = card.append("rect")
-                    .attr("height", 50)
-                    .attr("fill", "white")
-                    .attr("stroke-linejoin", "round")
-                    .attr("stroke-width", 3)
-                    .attr("stroke", arcColour)
-                    .attr("x", 0)
-                    .attr("y", 0);
-                
-                let width = GraphDims.lowerGraphTooltipMinWidth;
-                lines.map((line, lineNum) => {
-                    const text = card.append("text")
-                        .attr("x", 10)
-                        .attr("y", (lineNum + 1) * 10)
-                        .text(line);
-                    width = Math.max(text.node().getComputedTextLength() + 20, width);
-                })
-                cardRect.attr("width", width);*/
-        
                 self.positionHoverCard(toolTip, d);
             }
         

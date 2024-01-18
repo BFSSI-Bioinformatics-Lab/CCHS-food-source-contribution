@@ -1,3 +1,12 @@
+export const DefaultDims = {
+    fontSize: 12,
+    paddingSize: 5,
+    pos: 0,
+    length: 0,
+    borderWidth: 3,
+    lineSpacing: 1
+};
+
 export const GraphDims = Object.freeze({
     upperGraphWidth: 800,
     upperGraphHeight: 600,
@@ -44,4 +53,4 @@ export const GraphDims = Object.freeze({
     legendSquareSize: 12,
     legendRowHeight: 20,
     tableSectionBorderLeft: "1px solid black",
-})
+});

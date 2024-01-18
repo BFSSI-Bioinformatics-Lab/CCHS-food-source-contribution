@@ -1,3 +1,4 @@
+// translations for certain text used in the project
 export const TranslationObj = {
     en: {
         translation: {
@@ -63,3 +64,57 @@ export const TranslationObj = {
         translation: {} 
     }
 }
+
+// text wrap attributes
+export const TextWrap  = {
+    NoWrap: "No Wrap",
+    Wrap: "Wrap"
+};
+
+// text anchor attributes
+export const TextAnchor = {
+    Start: "start",
+    Middle: "middle",
+    End: "end"
+};
+
+// font weight attributes
+export const FontWeight = {
+    Normal: "normal",
+    Bold: "bold",
+    Lighter: "lighter",
+    Bolder: "bolder"
+}
+
+// default attributes used for different components
+export const DefaultAttributes = {
+    textAnchor: TextAnchor.Start,
+    textWrap: TextWrap.Wrap,
+    fontWeight: FontWeight.Normal,
+    opacity: 1
+}
+
+// column names in the food description group csv file
+export const FoodGroupDescDataColNames = {
+    foodGroupLv1: "Food Group Name_Level 1",
+    foodGroupLv2: "Food Group Name_Level 2",
+    foodGroupLv3: "Food Group Name_Level 3",
+    description: "Description of the Contents of the Food Groups and Sub-groups"
+};
+
+// column names in the food ingredient csv file
+export const NutrientDataColNames = {
+    ageSexGroup: "Age-sex group (*: excludes pregnant or breastfeeding)",
+    foodGroupLv1: "Food group_level1",
+    foodGroupLv2: "Food group_level2",
+    foodGroupLv3: "Food group_level3"
+};
+
+// heading names for the age sex group
+export const AgeSexGroupHeadings = {
+    Population1Up: "Population age 1+", 
+    Children1To8: "Children 1 to 8 y", 
+    YouthAndAdolescents: "Youth & adolescents 9 to 18 y",
+    AdultMales: "Adult males 19 y +",
+    AdultFemales: "Adult females 19 y +"
+};
