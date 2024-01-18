@@ -6,6 +6,7 @@ import { viewTools } from './tools/viewTools.js';
 import { TranslationTools } from '../tools/translationTools.js';
 
 
+// ViewController: Overall class for the view and controller
 class ViewController {
     /* Calls loading of data and sets up the selector to call the chart update functions on change */
     async setupTool(){

@@ -45,9 +45,16 @@ export class Component {
 
 
 // svgComponent: Abstract class to build a component used in a SVG
-export class svgComponent extends Component {
-    constructor({parent = null, x = DefaultDims.pos, y = DefaultDims.pos, width = DefaultDims.length, height = DefaultDims.length, 
-                 id = null, opacity = DefaultAttributes.opacity} = {}) {
+export class SvgComponent extends Component {
+    constructor({parent = null, 
+                 x = DefaultDims.pos, 
+                 y = DefaultDims.pos, 
+                 width = DefaultDims.length, 
+                 height = DefaultDims.length, 
+                 padding = 0,
+                 margin = 0,
+                 id = null, 
+                 opacity = DefaultAttributes.opacity} = {}) {
         super();
         this.parent = parent;
         this.id = id;
@@ -57,6 +64,9 @@ export class svgComponent extends Component {
         this.width = width;
         this.height = height;
         this.opacity = opacity;
+
+        this.setupDims("padding", padding);
+        this.setupDims("margin", margin);
 
         this.group = null;
     }
@@ -122,7 +132,7 @@ export class svgComponent extends Component {
     }
 
     redraw(opts = {}) {
-        this.group.attr("transform", `translate(${this.x}, ${this.y})`)
+        this.group.attr("transform", `translate(${this.x + this.marginLeft}, ${this.y + this.marginTop})`)
             .attr("opacity", this.opacity);
     }
 }

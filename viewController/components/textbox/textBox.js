@@ -1,9 +1,9 @@
-import { svgComponent } from "../component.js";
+import { SvgComponent } from "../component.js";
 import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
 import { TextWrap, DefaultAttributes } from "../../../assets/strings/strings.js";
 import { Colours } from "../../../assets/colours/colours.js";
 
-export class TextBox extends svgComponent {
+export class TextBox extends SvgComponent {
     constructor({parent = null, 
                  x = DefaultDims.pos, 
                  y = DefaultDims.pos, 
@@ -20,7 +20,7 @@ export class TextBox extends svgComponent {
                  fill = Colours.None, id = null, 
                  opacity = DefaultAttributes.opacity} = {}) {
 
-        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity});
+        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin});
         this.fontSize = fontSize;
         this.lineSpacing = lineSpacing;
         this.textAlign = textAlign;
@@ -29,17 +29,27 @@ export class TextBox extends svgComponent {
         this.fill = fill;
 
         // text can either be a string or a list of strings
-        this.text = text;
+        this._text = text;
+        this.textX = this.paddingLeft + this.marginLeft;
+        this.textY = this.paddingTop + this.marginTop;
 
-        // setup the padding and margins
-        this.setupDims("padding", padding);
-        this.setupDims("margin", margin);
-        this.textX = this.paddingLeft;
-        this.textY = this.paddingTop;
+        // whether the text changes
+        this._textChanged = true;
 
         // different individual parts of the component drawn
         this.box = null;
         this.textGroup = null;
+    }
+
+    // text(): Getter for 'text'
+    get text() {
+        return this._text;
+    }
+
+    // text(newText): Setter for 'text'
+    set text(newText) {
+        this._text = newText;
+        this._textChanged = true;
     }
 
     setup() {
@@ -64,21 +74,27 @@ export class TextBox extends svgComponent {
             .attr("y", 0);
 
         // whether to do extra computation for redrawing the text
-        if (opts["redrawText"] === undefined || opts["redrawText"]) {
+        if (this._textChanged) {
             this.redrawText();
         }
     }
 
     remove(opts = {}) {
-        if (opts["redrawText"] === undefined || opts["redrawText"]) {
+        if (this._textChanged) {
             this.textGroup.selectAll("tspan").remove();
         }
     }
 
+    update({atts = {}, opts = {}} = {}) {
+        super.update({atts: atts, opts: opts});
+        this._textChanged = false;
+    }
+
     redrawText() {
+        console.log("NEW TEXT: ", this._text);
         let textY = this.textY;
         let prevTextY = textY;
-        let textLines = this.text;
+        let textLines = this._text;
         let linesWritten = 0;
         if (typeof textLines === 'string') {
             textLines = [textLines];
