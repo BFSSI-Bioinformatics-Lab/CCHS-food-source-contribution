@@ -31,6 +31,7 @@ export class barGraph extends Component {
         const self = this;
         const upperGraphSvgWidth = GraphDims.upperGraphWidth + GraphDims.upperGraphLeft + GraphDims.upperGraphRight;
         const upperGraphSvgHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom;
+        const upperGraphRightPos = GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin;
     
         /* Create svg components */
         const upperGraphSvg = d3.select("#upperGraph")
@@ -74,7 +75,7 @@ export class barGraph extends Component {
             .range([GraphDims.upperGraphHeight, 0]);
     
         const upperGraphLegend = upperGraphSvg.append("g")
-            .attr("transform", `translate(${GraphDims.upperGraphLeft + GraphDims.upperGraphWidth}, ${GraphDims.upperGraphTop})`);
+            .attr("transform", `translate(${upperGraphRightPos}, ${GraphDims.upperGraphTop})`);
     
         /* Sets up alternator between graph types (percentage vs number) */
         const typeIterator = getGraphType();
@@ -89,7 +90,7 @@ export class barGraph extends Component {
         
         /* Food group description elements changed on hover */
         const upperGraphInfoBox = new Infobox({parent: upperGraphSvg, 
-                                               x: GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin, 
+                                               x: upperGraphRightPos, 
                                                y: GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
                                                width: GraphDims.upperGraphInfoBoxWidth, 
                                                height: GraphDims.upperGraphInfoBoxHeight, 
