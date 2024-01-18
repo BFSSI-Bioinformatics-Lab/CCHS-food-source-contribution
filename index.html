@@ -17,7 +17,7 @@
               integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
         <link rel="stylesheet" href="./static/GCWeb/css/theme.min.css">
     
-        <link rel="stylesheet" href="./styles/table.css">
+        <link rel="stylesheet" href="./styles/styles.css">
         
         <!--<![endif]-->
         <!--[if lt IE 9]>
@@ -217,14 +217,14 @@
                         </label>
                         <select class="form-control" name="nutrientSelect" title="Select nutrient" id="upperGraphNutrientSelect"></select>
                     </div>
-                    <div class="row">
-                        <figure id="upperGraph" class="col-sm-8"></figure>
-                        <div class="upperGraphExtra col-sm-4">
-                            <div class="upperGraphActions col-xs-12">
-                                <button class="btn btn-info" id="upperGraphSwitchType">Switch to Numbers</button>
-                                <button class="btn btn-success" id="upperGraphSaveGraph">Save graph</button>
-                            </div>
+                    <div class="graphExtra">
+                        <div class="upperGraphActions">
+                            <button class="btn btn-info" id="upperGraphSwitchType">Switch to Numbers</button>
+                            <button class="btn btn-success" id="upperGraphSaveGraph">Save graph</button>
                         </div>
+                    </div>
+                    <div class="row">
+                        <figure id="upperGraph" class="col-sm-12"></figure>
                         <div class="col-xs-12">
                             <details>
                                 <summary id="upperGraphTableTitle"></summary>
@@ -280,12 +280,12 @@
                         </label>
                         <select class="form-control" name="ageSexSelect" title="Select age-sex group" id="lowerGraphAgeSexSelect"></select>
                     </div>
+                    <div class="graphExtra">
+                        <button class="btn btn-info" id="lowerGraphFilterGroupsButton">Filter on Level 2 groups</button>
+                    </div>
                     <div class="row">
-                        <div class="col-xs-8">
+                        <div class="col-sm-12">
                             <figure id="lowerGraph"></figure>
-                        </div>
-                        <div id="lowerGraphExtra" class="col-xs-4">
-                            <button class="btn btn-info" id="lowerGraphFilterGroupsButton" style="position:relative;top:70px;">Filter on Level 2 groups</button>
                         </div>
                     </div>
                     <div class="col-xs-12">
@@ -651,10 +651,10 @@
     <script src="./static/GCWeb/js/theme.min.js"></script>
     <script src="./static/js/main.js"></script>
     <!--<script src="/src/js/saveSvgAsPng.js"></script>-->
+
     <script src="i18next.js"></script>
     <script src="i18nextBrowserLanguageDetector.min.js"></script>
-    <script src="translation.js"></script>
-    <script src="foodSourceContributionTool.js"></script>
+    <script type="module" src="./viewController/foodSourceContributionTool.js"></script>
     <script>
         jQuery.fn.tableToCSV = function () {
             let clean_text = function (text) {
