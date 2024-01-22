@@ -21,12 +21,12 @@ export class ToolTip extends TextBox {
                  borderColour = Colours.None, 
                  textWrap = TextWrap.Wrap, 
                  opacity = DefaultAttributes.opacity, 
-                 fill = Colours.None} = {}) {
+                 backgroundColour = Colours.None} = {}) {
 
         super({parent: parent, x: x, y: y, width: width, height: height, text: text, fontSize: fontSize, 
                padding: padding, margin: margin, lineSpacing: lineSpacing, 
                textAlign: textAlign, fontWeight: fontWeight, 
-               textWrap: textWrap, fill: fill, id: id, opacity: opacity});
+               textWrap: textWrap, backgroundColour: backgroundColour, id: id, opacity: opacity});
         this.borderWidth = borderWidth;
         this.borderColour = borderColour;
 

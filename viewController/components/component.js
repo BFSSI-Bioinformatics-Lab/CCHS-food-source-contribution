@@ -54,7 +54,9 @@ export class SvgComponent extends Component {
                  padding = 0,
                  margin = 0,
                  id = null, 
-                 opacity = DefaultAttributes.opacity} = {}) {
+                 opacity = DefaultAttributes.opacity,
+                 onMouseEnter = null,
+                 onMouseClick = null} = {}) {
         super();
         this.parent = parent;
         this.id = id;
@@ -64,11 +66,47 @@ export class SvgComponent extends Component {
         this.width = width;
         this.height = height;
         this.opacity = opacity;
+        
+        // All mouse events have type Func or null
+        this._onMouseEnter = onMouseEnter;
+        this._onMouseEnterChanged = true;
+        this._onMouseClick = onMouseClick;
+        this._onMouseClickChanged = true;
 
         this.setupDims("padding", padding);
         this.setupDims("margin", margin);
 
         this.group = null;
+    }
+
+    // padding(): Getter for padding
+    get padding() {
+        return this.getDims("padding");
+    }
+
+    // padding(newPadding): Setter for padding
+    set padding(newPadding) {
+        this.setupDims("padding", newPadding);
+    }
+
+    // margin(): Getter for margin
+    get margin() {
+        return this.getDims("margin");
+    }
+
+    // margin(): Setter for margin
+    set margin(newMargin) {
+        this.setupDims("margin", newMargin);
+    }
+
+    // fullWidth(): Getter for the full width of the component
+    get fullWidth() {
+        return this.marginLeft + this.width + this.marginRight;
+    }
+
+    // fullHeight(): Getter for the full height of the component
+    get fullHeight() {
+        return this.marginTop + this.height + this.marginBottom;
     }
 
     // setupGroup(): setups the overall group for the component
@@ -78,6 +116,42 @@ export class SvgComponent extends Component {
         if (this.id !== null) {
             this.group.attr("id", this.id);
         }
+    }
+
+    // onMouseEnter(): Getter for onMouseEnter
+    get onMouseEnter() {
+        return this._onMouseEnter;
+    }
+
+    // onMouseEnter(newMouseEnter): Setter for onMouseEnters
+    set onMouseEnter(newMouseEnter) {
+        this._onMouseEnter = newMouseEnter;
+        this._onMouseEnterChanged = true;
+    }
+
+    get onMouseClick() {
+        return this._onMouseClick;
+    }
+
+    set onMouseClick(newMouseClick) {
+        this._onMouseClick = newMouseClick;
+        this._onMouseClickChanged = true;
+    }
+
+    // getDims(dimName): Retrieves the dimensions for 'dimName'
+    getDims(dimName) {
+        const leftDimName = `${dimName}Left`;
+        const topDimName = `${dimName}Top`;
+        const rightDimName = `${dimName}Right`;
+        const bottomDimName = `${dimName}Bottom`;
+
+        let result = {};
+        result[leftDimName] = this[leftDimName];
+        result[topDimName] = this[topDimName];
+        result[rightDimName] = this[rightDimName];
+        result[bottomDimName] = this[bottomDimName];
+
+        return result;
     }
 
     // setupDims(dimName, values): Setups the padding and margin for the textbox
@@ -134,5 +208,14 @@ export class SvgComponent extends Component {
     redraw(opts = {}) {
         this.group.attr("transform", `translate(${this.x + this.marginLeft}, ${this.y + this.marginTop})`)
             .attr("opacity", this.opacity);
+
+        if (this._onMouseEnter !== null && this._onMouseEnterChanged) {
+            this.group.on("mouseenter", () => this._onMouseEnter.run());
+            this._onMouseEnterChanged = false;
+        }
+
+        if (this._onMouseClick !== null && this._onMouseClickChanged) {
+            this.group.on("click", () => this._onMouseClick.run())
+        }
     }
 }

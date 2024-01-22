@@ -45,8 +45,10 @@ export class Infobox extends TextBox {
 
     redraw(opts = {}) {
         super.redraw(opts);
-        this.highlight.attr("y2", this.height)
-                      .attr("stroke-width", this.borderWidth);
+        this.highlight.attr("x1", this.borderWidth / 2)
+            .attr("x2", this.borderWidth / 2)
+            .attr("y2", this.height)
+            .attr("stroke-width", this.borderWidth);
 
         if (this.borderColour !== null) {
             this.highlight

@@ -17,7 +17,7 @@ export class TextBox extends SvgComponent {
                  textAlign = DefaultAttributes.textAnchor, 
                  fontWeight = DefaultAttributes.fontWeight, 
                  textWrap = DefaultAttributes.textWrap, 
-                 fill = Colours.None, id = null, 
+                 backgroundColour = Colours.None, id = null, 
                  opacity = DefaultAttributes.opacity} = {}) {
 
         super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin});
@@ -26,7 +26,7 @@ export class TextBox extends SvgComponent {
         this.textAlign = textAlign;
         this.fontWeight = fontWeight;
         this.textWrap = textWrap;
-        this.fill = fill;
+        this.backgroundColour = backgroundColour;
 
         // text can either be a string or a list of strings
         this._text = text;
@@ -64,19 +64,19 @@ export class TextBox extends SvgComponent {
         this.textGroup.attr("text-anchor", this.textAlign);
         this.textGroup.attr("font-weight", this.fontWeight);
 
-        this.box.attr("height", this.height)
-            .attr("width", this.width)
-            .attr("fill", this.fill)
-            .attr("stroke-linejoin", "round")
-            .attr("stroke-width", 0)
-            .attr("stroke", Colours.None)
-            .attr("x", 0)
-            .attr("y", 0);
-
         // whether to do extra computation for redrawing the text
         if (this._textChanged) {
             this.redrawText();
         }
+
+        this.box.attr("height", this.height)
+            .attr("width", this.width)
+            .attr("fill", this.backgroundColour)
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-width", 0)
+            .attr("stroke", Colours.None)
+            .attr("x", 0)
+            .attr("y", 0);  
     }
 
     remove(opts = {}) {
@@ -91,7 +91,6 @@ export class TextBox extends SvgComponent {
     }
 
     redrawText() {
-        console.log("NEW TEXT: ", this._text);
         let textY = this.textY;
         let prevTextY = textY;
         let textLines = this._text;
@@ -185,6 +184,6 @@ export class TextBox extends SvgComponent {
             .attr("x", tspanXPos).attr("y", textY)
             .text(text);
 
-        this.width = Math.max(textNode.node().getComputedTextLength() + 20, this.width);
+        this.width = Math.max(textNode.node().getComputedTextLength() + this.paddingLeft + this.paddingRight, this.width);
     }
 }
