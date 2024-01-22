@@ -8,6 +8,8 @@ import { TranslationTools } from "../../../tools/translationTools.js";
 import { Func } from "../../../tools/func.js";
 import { Legend } from "../legend/legend.js";
 
+//const saveSvgAsPng = window.saveSvgAsPng;
+
 
 export class BarGraph extends Component {
     constructor(data, foodGroupDescriptions) {
@@ -27,6 +29,7 @@ export class BarGraph extends Component {
 
         // different individual elements for the component
         this.upperGraphSvg = null;
+        this.upperGraphSvgBackground = null;
         this.upperGraphBars = null;
         this.upperGraphHeading = null;
         this.upperGraphTooltips = null;
@@ -349,14 +352,23 @@ export class BarGraph extends Component {
         const upperGraphSvgWidth = GraphDims.upperGraphWidth + GraphDims.upperGraphLeft + GraphDims.upperGraphRight;
         const upperGraphSvgHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom;
         const upperGraphRightPos = GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin;
+
+        // register the button to save the bar graph as a png
+        d3.select("#upperGraphSaveGraph").on("click", () => this.saveAsImage());
     
-        /* Create svg components */
-        self.upperGraphSvg = d3.select("#upperGraph")
+        /* Create svg component */
+        this.upperGraphSvg = d3.select("#upperGraph")
             .append("svg")
                 .attr("width", upperGraphSvgWidth)
                 .attr("height", upperGraphSvgHeight)
                 .attr("viewBox", [0, 0, upperGraphSvgWidth, upperGraphSvgHeight])
                 .attr("style", "max-width: 100%; height: auto;");
+
+        // create the background for the graph
+        this.upperGraphSvgBackground = this.upperGraphSvg.append("rect")
+            .attr("fill", Colours.None)
+            .attr("width", upperGraphSvgWidth)
+            .attr("height", upperGraphSvgHeight)
     
         this.upperGraphHeading = self.upperGraphSvg.append("g")
             .append("text")
@@ -452,6 +464,12 @@ export class BarGraph extends Component {
 
             legend.draw();
         }
+    }
+
+    // saveAsImage(): Saves the bar graph as an image
+    saveAsImage() {
+        const svg = document.getElementById("upperGraph").firstChild;
+        saveSvgAsPng(svg, "barGraph.png", {backgroundColor: "white"});
     }
 }
 
