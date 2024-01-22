@@ -7,6 +7,7 @@ import { Component } from "../component.js";
 import { TranslationTools } from "../../../tools/translationTools.js";
 import { TextBox } from "../textbox/textBox.js";
 import { ToolTip } from "../toolTip/toolTip.js";
+import { Legend } from "../legend/legend.js";
 import { SunBurstStates } from "../../../enums/enums.js";
 
 
@@ -323,6 +324,7 @@ export class sunBurst extends Component {
         // Specify the chart’s dimensions.
         const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
         const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
+        const lowerGraphRightXPos = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth;
         self.radius = GraphDims.lowerGraphArcRadius;
     
         const ageSexSelector = d3.select("#lowerGraphAgeSexSelect");
@@ -334,7 +336,32 @@ export class sunBurst extends Component {
         .attr("viewBox", [0, 0, width, height])
         .attr("style", "max-width: 100%; height: auto;")
         .style("font", "10px sans-serif");
+
+        // draw the infobox
+        const lowerGraphInfoBox = new Infobox({parent: lowerGraphSvg, 
+                                               x: lowerGraphRightXPos, 
+                                               y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight, 
+                                               width: GraphDims.lowerGraphInfoBoxWidth,
+                                               height: GraphDims.lowerGraphInfoBoxHeight,
+                                               fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
+                                               borderWidth: GraphDims.lowerGraphInfoBoxBorderWidth,
+                                               padding: GraphDims.lowerGraphInfoBoxPaddingLeft, 
+                                               lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing});
     
+        lowerGraphInfoBox.draw();
+
+        // draw the legend
+        const lowerGraphLegend = new Legend({parent: lowerGraphSvg, 
+                                             x: lowerGraphRightXPos, 
+                                             y: GraphDims.lowerGraphTop, 
+                                             textPadding: [5, 0],
+                                             legendItemPadding: [0, 2],
+                                             fontSize: 12,
+                                             colourBoxWidth: GraphDims.legendSquareSize,
+                                             colourBoxHeight: GraphDims.legendSquareSize,
+                                             data: Object.entries(GraphColours)});
+        lowerGraphLegend.draw();
+
         const lowerGraphChartHeading = lowerGraphSvg.append("g")
         .append("text")
         .attr("text-anchor", "middle")
@@ -346,18 +373,6 @@ export class sunBurst extends Component {
         .attr("transform", `translate(${GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2})`)
     
         self.lowerGraphFilterGroupsButton = d3.select("#lowerGraphFilterGroupsButton");
-
-        const lowerGraphInfoBox = new Infobox({parent: lowerGraphSvg, 
-                                               x: GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth, 
-                                               y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight, 
-                                               width: GraphDims.lowerGraphInfoBoxWidth,
-                                               height: GraphDims.lowerGraphInfoBoxHeight,
-                                               fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
-                                               borderWidth: GraphDims.lowerGraphInfoBoxBorderWidth,
-                                               padding: GraphDims.lowerGraphInfoBoxPaddingLeft, 
-                                               lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing});
-    
-        lowerGraphInfoBox.draw();
     
         const lowerGraphTable = d3.select("#lowerGraphTable");
         const lowerGraphTableHeading = lowerGraphTable.append("thead");
@@ -570,7 +585,7 @@ export class sunBurst extends Component {
                                              borderColour: arcColour, 
                                              textWrap: TextWrap.NoWrap, 
                                              opacity: 0, 
-                                             fill: "white"});
+                                             backgroundColour: "white"});
                 
                 toolTip.draw();
                 self.hoverToolTips[toolTipId] = toolTip;
