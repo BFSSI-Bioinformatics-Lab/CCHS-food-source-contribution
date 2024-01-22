@@ -306,12 +306,9 @@ export class Legend extends SvgComponent {
         }
 
         // deepcopy the arguments
-        console.log("ARRAY: ", Array.isArray(this._legendItemMouseEnter.args));
         let args = this._legendItemMouseEnter.args;
         if (!Array.isArray(args)) {
             args = JSON.parse(JSON.stringify(this._legendItemMouseEnter.args));
-        } else {
-            console.log("AFETR ARGS: ", args);
         }
 
         let result = new Func(mouseEventFunc.func, args);
