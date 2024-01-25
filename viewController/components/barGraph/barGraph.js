@@ -8,8 +8,6 @@ import { TranslationTools } from "../../../tools/translationTools.js";
 import { Func } from "../../../tools/func.js";
 import { Legend } from "../legend/legend.js";
 
-//const saveSvgAsPng = window.saveSvgAsPng;
-
 
 export class BarGraph extends Component {
     constructor(data, foodGroupDescriptions) {
