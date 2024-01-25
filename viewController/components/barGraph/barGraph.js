@@ -110,7 +110,9 @@ export class BarGraph extends Component {
             obj[category] = g[category];
             return obj;
         });
-        this.upperGraphYAxisScale.domain([0, d3.max(Object.values(barData).map(b => b[category])) * 1.15]);
+
+        // the commented line below scales the y-axis to be fit with the focused bars
+        // this.upperGraphYAxisScale.domain([0, d3.max(Object.values(barData).map(b => b[category])) * 1.15]);
         this.upperGraphYAxisLine.call(d3.axisLeft(this.upperGraphYAxisScale));
 
         this.upperGraphBars.selectAll("g").remove();
