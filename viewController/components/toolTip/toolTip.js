@@ -1,7 +1,6 @@
-import { DefaultDims } from "../../../assets/dimensions/defaultDimensions.js";
-import { DefaultAttributes } from "../../../assets/strings/defaultAttributes.js";
+import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
 import { Colours } from "../../../assets/colours/colours.js";
-import { TextWrap } from "../../../assets/strings/attributes.js";
+import { TextWrap, DefaultAttributes } from "../../../assets/strings/strings.js";
 import { TextBox } from "../textbox/textBox.js";
 
 export class ToolTip extends TextBox {
@@ -22,12 +21,12 @@ export class ToolTip extends TextBox {
                  borderColour = Colours.None, 
                  textWrap = TextWrap.Wrap, 
                  opacity = DefaultAttributes.opacity, 
-                 fill = Colours.None} = {}) {
+                 backgroundColour = Colours.None} = {}) {
 
         super({parent: parent, x: x, y: y, width: width, height: height, text: text, fontSize: fontSize, 
                padding: padding, margin: margin, lineSpacing: lineSpacing, 
                textAlign: textAlign, fontWeight: fontWeight, 
-               textWrap: textWrap, fill: fill, id: id, opacity: opacity});
+               textWrap: textWrap, backgroundColour: backgroundColour, id: id, opacity: opacity});
         this.borderWidth = borderWidth;
         this.borderColour = borderColour;
 
