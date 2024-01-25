@@ -1,6 +1,6 @@
 import { Colours, GraphColours } from "../../../assets/colours/colours.js";
 import { GraphDims } from "../../../assets/dimensions/dimensions.js";
-import { TextWrap, FoodGroupDescDataColNames } from "../../../assets/strings/strings.js";
+import { TextWrap, FoodGroupDescDataColNames, FontWeight } from "../../../assets/strings/strings.js";
 import { Component } from "../component.js";
 import { Infobox } from "../infobox/infobox.js";
 import { ToolTip } from "../toolTip/toolTip.js";
@@ -312,6 +312,23 @@ export class BarGraph extends Component {
                 .style("min-width", (d, i) => i === 0 ? "200px" : "40px")
                 .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
+                .style("font-size", "12px")
+                .style("font-weight", (d, i) => {
+                    const colNum = (i + 1) % 4;
+                    if (colNum === 2 || colNum === 0) {
+                        return FontWeight.Bold;
+                    }
+
+                    return FontWeight.Normal;
+                })
+                .style("opacity", (d, i) => {
+                    const colNum = (i + 1) % 4;
+                    if (colNum === 3 || colNum === 1) {
+                        return 0.8;
+                    }
+
+                    return 1;
+                })
                 .attr("colspan", 1)
                 .text(d => TranslationTools.translateText(d))
         
@@ -341,7 +358,24 @@ export class BarGraph extends Component {
                     .attr("colspan", 1)
                     .text((d) => Number.isNaN(d) ? "" : d)
                     .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
-                    .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "");
+                    .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
+                    .style("font-size", "12px")
+                    .style("font-weight", (d, i) => {
+                        const colNum = (i + 1) % 4;
+                        if (colNum === 2 || colNum === 0) {
+                            return FontWeight.Bold;
+                        }
+    
+                        return FontWeight.Normal; 
+                    })
+                    .style("opacity", (d, i) => {
+                        const colNum = (i + 1) % 4;
+                        if (colNum === 3 || colNum === 1) {
+                            return 0.8;
+                        }
+    
+                        return 1;
+                    });
         });
 
         this.upperGraphTableTitle.text(TranslationTools.translateText("upperGraph.tableTitle", { amountUnit: this.getNutrientUnit(nutrient), nutrient }))
