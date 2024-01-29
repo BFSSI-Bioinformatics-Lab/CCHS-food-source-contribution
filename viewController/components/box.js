@@ -1,7 +1,6 @@
-import { SvgComponent } from "../component.js";
-import { DefaultAttributes } from "../../../assets/strings/strings.js";
-import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
-import { Colours } from "../../../assets/colours/colours.js";
+import { SvgComponent } from "./component.js";
+import { Colours, DefaultDims, DefaultAttributes } from "../../assets/assets.js";
+
 
 // Box: Class for a box/rectangle
 export class Box extends SvgComponent {

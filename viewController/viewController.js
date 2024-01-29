@@ -1,7 +1,7 @@
 import { TranslationObj } from '../assets/strings/strings.js';
 import { Model } from '../model/model.js'
-import { BarGraph } from './components/barGraph/barGraph.js';
-import { sunBurst } from './components/sunBurstGraph/sunBurstGraph.js';
+import { BarGraph } from './components/barGraph.js';
+import { SunBurst } from './components/sunBurstGraph.js';
 import { viewTools } from './tools/viewTools.js';
 import { TranslationTools } from '../tools/translationTools.js';
 
@@ -29,7 +29,7 @@ class ViewController {
                         .text(d => d);
 
                 const upperGraph = new BarGraph(nutrientsData, foodGroupDescriptionsData.data);
-                const lowerGraph = new sunBurst(nutrientsData, foodGroupDescriptionsData.data);
+                const lowerGraph = new SunBurst(nutrientsData, foodGroupDescriptionsData.data);
                         
                 const updateUpperGraph = upperGraph.draw();
                 const updateLowerGraph = lowerGraph.draw();

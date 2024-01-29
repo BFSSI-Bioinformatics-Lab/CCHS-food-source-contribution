@@ -1,10 +1,8 @@
-import { SvgComponent } from "../component.js";
-import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
-import { Colours } from "../../../assets/colours/colours.js";
-import { TextBox } from "../textbox/textBox.js";
-import { Box } from "../box/box.js";
-import { Func } from "../../../tools/func.js";
-import { TextWrap, DefaultAttributes } from "../../../assets/strings/strings.js";
+import { SvgComponent } from "./component.js";
+import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "../../assets/assets.js";
+import { TextBox } from "./textBox.js";
+import { Box } from "./box.js";
+import { Func } from "../../tools/func.js";
 
 
 // LegendItem: Class for a row itme in the legend
