@@ -39,8 +39,8 @@ export class Box extends SvgComponent {
         this.height = Math.max(this.height, this.paddingTop + this.boxHeight + this.paddingBottom);
     }
 
-    setup() {
-        super.setup();
+    setup(opts = {}) {
+        super.setup(opts);
         this.backgroundBox = this.group.append("rect");
         this.box = this.group.append("rect");
     }

@@ -50,8 +50,8 @@ export class TextBox extends SvgComponent {
         this._textChanged = true;
     }
 
-    setup() {
-        super.setup();
+    setup(opts = {}) {
+        super.setup(opts);
         this.box = this.group.append("rect");
         this.textGroup = this.group.append("text");
     }
@@ -77,7 +77,7 @@ export class TextBox extends SvgComponent {
             .attr("y", 0);  
     }
 
-    remove(opts = {}) {
+    clear(opts = {}) {
         if (this._textChanged) {
             this.textGroup.selectAll("tspan").remove();
         }

@@ -37,8 +37,8 @@ export class Infobox extends TextBox {
         return this.width - this.paddingLeft - this.paddingRight - this.borderWidth;
     }
 
-    setup() {
-        super.setup();
+    setup(opts = {}) {
+        super.setup(opts);
         this.highlight = this.group.append("line");
     }
 

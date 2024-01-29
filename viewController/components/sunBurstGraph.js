@@ -1,5 +1,5 @@
 import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames, SunBurstStates } from "../../assets/assets.js";
-import { viewTools } from "../tools/viewTools.js";
+import { ViewTools } from "../tools/viewTools.js";
 import { Infobox } from "./infobox.js";
 import { Component } from "./component.js";
 import { TranslationTools } from "../../tools/translationTools.js";
@@ -9,11 +9,17 @@ import { Legend } from "./legend.js";
 
 
 export class SunBurst extends Component {
-    constructor(data, foodGroupDescriptions, tableData) {
-        super();
-        this.data = data;
-        this.foodGroupDescriptions = foodGroupDescriptions;
-        this.tableData = tableData;
+    constructor({model = null} = {}) {
+        super({model: model});
+
+        // === Data retrieves from the model ===
+        this.nutrient = ""
+        this.data = null;
+        this.foodGroupDescriptions = [];
+
+        this.getUpdatedModelData();
+
+        // =====================================
 
         this.selectedNode = null;
         this.root = null;
@@ -27,18 +33,30 @@ export class SunBurst extends Component {
 
         this.mouseOverFoodGroupName = null;
         
-        // individual components within the sunBurst
+        // === individual components within the sunBurst ===
+
+        this.sunBurstGroup = null;
         this.lowerGraphFilterGroupsButton = null;
         this.lowerGraphSunburst = null;
         this.label = null;
+
+        // invisible arcs used to identify mouse hover events
         this.hoverPath = null;
+
+        // the path for the text labels of the graph to follow        
         this.path = null;
+
+        // generator for the display of the arcs on the graph
         this.arc = null;
+
+        // all the hover tooltips for the graph
         this.hoverToolTips = {};
+
+        // =================================================
     }
 
     draw() {
-        return this.lowerGraph(this.data, this.foodGroupDescriptions, this.tableData);
+        return this.lowerGraph(this.data, this.foodGroupDescriptionss);
     }
 
     // getToolTipId(num): Retrieves the key id for a particular id
@@ -70,6 +88,8 @@ export class SunBurst extends Component {
         let radius = this.radius;
         if (treeNode.depth <= 1) {
             radius = GraphDims.lowerGraphCenterArcRadius;
+        } else if (this.graphState == SunBurstStates.FilterOnlyLevel2) {
+            radius = GraphDims.lowerGraph2LevelFilterArcRadius;
         }
         
         return radius;
@@ -144,9 +164,32 @@ export class SunBurst extends Component {
         return d.depth <= this.treeHeight && d.depth >= 1 && d.x1 > d.x0;
     }
 
+    // updateArcThickness(): Updates the thickness for the arcs based on what state the sunburst is in
+    updateArcThickness() {
+        // update the outer-radius for the arc generators
+        this.arc.outerRadius(d => this.getArcOuterRadius(d));
+
+        // Update the radius for the arcs
+        this.path.attr("d", (d) => { this.arc(d.current); }); 
+        this.hoverPath.attr("d", (d) =>{ this.arc(d.current); });
+
+        // center the position of the arc text labels
+        this.label.each((d, i) => {
+            const element = d3.select(`#arcLabel${i}`);
+            const parent = d3.select(element.node().parentNode);
+            parent.attr("dy", (parentNode) => { return this.getLabelDY(parentNode); });
+        });
+    }
+
+    // getLabelDY(treeNode): Retrieves the y positioning of the label text on the arc
     getLabelDY(treeNode) {
+        let radius = this.getRadius(treeNode);
+        if (this.graphState == SunBurstStates.FilterOnlyLevel2) {
+            radius += (GraphDims.lowerGraph2LevelFilterArcRadius - GraphDims.lowerGraphArcRadius) * 2;
+        }
+
         if (treeNode.depth > 1) {
-            return this.radius / 2;
+            return radius / 2;
         }
 
         return (this.radius - GraphDims.lowerGraphCenterArcRadius) / 2 + 5;
@@ -285,6 +328,12 @@ export class SunBurst extends Component {
             y1: d.y1,
         });
 
+        // enable the on-click event for the arcs
+        this.enableArcOnClick();
+
+        // set back the thickness of the arcs back to its original thickness
+        this.updateArcThickness();
+
         this.transitionArcs(0);
         this.setFilterButtonToLevel2Groups();
     }
@@ -309,11 +358,73 @@ export class SunBurst extends Component {
             }
             acc += d.depth === highestDepth ? (d.x1 - d.x0) : 0;
         });
+
+        // disable the on-click event for the arcs
+        this.disableArcOnClick();
+
+        // increase the thickness of the arcs
+        this.updateArcThickness();
+        
         this.transitionArcs(0);
         this.setFilterButtonToAllGroups();
     }
 
-    lowerGraph(nutrientsData, foodGroupDescriptions){
+    // arcOnClick(event, i): Handle zoom on click when clicking on an arc.
+    arcOnClick(event, i) {
+        const children = this.root.descendants();
+        this.sunBurstGroup.datum(children[i] ?? this.root);
+
+        // the node that has been clicked
+        const p = children[i] ?? children;
+
+        const isTransitionArc = (!p.target || (p.target.x1 - p.target.x0) < 2 * Math.PI || this.selectedNode != p);
+
+        /* Transition only if the clicked arc does not already span a full circle or the arc has not been already selected */
+        if (isTransitionArc) {
+            this.root.each(d => {
+                if (d.data.row)
+                    d.target = {
+                        depth: d.depth,
+                        data: d.data,
+                        value: d.value,
+                        x0: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 0 : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
+                        x1: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 2 * Math.PI : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
+                        y0: d.y0,
+                        y1: d.y1
+                    }
+            });
+        }
+
+        this.selectedNode = p;
+
+        if (isTransitionArc) {
+            this.transitionArcs();
+        }
+
+        // set the correct state for the filter button
+        this.setFilterButtonToLevel2Groups();
+    }
+
+    // enableArcOnClick(): Register the on-click event for the arcs to be clickable
+    enableArcOnClick() {
+        this.hoverPath.on("click", (e, i) => {
+            this.arcOnClick(e,i + 1);
+        });
+    }
+
+    // disableArcOnClick(): Disables the on-click event for the arcs
+    disableArcOnClick() {
+        this.hoverPath.on("click", null);
+    }
+
+    // getUpdatedModelData(): Retrieves the updated versions of the data from the model
+    getUpdatedModelData() {
+        this.nutrient = this.model.nutrient;
+        this.data = this.model.foodIngredientData;
+        this.foodGroupDescriptions = this.model.foodGroupDescriptionData.data;
+    }
+
+    lowerGraph(nutrientsData){
         const self = this;
         const data = nutrientsData.fullyNestedDataByFoodGroup;
         const tableData = nutrientsData.dataGroupedByNutrientAndDemoList;
@@ -377,8 +488,10 @@ export class SunBurst extends Component {
         const lowerGraphTableTitle = d3.select("#lowerGraphTableTitle");
     
         /* Draws table, sunburst, and updates age-sex selector */
-        async function drawGraph(nutrient){
-            ageSexSelector.on("change", () => drawGraph(nutrient))
+        async function drawGraph(){
+            self.getUpdatedModelData();
+
+            ageSexSelector.on("change", () => drawGraph(self.nutrient))
                 .selectAll("option")
                 .data(nutrientsData.ageSexGroupHeadings)
                 .enter()
@@ -386,14 +499,14 @@ export class SunBurst extends Component {
                     .property("value", d => d)
                     .text(d => d);
         
-            const ageSexGroup = viewTools.getSelector("#lowerGraphAgeSexSelect");
+            const ageSexGroup = ViewTools.getSelector("#lowerGraphAgeSexSelect");
             lowerGraphChartHeading.text(TranslationTools.translateText("lowerGraph.graphTitle", {
-                nutrient,
-                ageSexGroup
+                nutrient: self.nutrient,
+                ageSexGroup: ageSexGroup
             }));
         
-            drawSunburst(nutrient, ageSexGroup);
-            drawTable(nutrient, ageSexGroup);
+            drawSunburst(self.nutrient, ageSexGroup);
+            drawTable(self.nutrient, ageSexGroup);
         }
     
         // Source reference: https://observablehq.com/@d3/zoomable-sunburst
@@ -468,7 +581,7 @@ export class SunBurst extends Component {
             nutrientTextBox.update();
         
             // TODO: check what this does, copied from the reference 
-            const parent = self.lowerGraphSunburst.append("circle")
+            self.sunBurstGroup = self.lowerGraphSunburst.append("circle")
                 .datum(self.root.descendants())
                 .attr("r", d => self.getRadius(d))
                 .attr("fill", "none")
@@ -489,12 +602,7 @@ export class SunBurst extends Component {
                 .attr("fill-opacity", 0)
                 .attr("pointer-events", "auto")
                 .attr("d", d => self.arc(d.current))
-        
-            // Make the arcs clickable.
-            self.hoverPath.style("cursor", "pointer")
-                .on("click", (e, i) => {
-                    clicked(e,i + 1);
-                });
+                .style("cursor", "pointer");
         
             self.hoverPath.on("mousemove", arcHover);
             self.hoverPath.on("mouseenter", arcHover);
@@ -515,43 +623,6 @@ export class SunBurst extends Component {
             /* Make the opacity of tooltip 0 */
             function arcUnHover(d, i){
                 d3.select(`#arcHover${i}`).attr("opacity", 0);
-            }
-
-            // Handle zoom on click.
-            function clicked(event, i) {
-        
-                const children = self.root.descendants();
-                parent.datum(children[i] ?? self.root);
-
-                // the node that has been clicked
-                const p = children[i] ?? children;
-
-                const isTransitionArc = (!p.target || (p.target.x1 - p.target.x0) < 2 * Math.PI || self.selectedNode != p);
-        
-                /* Transition only if the clicked arc does not already span a full circle or the arc has not been already selected */
-                if (isTransitionArc) {
-                    self.root.each(d => {
-                        if (d.data.row)
-                            d.target = {
-                                depth: d.depth,
-                                data: d.data,
-                                value: d.value,
-                                x0: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 0 : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
-                                x1: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 2 * Math.PI : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
-                                y0: d.y0,
-                                y1: d.y1
-                            }
-                    });
-                }
-
-                self.selectedNode = p;
-
-                if (isTransitionArc) {
-                    self.transitionArcs();
-                }
-
-                // set the correct state for the filter button
-                self.setFilterButtonToLevel2Groups();
             }
         
             /* Creation of tooltip */

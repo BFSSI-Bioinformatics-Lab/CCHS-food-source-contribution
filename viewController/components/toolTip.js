@@ -32,8 +32,8 @@ export class ToolTip extends TextBox {
         this.cardRect = null;
     }
 
-    setup() {
-        super.setup();
+    setup(opts = {}) {
+        super.setup(opts);
         this.cardRect = this.group.append("rect");
     }
 

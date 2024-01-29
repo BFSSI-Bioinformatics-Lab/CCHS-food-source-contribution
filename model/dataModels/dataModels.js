@@ -1,4 +1,4 @@
-import { AgeSexGroupOrder } from "../../assets/assets";
+import { AgeSexGroupOrder } from "../../assets/assets.js";
 
 
 const SortedAgeSexGroupHeadings = Object.keys(AgeSexGroupOrder).sort((a,b) => {return AgeSexGroupOrder[a] - AgeSexGroupOrder[b]});

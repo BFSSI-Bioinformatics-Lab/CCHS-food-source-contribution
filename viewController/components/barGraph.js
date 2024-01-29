@@ -1,5 +1,4 @@
-import { Colours, GraphColours, GraphDims } from "../../assets/assets.js";
-import { TextWrap, FoodGroupDescDataColNames, FontWeight } from "../../assets/assets.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight } from "../../assets/assets.js";
 import { Component } from "./component.js";
 import { Infobox } from "./infobox.js";
 import { ToolTip } from "./toolTip.js";
@@ -9,12 +8,20 @@ import { Legend } from "./legend.js";
 
 
 export class BarGraph extends Component {
-    constructor(data, foodGroupDescriptions) {
-        super();
-        this.data = data;
-        this.groupedAmount = {};
+    constructor({model = null} = {}) {
+        super({model: model});
+
+        // === Data retrieves from the model ===
         this.nutrient = "";
-        this.foodGroupDescriptions = foodGroupDescriptions;
+        this.data = [];
+        this.foodGroupDescriptions = [];
+
+        this.getUpdatedModelData();
+
+        // =====================================
+
+
+        this.groupedAmount = {};
         
         this.focusedFoodGroup = null;
         this.mouseOverFoodGroupName = null;
@@ -24,7 +31,7 @@ export class BarGraph extends Component {
         this.graphType = "";
         this.typeIterator = this.getGraphType();
 
-        // different individual elements for the component
+        // === different individual elements for the component ===
         this.upperGraphSvg = null;
         this.upperGraphSvgBackground = null;
         this.upperGraphBars = null;
@@ -43,6 +50,8 @@ export class BarGraph extends Component {
         this.upperGraphTableHeading = null;
         this.upperGraphTableBody = null;
         this.upperGraphTableTitle = null;
+
+        // =======================================================
     }
 
     // getToolTipId(num): Retrieves the key id for a particular id
@@ -221,13 +230,23 @@ export class BarGraph extends Component {
                 .on("click", onClick);
     }
 
+    // getUpdatedModelData(): Retrieves the updated versions of the data from the model
+    getUpdatedModelData() {
+        this.nutrient = this.model.nutrient;
+        this.data = this.model.foodIngredientData;
+        this.foodGroupDescriptions = this.model.foodGroupDescriptionData.data;
+    }
+
     /* Update bar graph given a specific nutrient */
-    async updateGraph(nutrient){
+    async updateGraph(){
+        // get the updated data for the graph
+        this.getUpdatedModelData();
+
+        const nutrient = this.nutrient;
+        const nutrientData = this.data.getNutrientData(nutrient);
+
         /* graphType is updated by the getGraphType function */
         let type = this.graphType;
-        this.nutrient = nutrient;
-
-        const nutrientData = this.data.getNutrientData(nutrient);
 
         const xAxisValues = this.data.ageSexGroupHeadings;
         this.upperGraphXAxisScale.domain(xAxisValues)

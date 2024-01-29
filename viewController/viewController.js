@@ -1,59 +1,68 @@
-import { TranslationObj } from '../assets/strings/strings.js';
 import { Model } from '../model/model.js'
 import { BarGraph } from './components/barGraph.js';
 import { SunBurst } from './components/sunBurstGraph.js';
-import { viewTools } from './tools/viewTools.js';
-import { TranslationTools } from '../tools/translationTools.js';
+import { ViewTools } from './tools/viewTools.js';
+import { TranslationTools, TranslationObj } from '../tools/translationTools.js';
+import { Component } from './components/component.js';
 
 
 // ViewController: Overall class for the view and controller
-class ViewController {
-    /* Calls loading of data and sets up the selector to call the chart update functions on change */
-    async setupTool(){
-        const model = new Model("data/Food Group descriptions.csv", "data/FSCT data_Food_ingredients CCHS 2015 all nutrients_Infobase.csv");
+class ViewController extends Component{
+    constructor({model = null} = {}) {
+        super();
+        this.model = model;
 
-        Promise.all([model.loadNutrientsData(), model.loadFoodGroupDescriptionData()])
-            .then((files) => {
-                const [nutrientsData, foodGroupDescriptionsData] = files;
+        this.updateSunburst = null;
+        this.updateBarGraph = null;
 
-                const nutrientOptions = Object.keys(nutrientsData.dataGroupedByNutrientAndDemo);
-            
-                const nutrientSelector = d3.select("#upperGraphNutrientSelect")
-                    .on("change", updateTool)
-                    .selectAll("option")
-                    .data(nutrientOptions)
-                    .enter()
-                    .append("option")
-                        .attr("title", d => d)
-                        .property("value", d => d)
-                        .text(d => d);
+        // === individual elements for the component ===
+        this.nutrientSelector = null;
+        this.sunBurst = null;
+        this.barGraph = null;
 
-                const upperGraph = new BarGraph(nutrientsData, foodGroupDescriptionsData.data);
-                const lowerGraph = new SunBurst(nutrientsData, foodGroupDescriptionsData.data);
-                        
-                const updateUpperGraph = upperGraph.draw();
-                const updateLowerGraph = lowerGraph.draw();
-            
-                function updateTool(){
-                    const nutrient = viewTools.getSelector("#upperGraphNutrientSelect");
-                    updateUpperGraph(nutrient);
-                    updateLowerGraph(nutrient);
-                }
-            
-                updateTool();
-            
-                // only make the graphs visible once everything is set up 
-                d3.select("#foodSourceContributionTool").style("visibility", "visible");
-            });
+        // =============================================
+    }
+
+    setup(opts = {}) {
+        const nutrientOptions = Object.keys(this.model.foodIngredientData.dataGroupedByNutrientAndDemo);
+        this.nutrientSelector = d3.select("#upperGraphNutrientSelect")
+            .on("change", () => { this.redraw(); })
+            .selectAll("option")
+            .data(nutrientOptions)
+            .enter()
+            .append("option")
+                .attr("title", d => d)
+                .property("value", d => d)
+                .text(d => d);
+
+        this.barGraph = new BarGraph({model: this.model});
+        this.sunBurst = new SunBurst({model: this.model});
+
+        this.updateBarGraph = this.barGraph.draw();
+        this.updateSunburst = this.sunBurst.draw();
+    }
+
+    redraw(opts = {}) {
+        this.model.nutrient = ViewTools.getSelector(this.nutrientSelector);
+        this.updateBarGraph();
+        this.updateSunburst();
+
+        // only make the graphs visible once everything is set up 
+        d3.select("#foodSourceContributionTool").style("visibility", "visible");
     }
 };
 
 
-
-const viewController = new ViewController();
-
+//////////
+// MAIN //
+//////////
 // load in the view for the application
 window.addEventListener("load", () => {
+    const model = new Model("data/Food Group descriptions.csv", "data/FSCT data_Food_ingredients CCHS 2015 all nutrients_Infobase.csv");
+    const viewController = new ViewController({model: model});
     TranslationTools.registerTranslation(TranslationObj);
-    viewController.setupTool();
-})
+
+    Promise.all([model.load()]).then(() => {
+        viewController.render();
+    });
+});
