@@ -1,7 +1,5 @@
-import { SvgComponent } from "../component.js";
-import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
-import { TextWrap, DefaultAttributes } from "../../../assets/strings/strings.js";
-import { Colours } from "../../../assets/colours/colours.js";
+import { SvgComponent } from "./component.js";
+import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "../../assets/assets.js";
 
 export class TextBox extends SvgComponent {
     constructor({parent = null, 

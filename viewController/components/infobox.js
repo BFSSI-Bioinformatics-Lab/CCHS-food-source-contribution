@@ -1,7 +1,6 @@
-import { TextBox } from "../textbox/textBox.js";
-import { DefaultDims } from "../../../assets/dimensions/dimensions.js";
-import { DefaultAttributes } from "../../../assets/strings/strings.js";
-import { Colours } from "../../../assets/colours/colours.js";
+import { TextBox } from "./textBox.js";
+import { Colours, DefaultDims, DefaultAttributes } from "../../assets/assets.js";
+
 
 export class Infobox extends TextBox {
     constructor({parent = null, 

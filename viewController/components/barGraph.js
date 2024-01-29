@@ -1,12 +1,11 @@
-import { Colours, GraphColours } from "../../../assets/colours/colours.js";
-import { GraphDims } from "../../../assets/dimensions/dimensions.js";
-import { TextWrap, FoodGroupDescDataColNames, FontWeight } from "../../../assets/strings/strings.js";
-import { Component } from "../component.js";
-import { Infobox } from "../infobox/infobox.js";
-import { ToolTip } from "../toolTip/toolTip.js";
-import { TranslationTools } from "../../../tools/translationTools.js";
-import { Func } from "../../../tools/func.js";
-import { Legend } from "../legend/legend.js";
+import { Colours, GraphColours, GraphDims } from "../../assets/assets.js";
+import { TextWrap, FoodGroupDescDataColNames, FontWeight } from "../../assets/assets.js";
+import { Component } from "./component.js";
+import { Infobox } from "./infobox.js";
+import { ToolTip } from "./toolTip.js";
+import { TranslationTools } from "../../tools/translationTools.js";
+import { Func } from "../../tools/func.js";
+import { Legend } from "./legend.js";
 
 
 export class BarGraph extends Component {

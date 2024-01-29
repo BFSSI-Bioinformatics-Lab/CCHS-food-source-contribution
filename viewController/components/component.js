@@ -1,5 +1,4 @@
-import { DefaultDims } from "../../assets/dimensions/dimensions.js";
-import { DefaultAttributes } from "../../assets/strings/strings.js";
+import { DefaultDims, DefaultAttributes } from "../../assets/assets.js";
 
 
 // Component: Abstract class for building a component used in the UI

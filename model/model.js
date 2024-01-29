@@ -1,7 +1,9 @@
-import { CSVDataModel } from "./dataModels/csvDataModel.js";
-import { FoodIngredientModel } from "./dataModels/foodIngredientModel.js";
-import { FoodGroupDescDataColNames, NutrientDataColNames} from "../assets/strings/strings.js";
+import { CSVDataModel } from "./dataModels/dataModels.js";
+import { FoodIngredientDataModel } from "./dataModels/dataModels.js";
+import { FoodGroupDescDataColNames, NutrientDataColNames } from "../assets/assets.js";
 
+
+// Model: The overall model for the user interface
 export class Model {
     #foodGroupDescriptionFileSrc;
     #nutrientFileSrc;
@@ -63,6 +65,6 @@ export class Model {
                                             .rollup(d => d[0])
                                             .object(data));
 
-        return new FoodIngredientModel(data, dataGroupedByNutrientAndDemoList, dataGroupedByNutrientAndDemo, fullyNestedDataByFoodGroup);
+        return new FoodIngredientDataModel(data, dataGroupedByNutrientAndDemoList, dataGroupedByNutrientAndDemo, fullyNestedDataByFoodGroup);
     }
 }

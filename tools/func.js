@@ -1,11 +1,14 @@
 
 
+// Func: Wrapper class for handling anonymous functions or
+//  higher ordered functions
 export class Func {
     constructor(func, args) {
         this.func = func;
         this.args = args;
     }
 
+    // run(): Runs the function
     run() {
         if (Array.isArray(this.args)) {
             return this.func(...this.args);
@@ -14,9 +17,8 @@ export class Func {
         }
     }
 
+    // setArg(name, value): Sets the arguments for the function
     setArg(name, value) {
-        //console.log("SETTER: ", this.args, " AND ", Array.isArray(this.args));  
-
         if (Array.isArray(this.args)) {
             this.args.push(value);
         } else {

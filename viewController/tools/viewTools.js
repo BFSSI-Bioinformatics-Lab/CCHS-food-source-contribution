@@ -1,4 +1,4 @@
-// viewTools: Class of helper functions for the view
+// viewTools: Class of helper functions used only for the view
 export class viewTools {
 
     /* Returns selected option given a select html tag selector */

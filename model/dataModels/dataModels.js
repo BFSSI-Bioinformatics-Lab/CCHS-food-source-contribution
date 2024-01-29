@@ -1,9 +1,19 @@
-import { CSVDataModel } from "./csvDataModel.js";
-import { AgeSexGroupOrder } from "../../enums/enums.js";
+import { AgeSexGroupOrder } from "../../assets/assets";
+
 
 const SortedAgeSexGroupHeadings = Object.keys(AgeSexGroupOrder).sort((a,b) => {return AgeSexGroupOrder[a] - AgeSexGroupOrder[b]});
 
-export class FoodIngredientModel extends CSVDataModel {
+
+// CSVDataModel: Data model for importing data from CSV files
+export class CSVDataModel {
+    constructor(data) {
+        this.data = data;
+    }
+}
+
+
+// FoodIngredientDataModel: Data model for the food ingredient data in the CSV file
+export class FoodIngredientDataModel extends CSVDataModel {
     constructor(data, dataGroupedByNutrientAndDemoList, dataGroupedByNutrientAndDemo, fullyNestedDataByFoodGroup) {
         super(data);
         this.dataGroupedByNutrientAndDemoList = dataGroupedByNutrientAndDemoList;

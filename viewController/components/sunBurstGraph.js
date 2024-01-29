@@ -1,17 +1,14 @@
-import { GraphColours } from "../../../assets/colours/colours.js";
-import { GraphDims } from "../../../assets/dimensions/dimensions.js";
-import { TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames } from "../../../assets/strings/strings.js";
-import { viewTools } from "../../tools/viewTools.js";
-import { Infobox } from "../infobox/infobox.js";
-import { Component } from "../component.js";
-import { TranslationTools } from "../../../tools/translationTools.js";
-import { TextBox } from "../textbox/textBox.js";
-import { ToolTip } from "../toolTip/toolTip.js";
-import { Legend } from "../legend/legend.js";
-import { SunBurstStates } from "../../../enums/enums.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames, SunBurstStates } from "../../assets/assets.js";
+import { viewTools } from "../tools/viewTools.js";
+import { Infobox } from "./infobox.js";
+import { Component } from "./component.js";
+import { TranslationTools } from "../../tools/translationTools.js";
+import { TextBox } from "./textBox.js";
+import { ToolTip } from "./toolTip.js";
+import { Legend } from "./legend.js";
 
 
-export class sunBurst extends Component {
+export class SunBurst extends Component {
     constructor(data, foodGroupDescriptions, tableData) {
         super();
         this.data = data;
