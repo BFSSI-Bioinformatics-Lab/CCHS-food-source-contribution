@@ -140,20 +140,20 @@ export class LegendItem extends SvgComponent {
         this.height = Math.max(this.height, this.paddingTop + Math.max(this.colourBoxHeight, this.textBox.fullHeight) + this.paddingBottom);
     }
 
-    setup() {
-        super.setup();
+    setup(opts = {}) {
+        super.setup(opts);
         this.box = this.group.append("rect");
 
         this.colourBox.parent = this.group;
-        this.colourBox.setup();
+        this.colourBox.setup(opts);
 
         this.textBox.parent = this.group;
-        this.textBox.setup();
+        this.textBox.setup(opts);
     }
 
-    remove(opts = {}) {
-        this.colourBox.remove(opts);
-        this.textBox.remove(opts);
+    clear(opts = {}) {
+        this.colourBox.clear(opts);
+        this.textBox.clear(opts);
     }
 
     redraw(opts = {}) {
@@ -353,20 +353,20 @@ export class Legend extends SvgComponent {
         }
     }
 
-    setup() {
-        super.setup();
+    setup(opts = {}) {
+        super.setup(opts);
         this.setupLegendItems();
 
         for (const legendItem of this.legendItems) {
-            legendItem.setup();
+            legendItem.setup(opts);
         }
 
         this.box.parent = this.group;
-        this.box.setup();
+        this.box.setup(opts);
     }
 
-    remove(opts = {}) {
-        super.remove(opts);
+    clear(opts = {}) {
+        super.clear(opts);
 
         if (this._dataChanged) {
             this.group.selectAll("g").remove();

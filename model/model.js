@@ -12,7 +12,9 @@ export class Model {
         this.#foodGroupDescriptionFileSrc = foodGroupDescriptionFileSrc;
         this.#nutrientFileSrc = nutrientFileSrc;
 
+        this.nutrient = "";
         this.foodGroupDescriptionData = null;
+        this.foodIngredientData = null;
     }
     
     // convert all numeric fields into floats:
@@ -24,6 +26,15 @@ export class Model {
         return data;
     }
 
+    // load(): Setup all the needed data for the user interface
+    async load() {
+        await Promise.all([this.loadFoodGroupDescriptionData(), this.loadFoodIngredientsData()]).then((dataModels) => {
+            this.foodGroupDescriptionData = dataModels[0];
+            this.foodIngredientData = dataModels[1];
+        });
+    }
+
+    // loadFoodGroupDescriptionData(): Load the data for all the food group descriptions
     async loadFoodGroupDescriptionData() {
         let data = await d3.csv(this.#foodGroupDescriptionFileSrc);
         data = this.numToFloat(data);
@@ -41,7 +52,8 @@ export class Model {
         return new CSVDataModel(fullyNestedDataByFoodLevel);  
     }
 
-    async loadNutrientsData(){
+    // loadFoodIngredientsData(): Load the data for all the food ingredients
+    async loadFoodIngredientsData(){
         let data = await d3.csv(this.#nutrientFileSrc);
         data = this.numToFloat(data);
 

@@ -3,14 +3,21 @@ import { DefaultDims, DefaultAttributes } from "../../assets/assets.js";
 
 // Component: Abstract class for building a component used in the UI
 export class Component {
+    constructor({model = null} = {}) {
+        this.model = model;
+        this._initialized = false;
+    }
+
     // draw(): First initializing for drawing the component
-    draw() {
-        this.setup();
-        this.redraw();
+    draw({atts = {}, opts = {}} = {}) {
+        this.updateAtts(atts);
+        this.setup(opts);
+        this.redraw(opts);
+        this._initialized = true;
     }
 
     // setup(): Performs any setup for drawing the component
-    setup() {
+    setup(opts = {}) {
 
     }
 
@@ -20,8 +27,8 @@ export class Component {
 
     }
 
-    // remove(opts): Remove some parts of the component
-    remove(opts = {}) {
+    // clear(opts): Remove some parts of the component
+    clear(opts = {}) {
 
     }
 
@@ -37,8 +44,18 @@ export class Component {
     // update(): Updates the component
     update({atts = {}, opts = {}} = {}) {
         this.updateAtts(atts);
-        this.remove(opts);
+        this.clear(opts);
         this.redraw(opts);
+    }
+
+    // render(): Changes the view of the component
+    render({atts = {}, opts = {}} = {}) {
+        if (this._initialized) {
+            this.update({atts: atts, opts: opts});
+            return;
+        }
+
+        this.draw({atts: atts, opts: opts});
     }
 }
 
@@ -200,7 +217,7 @@ export class SvgComponent extends Component {
     }
 
     // setup(): Performs any setup for drawing the component
-    setup() {
+    setup(opts = {}) {
         this.#setupGroup();
     }
 
