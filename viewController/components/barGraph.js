@@ -282,6 +282,7 @@ export class BarGraph extends Component {
 
         // draw the graph title
         this.upperGraphHeading.text(TranslationTools.translateText(`upperGraph.${type}.graphTitle`, { nutrient, amountUnit: this.getNutrientUnit(nutrient)}))
+            .attr("font-weight", FontWeight.Bold);
 
         //draw the table
         this.drawTable(nutrient);
