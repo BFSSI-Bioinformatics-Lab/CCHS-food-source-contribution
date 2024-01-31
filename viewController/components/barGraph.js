@@ -460,6 +460,11 @@ export class BarGraph extends Component {
         this.graphType = this.typeIterator.next().value;
     
         const upperGraphTable = d3.select("#upperGraphTable");
+
+        // remove any dummy tables that says "no data available in table" produced by JQuery
+        upperGraphTable.selectAll("thead").remove();
+        upperGraphTable.selectAll("tbody").remove();
+
         this.upperGraphTableHeading = upperGraphTable.append("thead");
         this.upperGraphTableBody = upperGraphTable.append("tbody");
         this.upperGraphTableTitle = d3.select("#upperGraphTableTitle");
