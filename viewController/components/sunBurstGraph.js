@@ -503,7 +503,8 @@ export class SunBurst extends Component {
             lowerGraphChartHeading.text(TranslationTools.translateText("lowerGraph.graphTitle", {
                 nutrient: self.nutrient,
                 ageSexGroup: ageSexGroup
-            }));
+            }))
+            .attr("font-weight", FontWeight.Bold);
         
             drawSunburst(self.nutrient, ageSexGroup);
             drawTable(self.nutrient, ageSexGroup);
