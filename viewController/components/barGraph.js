@@ -105,7 +105,7 @@ export class BarGraph extends Component {
     /* Set the opacity of the previously hovered bar's info to be 0 */
     onBarUnHover(d, i){
         this.hideInfoBox();
-        d3.select(`#barHover${i}`).attr("opacity", 0);
+        d3.select(`#barHover${i}`).attr("opacity", 0).style("pointer-events", "none");
     }
 
     // barOnClick(dt): Focus on a particular food group when a bar is clicked

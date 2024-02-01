@@ -313,31 +313,47 @@ export class BackgroundSVGComponent extends SvgComponent {
     redraw(opts = {}) {
         super.redraw(opts);
         this.redrawBackground();
+        this.setMouseEvents();
+    }
 
+    // setMouseEvents(): Sets the mouse events
+    setMouseEvents() {
+        this.setComponentMouseEvents();
+
+        this._onMouseClickChanged = false;
+        this._onMouseEnterChanged = false;
+        this._onMouseLeaveChanged = false;
+        this._onMouseOverChanged = false;
+        this._onMouseMoveChanged = false;
+    }
+
+    // setComponentMouseEvents(): Sets the mouse events for the entire component
+    setComponentMouseEvents() {
+        this.setElementMouseEvents(this.group);
+        this.setElementMouseEvents(this.background);
+    }
+
+    // setElementMouseEvents(element): Sets the mouse events for an element 
+    setElementMouseEvents(element) {
         // add all the mouse events to the background shape
         if (this._onMouseEnter !== null && this._onMouseEnterChanged) {
-            this.group.on("mouseenter", () => { this._onMouseEnter.run() });
-            this._onMouseEnterChanged = false;
+            element.on("mouseenter", () => { this._onMouseEnter.run() });
         }
 
         if (this._onMouseClick !== null && this._onMouseClickChanged) {
-            this.group.on("click", () => { this._onMouseClick.run() });
-            this._onMouseClickChanged = false;
+            element.on("click", () => { this._onMouseClick.run() });
         }
 
         if (this._onMouseLeave !== null && this._onMouseLeaveChanged) {
-            this.group.on("mouseleave", () => { this._onMouseLeave.run() });
-            this._onMouseLeaveChanged = false;
+            element.on("mouseleave", () => { this._onMouseLeave.run() });
         }
 
         if (this._onMouseOver !== null && this._onMouseOverChanged) {
-            this.group.on("mouseover", () => { this._onMouseOver.run() });
-            this._onMouseOverChanged = false;
+            element.on("mouseover", () => { this._onMouseOver.run() });
         }
 
         if (this._onMouseMove !== null && this._onMouseMoveChanged) {
-            this.group.on("mousemove", () => { this._onMouseMove.run() });
-            this._onMouseMoveChanged = false;
+            element.on("mousemove", () => { this._onMouseMove.run() });
         }
     }
 }

@@ -55,14 +55,15 @@ export class Box extends RectSvgComponent {
 
         super.redraw(opts);
 
-        this.background.attr("width", this.width)
-            .attr("height", this.height)
-            .attr("fill", this._backgroundColour);
-
         this.box.attr("y", this.paddingTop)
             .attr("x", this.paddingLeft)
             .attr("width", this.boxWidth)
             .attr("height", this.boxHeight)
             .attr("fill", this.boxColour);
+    }
+
+    setComponentMouseEvents() {
+        super.setComponentMouseEvents();
+        this.setElementMouseEvents(this.box);
     }
 }
