@@ -51,6 +51,7 @@ export const GraphDims = Object.freeze({
     upperGraphTop: 60,
     upperGraphBottom: 60,
     upperGraphTooltipMinWidth: 140,
+    upperGraphAxesFontSize: 20,
     upperGraphTooltipFontSize: 12,
     upperGraphTooltipTopPadding: 8,
     upperGraphTooltipLeftPadding: 10,

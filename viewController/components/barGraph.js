@@ -475,13 +475,13 @@ export class BarGraph extends Component {
             
         this.upperGraphXAxisScale = d3.scaleBand()
             .range([0, GraphDims.upperGraphWidth])
-        const upperGraphXAxisLabel = upperGraphXAxis.append("text")
+        const upperGraphXAxisLabel = upperGraphXAxis.append("text").attr("font-size", GraphDims.upperGraphAxesFontSize);
     
         const upperGraphYAxis = upperGraphAxes.append("g")
         this.upperGraphYAxisLine = upperGraphYAxis.append("g")
             .attr("transform", `translate(${GraphDims.upperGraphLeft}, ${GraphDims.upperGraphTop})`);
     
-        this.upperGraphYAxisLabel = upperGraphYAxis.append("text")
+        this.upperGraphYAxisLabel = upperGraphYAxis.append("text").attr("font-size", GraphDims.upperGraphAxesFontSize)
             .attr("transform", "rotate(-90)")
             .attr("text-anchor", "middle")
             .attr("y", GraphDims.upperGraphLeft / 4)
