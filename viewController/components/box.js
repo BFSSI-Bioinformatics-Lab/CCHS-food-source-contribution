@@ -1,9 +1,9 @@
-import { SvgComponent } from "./component.js";
+import { RectSvgComponent } from "./component.js";
 import { Colours, DefaultDims, DefaultAttributes } from "../../assets/assets.js";
 
 
 // Box: Class for a box/rectangle
-export class Box extends SvgComponent {
+export class Box extends RectSvgComponent {
     constructor({parent = null, 
                  x = DefaultDims.pos, 
                  y = DefaultDims.pos, 
@@ -16,10 +16,15 @@ export class Box extends SvgComponent {
                  id = null, 
                  opacity = DefaultAttributes.opacity,
                  backgroundColour = Colours.None,
-                 boxColour = Colours.None} = {}) {
-        super({parent: parent, x: x, y: y, width: width, height: height, padding: padding, margin: margin, id: id, opacity: opacity});
+                 boxColour = Colours.None,
+                 onMouseEnter = null,
+                 onMouseClick = null,
+                 onMouseLeave = null,
+                 onMouseOver = null,
+                 onMouseMove = null} = {}) {
+        super({parent: parent, x: x, y: y, width: width, height: height, padding: padding, margin: margin, id: id, opacity: opacity, backgroundColour,
+               onMouseEnter, onMouseClick, onMouseLeave, onMouseOver, onMouseMove});
 
-        this.backgroundColour = backgroundColour;
         this.boxColour = boxColour;
         this.boxWidth = boxWidth;
         this.boxHeight = boxHeight;
@@ -41,7 +46,6 @@ export class Box extends SvgComponent {
 
     setup(opts = {}) {
         super.setup(opts);
-        this.backgroundBox = this.group.append("rect");
         this.box = this.group.append("rect");
     }
 
@@ -51,9 +55,9 @@ export class Box extends SvgComponent {
 
         super.redraw(opts);
 
-        this.backgroundBox.attr("width", this.width)
+        this.background.attr("width", this.width)
             .attr("height", this.height)
-            .attr("fill", this.backgroundColour);
+            .attr("fill", this._backgroundColour);
 
         this.box.attr("y", this.paddingTop)
             .attr("x", this.paddingLeft)

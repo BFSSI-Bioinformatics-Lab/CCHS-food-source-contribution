@@ -1,10 +1,8 @@
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames, SunBurstStates } from "../../assets/assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames, SunBurstStates, Colours } from "../../assets/assets.js";
 import { ViewTools } from "../tools/viewTools.js";
-import { Infobox } from "./infobox.js";
 import { Component } from "./component.js";
 import { TranslationTools } from "../../tools/translationTools.js";
-import { TextBox } from "./textBox.js";
-import { ToolTip } from "./toolTip.js";
+import { TextBox, ToolTip, Infobox } from "./textBox.js";
 import { Legend } from "./legend.js";
 
 
@@ -429,6 +427,9 @@ export class SunBurst extends Component {
         const data = nutrientsData.fullyNestedDataByFoodGroup;
         const tableData = nutrientsData.dataGroupedByNutrientAndDemoList;
 
+        // register the save image button
+        d3.select("#lowerGraphSaveGraph").on("click", () => this.saveAsImage());
+
         // Specify the chart’s dimensions.
         const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
         const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
@@ -456,7 +457,7 @@ export class SunBurst extends Component {
                                                padding: GraphDims.lowerGraphInfoBoxPaddingLeft, 
                                                lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing});
     
-        lowerGraphInfoBox.draw();
+        lowerGraphInfoBox.render();
 
         // draw the legend
         const lowerGraphLegend = new Legend({parent: lowerGraphSvg, 
@@ -468,7 +469,7 @@ export class SunBurst extends Component {
                                              colourBoxWidth: GraphDims.legendSquareSize,
                                              colourBoxHeight: GraphDims.legendSquareSize,
                                              data: Object.entries(GraphColours)});
-        lowerGraphLegend.draw();
+        lowerGraphLegend.render();
 
         const lowerGraphChartHeading = lowerGraphSvg.append("g")
         .append("text")
@@ -576,7 +577,7 @@ export class SunBurst extends Component {
                                                  fontSize: GraphDims.lowerGraphCenterFontSize,  
                                                  textAlign: TextAnchor.Middle, 
                                                  fontWeight: FontWeight.Bold });
-            nutrientTextBox.draw();
+            nutrientTextBox.render();
 
             nutrientTextBox.text = nutrient;
             nutrientTextBox.update();
@@ -624,6 +625,7 @@ export class SunBurst extends Component {
             /* Make the opacity of tooltip 0 */
             function arcUnHover(d, i){
                 d3.select(`#arcHover${i}`).attr("opacity", 0);
+                lowerGraphInfoBox.render({atts: {text: "", borderColour: Colours.None}});
             }
         
             /* Creation of tooltip */
@@ -656,7 +658,7 @@ export class SunBurst extends Component {
                                              opacity: 0, 
                                              backgroundColour: "white"});
                 
-                toolTip.draw();
+                toolTip.render();
                 self.hoverToolTips[toolTipId] = toolTip;
 
                 self.positionHoverCard(toolTip, d);
@@ -668,6 +670,7 @@ export class SunBurst extends Component {
 
                 let foodGroupName = d.data.name;
                 if (self.mouseOverFoodGroupName !== null && self.mouseOverFoodGroupName == foodGroupName) {
+                    lowerGraphInfoBox.render({atts: {text: "", borderColour: Colours.None}});
                     return;
                 }
 
@@ -685,9 +688,7 @@ export class SunBurst extends Component {
                     foodGroupName = "";
                 }
 
-                lowerGraphInfoBox.text = foodGroupName;
-                lowerGraphInfoBox.borderColour = colour
-                lowerGraphInfoBox.update();
+                lowerGraphInfoBox.render({atts: {text: foodGroupName, borderColour: colour}});
             }
     
         }
@@ -701,4 +702,9 @@ export class SunBurst extends Component {
         return drawGraph;
     }
 
+    // saveAsImage(): Saves the bar graph as an image
+    saveAsImage() {
+        const svg = document.getElementById("lowerGraph").firstChild;
+        saveSvgAsPng(svg, "SunburstGraph.png", {backgroundColor: "white"});
+    }
 }

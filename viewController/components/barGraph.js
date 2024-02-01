@@ -1,10 +1,10 @@
 import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight } from "../../assets/assets.js";
-import { Component } from "./component.js";
-import { Infobox } from "./infobox.js";
-import { ToolTip } from "./toolTip.js";
+import { Component, SvgComponent} from "./component.js";
+import { ToolTip, Infobox } from "./textBox.js";
 import { TranslationTools } from "../../tools/translationTools.js";
 import { Func } from "../../tools/func.js";
 import { Legend } from "./legend.js";
+
 
 
 export class BarGraph extends Component {
@@ -46,7 +46,7 @@ export class BarGraph extends Component {
         this.xAxisTicks = null;
         this.upperGraphInfoBox = null;
 
-        // table for teh graph
+        // table for the graph
         this.upperGraphTableHeading = null;
         this.upperGraphTableBody = null;
         this.upperGraphTableTitle = null;
@@ -72,19 +72,23 @@ export class BarGraph extends Component {
         return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
     }
 
-    /* Update food group description box */
-    updateInfoBox({name = "", colour = Colours.None, amount = 0}){
+    // hideInfoBox(): Hides the food group description box
+    hideInfoBox() {
+        this.mouseOverFoodGroupName = null;
+        this.upperGraphInfoBox.render({atts: {text: "", borderColour: Colours.None}});
+    }
+
+    // Update food group description box
+    updateInfoBox({name = "", colour = Colours.None, amount = 0} = {}){
         const foodGroupName = name;
         if (this.mouseOverFoodGroupName !== null && this.mouseOverFoodGroupName == foodGroupName) {
             return;
         }
 
-        self.mouseOverFoodGroupName = foodGroupName;
+        this.mouseOverFoodGroupName = foodGroupName;
         const desc = this.foodGroupDescriptions[foodGroupName][FoodGroupDescDataColNames.description];
 
-        this.upperGraphInfoBox.text = desc;
-        this.upperGraphInfoBox.borderColour = GraphColours[foodGroupName];
-        this.upperGraphInfoBox.update();
+        this.upperGraphInfoBox.render({atts: {text: desc, borderColour: GraphColours[foodGroupName]}});
     }
 
     /* Set the opacity of the hovered bar's info to be 1 */
@@ -100,6 +104,7 @@ export class BarGraph extends Component {
 
     /* Set the opacity of the previously hovered bar's info to be 0 */
     onBarUnHover(d, i){
+        this.hideInfoBox();
         d3.select(`#barHover${i}`).attr("opacity", 0);
     }
 
@@ -151,83 +156,21 @@ export class BarGraph extends Component {
         });
 
         const toolTip = new ToolTip({parent: this.upperGraphTooltips, 
-                                        width: GraphDims.upperGraphTooltipMinWidth, 
-                                        height : 50,
-                                        padding: [GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding],
-                                        id: toolTipId, 
-                                        text: lines,
-                                        fontSize: GraphDims.upperGraphTooltipFontSize, 
-                                        borderWidth: 3, 
-                                        borderColour: colour,
-                                        opacity: 0, 
-                                        textWrap: TextWrap.NoWrap, 
-                                        backgroundColour: "white",
-                                        lineSpacing: GraphDims.upperGraphTooltipLineSpacing});
+                                    width: GraphDims.upperGraphTooltipMinWidth, 
+                                    height : 50,
+                                    padding: [GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding],
+                                    id: toolTipId, 
+                                    text: lines,
+                                    fontSize: GraphDims.upperGraphTooltipFontSize, 
+                                    borderWidth: 3, 
+                                    borderColour: colour,
+                                    opacity: 0, 
+                                    textWrap: TextWrap.NoWrap, 
+                                    backgroundColour: "white",
+                                    lineSpacing: GraphDims.upperGraphTooltipLineSpacing});
 
         this.hoverToolTips[toolTipId] = toolTip;
-        toolTip.draw();
-    }
-
-    // drawUpperGraphStackedBars(element, groups, transform, onClick, mult): Draws the stacked bars for the graph
-    drawUpperGraphStackedBars(element, groups, transform, onClick, mult) {
-        const groupEntries = Object.entries(groups);
-        //  sort the [food group, intake] pairs in decreasing order by intake
-        groupEntries.sort((a, b) => b[1]- a[1]);
-        let accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
-
-        groupEntries.forEach((d, i) => this.hoverTooltip(d, mult * 100 + i));
-
-        element.append("g")
-            .attr("transform", transform)
-            .selectAll("rect")
-            .data(groupEntries)
-            .enter()
-            .append("rect")
-                .attr("width", 100)                                     
-                .attr("height", (d, i) => 
-                    GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]) + 
-                    /* So that there arent gaps between bars due to rounding */
-                    (i !== groupEntries.length - 1 ? 1 : 0)
-                )
-                .attr("x", -50)
-                .attr("y", (d, i) => {
-                    const scaledHeight = GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]);
-                    accumulatedHeight -= scaledHeight;
-                    return (accumulatedHeight) - 
-                        /* So that there arent gaps between bars due to rounding */
-                        (i !== groupEntries.length - 1 ? 1 : 0);
-                })
-                .attr("fill", d => GraphColours[d[0]]);
-        
-        accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
-        
-        /* Since tool tips cover the bars, use another transparent layer on top of everything with the shape of the bars to detect hover positions */
-        this.upperGraphBarHoverDetect.append("g")
-            .attr("transform", transform)
-            .selectAll("rect")
-            .data(groupEntries)
-            .enter()
-            .append("rect")
-                .attr("width", 100)                                     
-                .attr("height", (d, i) => 
-                    GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]) + 
-                    /* So that there arent gaps between bars due to rounding */
-                    (i !== groupEntries.length - 1 ? 1 : 0)
-                )
-                .attr("x", -50)
-                .attr("y", (d, i) => {
-                    const scaledHeight = GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]);
-                    accumulatedHeight -= scaledHeight;
-                    return (accumulatedHeight) - 
-                        /* So that there arent gaps between bars due to rounding */
-                        (i !== groupEntries.length - 1 ? 1 : 0);
-                })
-                .attr("fill-opacity", 0)
-                .on("mouseover", (d, i) => this.onBarHover(d, mult * 100 + i))
-                .on("mousemove", (d, i) => this.onBarHover(d, mult * 100 + i))
-                .on("mouseenter", (d, i) => this.onBarHover(d, mult * 100 + i))
-                .on("mouseleave", (d, i) => this    .onBarUnHover(d, mult * 100 + i))
-                .on("click", onClick);
+        toolTip.render();
     }
 
     // getUpdatedModelData(): Retrieves the updated versions of the data from the model
@@ -298,6 +241,97 @@ export class BarGraph extends Component {
 
     draw() {
         return this.upperGraph();
+    }
+
+    // drawUpperGraphStackedBars(element, groups, transform, onClick, mult): Draws the stacked bars for the graph
+    drawUpperGraphStackedBars(element, groups, transform, onClick, mult) {
+        const groupEntries = Object.entries(groups);
+        //  sort the [food group, intake] pairs in decreasing order by intake
+        groupEntries.sort((a, b) => b[1]- a[1]);
+        let accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
+
+        groupEntries.forEach((d, i) => this.hoverTooltip(d, mult * 100 + i));
+
+        element.append("g")
+            .attr("transform", transform)
+            .selectAll("rect")
+            .data(groupEntries)
+            .enter()
+            .append("rect")
+                .attr("width", 100)                                     
+                .attr("height", (d, i) => 
+                    GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]) + 
+                    /* So that there arent gaps between bars due to rounding */
+                    (i !== groupEntries.length - 1 ? 1 : 0)
+                )
+                .attr("x", -50)
+                .attr("y", (d, i) => {
+                    const scaledHeight = GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]);
+                    accumulatedHeight -= scaledHeight;
+                    return (accumulatedHeight) - 
+                        /* So that there arent gaps between bars due to rounding */
+                        (i !== groupEntries.length - 1 ? 1 : 0);
+                })
+                .attr("fill", d => GraphColours[d[0]]);
+        
+        accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
+        
+        /* Since tool tips cover the bars, use another transparent layer on top of everything with the shape of the bars to detect hover positions */
+        this.upperGraphBarHoverDetect.append("g")
+            .attr("transform", transform)
+            .selectAll("rect")
+            .data(groupEntries)
+            .enter()
+            .append("rect")
+                .attr("width", 100)                                     
+                .attr("height", (d, i) => 
+                    GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]) + 
+                    /* So that there arent gaps between bars due to rounding */
+                    (i !== groupEntries.length - 1 ? 1 : 0)
+                )
+                .attr("x", -50)
+                .attr("y", (d, i) => {
+                    const scaledHeight = GraphDims.upperGraphHeight - this.upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]);
+                    accumulatedHeight -= scaledHeight;
+                    return (accumulatedHeight) - 
+                        /* So that there arent gaps between bars due to rounding */
+                        (i !== groupEntries.length - 1 ? 1 : 0);
+                })
+                .attr("fill-opacity", 0)
+                .on("mouseover", (d, i) => {this.onBarHover(d, mult * 100 + i)})
+                .on("mousemove", (d, i) => this.onBarHover(d, mult * 100 + i))
+                .on("mouseenter", (d, i) => this.onBarHover(d, mult * 100 + i))
+                .on("mouseleave", (d, i) => this.onBarUnHover(d, mult * 100 + i))
+                .on("click", onClick);
+    }
+
+    setup(opts = {}) {
+        super.setup(opts);
+        this.bars = this.parent.append("g")
+            .attr("transform", `translate(${GraphDims.upperGraphLeft}, 0)`)
+    
+        this.axes = this.parent.append("g");
+    
+        this.xAxis = axes.append("g")
+        this.xAxisLine = this.xAxis.append("g")
+            .attr("transform", `translate(${GraphDims.upperGraphLeft}, ${GraphDims.upperGraphTop + GraphDims.upperGraphHeight})`);
+            
+        this.xAxisScale = d3.scaleBand()
+            .range([0, GraphDims.upperGraphWidth])
+        this.xAxisLabel = this.xAxis.append("text")
+
+        this.yAxis = this.axes.append("g")
+        this.yAxisLine = this.yAxis.append("g")
+            .attr("transform", `translate(${GraphDims.upperGraphLeft}, ${GraphDims.upperGraphTop})`);
+    
+        this.yAxisLabel = this.yAxis.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("text-anchor", "middle")
+            .attr("y", GraphDims.upperGraphLeft / 4)
+            .attr("x", -(GraphDims.upperGraphTop + GraphDims.upperGraphHeight / 2));
+            
+        this.yAxisScale = d3.scaleLinear()
+            .range([GraphDims.upperGraphHeight, 0]);
     }
 
     drawTable(nutrient){
@@ -482,7 +516,7 @@ export class BarGraph extends Component {
                                               padding: GraphDims.upperGraphInfoBoxPaddingLeft,
                                               lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing});
 
-        self.upperGraphInfoBox.draw();
+        self.upperGraphInfoBox.render();
 
         /* Draw colour legend */
         drawGraphLegend(GraphColours);
@@ -495,6 +529,8 @@ export class BarGraph extends Component {
     
         /* Draw the food group colour legend */
         function drawGraphLegend(titleToColours){
+            const showInfoBoxFunc = ({name = "", colour = Colours.None} = {}) => { self.updateInfoBox({name: name, colour: colour})};
+
             const legend = new Legend({parent: self.upperGraphSvg,
                                        x: upperGraphRightPos, 
                                        y: GraphDims.upperGraphTop,
@@ -504,7 +540,7 @@ export class BarGraph extends Component {
                                        colourBoxWidth: GraphDims.legendSquareSize,
                                        colourBoxHeight: GraphDims.legendSquareSize,
                                        data: Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items"),
-                                       legendItemMouseEnter: new Func(({name = "", colour = Colours.None} = {}) => {self.updateInfoBox({name: name, colour: colour})}, {}),
+                                       legendItemMouseEnter: new Func(showInfoBoxFunc, {}),
                                        legendItemMouseClick: new Func(({name = "", colour = Colours.None} = {}) =>  {
                                             let focusedFoodGroup = null;
                                             if (self.focusedFoodGroup === null || name != self.focusedFoodGroup[0]) {
@@ -518,16 +554,19 @@ export class BarGraph extends Component {
                                             } else {
                                                 self.updateGraph(self.nutrient);
                                             }
-                                       }, {})});
+                                       }, {}), 
+                                       onMouseLeave: new Func(({name = "", colour = Colours.None}) => { self.hideInfoBox() }, {}),
+                                       legendItemMouseOver: new Func(showInfoBoxFunc, {}),
+                                       legendMouseMove: new Func(showInfoBoxFunc, {})});
 
-            legend.draw();
+            legend.render();
         }
     }
 
     // saveAsImage(): Saves the bar graph as an image
     saveAsImage() {
         const svg = document.getElementById("upperGraph").firstChild;
-        saveSvgAsPng(svg, "barGraph.png", {backgroundColor: "white"});
+        saveSvgAsPng(svg, "BarGraph.png", {backgroundColor: "white"});
     }
 }
 

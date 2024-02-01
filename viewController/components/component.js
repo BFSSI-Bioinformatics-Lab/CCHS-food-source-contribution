@@ -1,4 +1,4 @@
-import { DefaultDims, DefaultAttributes } from "../../assets/assets.js";
+import { DefaultDims, DefaultAttributes, Colours } from "../../assets/assets.js";
 
 
 // Component: Abstract class for building a component used in the UI
@@ -63,6 +63,7 @@ export class Component {
 // svgComponent: Abstract class to build a component used in a SVG
 export class SvgComponent extends Component {
     constructor({parent = null, 
+                 model = null,
                  x = DefaultDims.pos, 
                  y = DefaultDims.pos, 
                  width = DefaultDims.length, 
@@ -72,8 +73,11 @@ export class SvgComponent extends Component {
                  id = null, 
                  opacity = DefaultAttributes.opacity,
                  onMouseEnter = null,
-                 onMouseClick = null} = {}) {
-        super();
+                 onMouseClick = null,
+                 onMouseLeave = null,
+                 onMouseOver = null,
+                 onMouseMove = null} = {}) {
+        super({model: model});
         this.parent = parent;
         this.id = id;
 
@@ -88,6 +92,12 @@ export class SvgComponent extends Component {
         this._onMouseEnterChanged = true;
         this._onMouseClick = onMouseClick;
         this._onMouseClickChanged = true;
+        this._onMouseLeave = onMouseLeave;
+        this._onMouseLeaveChanged = true;
+        this._onMouseOver = onMouseOver;
+        this._onMouseOverChanged = true;
+        this._onMouseMove = onMouseMove;
+        this._onMouseMoveChanged = true;
 
         this.setupDims("padding", padding);
         this.setupDims("margin", margin);
@@ -95,22 +105,18 @@ export class SvgComponent extends Component {
         this.group = null;
     }
 
-    // padding(): Getter for padding
     get padding() {
         return this.getDims("padding");
     }
 
-    // padding(newPadding): Setter for padding
     set padding(newPadding) {
         this.setupDims("padding", newPadding);
     }
 
-    // margin(): Getter for margin
     get margin() {
         return this.getDims("margin");
     }
 
-    // margin(): Setter for margin
     set margin(newMargin) {
         this.setupDims("margin", newMargin);
     }
@@ -134,12 +140,10 @@ export class SvgComponent extends Component {
         }
     }
 
-    // onMouseEnter(): Getter for onMouseEnter
     get onMouseEnter() {
         return this._onMouseEnter;
     }
 
-    // onMouseEnter(newMouseEnter): Setter for onMouseEnters
     set onMouseEnter(newMouseEnter) {
         this._onMouseEnter = newMouseEnter;
         this._onMouseEnterChanged = true;
@@ -152,6 +156,33 @@ export class SvgComponent extends Component {
     set onMouseClick(newMouseClick) {
         this._onMouseClick = newMouseClick;
         this._onMouseClickChanged = true;
+    }
+
+    get onMouseLeave() {
+        return this._onMouseLeave;
+    }
+
+    set onMouseLeave(newMouseOut) {
+        this._onMouseLeave = newMouseOut;
+        this._onMouseLeaveChanged = true;
+    }
+
+    get onMouseOver() {
+        return this._onMouseOver;
+    }
+
+    set onMouseOver(newMouseOver) {
+        this._onMouseOver = newMouseOver;
+        this._onMouseOverChanged = true;
+    }
+
+    get onMouseMove() {
+        return this._onMouseMove;
+    }
+
+    set onMouseMove(newMouseMove) {
+        this._onMouseMove = newMouseMove;
+        this._onMouseMoveChanged = true;
     }
 
     // getDims(dimName): Retrieves the dimensions for 'dimName'
@@ -224,14 +255,130 @@ export class SvgComponent extends Component {
     redraw(opts = {}) {
         this.group.attr("transform", `translate(${this.x + this.marginLeft}, ${this.y + this.marginTop})`)
             .attr("opacity", this.opacity);
+    }
+}
 
+
+// BackgroundSVGComponent: SVG component with a shaped background
+export class BackgroundSVGComponent extends SvgComponent {
+    constructor({parent = null, 
+        model = null,
+        x = DefaultDims.pos, 
+        y = DefaultDims.pos, 
+        width = DefaultDims.length, 
+        height = DefaultDims.length, 
+        padding = 0,
+        margin = 0,
+        id = null, 
+        opacity = DefaultAttributes.opacity,
+        backgroundColour = Colours.None,
+        borderColour = Colours.None,
+        borderWidth = 0,
+        onMouseEnter = null,
+        onMouseClick = null,
+        onMouseLeave = null,
+        onMouseOver = null,
+        onMouseMove = null} = {}) {
+
+        super({parent, model, x, y, width, height, padding, margin, id, opacity, onMouseEnter, onMouseClick, onMouseLeave, onMouseOver, onMouseMove});
+        this._backgroundColour = backgroundColour;
+        this.borderColour = borderColour;
+        this.borderWidth = borderWidth;
+
+        // individual elements for the component
+        this.background = null;
+    }
+
+    get backgroundColour() {
+        return this._backgroundColour;
+    }
+
+    set backgroundColour(newBackgroundColour) {
+        this._backgroundColour = newBackgroundColour;
+    }
+
+    // setupBackground: Method to create the shape for the background
+    // Note: should return some SVG shape
+    setupBackground() {}
+
+    // redrawBackground: Method to redraw certain attributes of the shape
+    redrawBackground() {}
+
+    setup(opts = {}) {
+        super.setup(opts);
+        this.background = this.setupBackground();
+        this.group.style('pointer-events', 'all');
+    }
+
+    redraw(opts = {}) {
+        super.redraw(opts);
+        this.redrawBackground();
+
+        // add all the mouse events to the background shape
         if (this._onMouseEnter !== null && this._onMouseEnterChanged) {
-            this.group.on("mouseenter", () => this._onMouseEnter.run());
+            this.group.on("mouseenter", () => { this._onMouseEnter.run() });
             this._onMouseEnterChanged = false;
         }
 
         if (this._onMouseClick !== null && this._onMouseClickChanged) {
-            this.group.on("click", () => this._onMouseClick.run())
+            this.group.on("click", () => { this._onMouseClick.run() });
+            this._onMouseClickChanged = false;
         }
+
+        if (this._onMouseLeave !== null && this._onMouseLeaveChanged) {
+            this.group.on("mouseleave", () => { this._onMouseLeave.run() });
+            this._onMouseLeaveChanged = false;
+        }
+
+        if (this._onMouseOver !== null && this._onMouseOverChanged) {
+            this.group.on("mouseover", () => { this._onMouseOver.run() });
+            this._onMouseOverChanged = false;
+        }
+
+        if (this._onMouseMove !== null && this._onMouseMoveChanged) {
+            this.group.on("mousemove", () => { this._onMouseMove.run() });
+            this._onMouseMoveChanged = false;
+        }
+    }
+}
+
+
+// RectSvgComponent: An SVG component where the overall shape for the background of the component
+//  is a rectangle
+export class RectSvgComponent extends BackgroundSVGComponent {
+    constructor({parent = null, 
+        model = null,
+        x = DefaultDims.pos, 
+        y = DefaultDims.pos, 
+        width = DefaultDims.length, 
+        height = DefaultDims.length, 
+        padding = 0,
+        margin = 0,
+        id = null, 
+        opacity = DefaultAttributes.opacity,
+        backgroundColour = Colours.None,
+        borderColour = Colours.None,
+        borderWidth = 0,
+        onMouseEnter = null,
+        onMouseClick = null,
+        onMouseLeave = null,
+        onMouseOver = null,
+        onMouseMove = null} = {}) {
+        
+        super({parent, model, x, y, width, height, padding, margin, id, opacity, onMouseEnter, onMouseClick, onMouseLeave, 
+               onMouseOver, onMouseMove, backgroundColour, borderColour, borderWidth});
+    }
+
+    // setupShape(): Creates a rectangular background
+    setupBackground() {
+        return this.group.append("rect");
+    }
+
+    redrawBackground() {
+        this.background.attr("height", this.height)
+            .attr("width", this.width)
+            .attr("fill", this._backgroundColour)
+            .attr("stroke", this.borderColour)
+            .attr("stroke-width", this.borderWidth);
     }
 }

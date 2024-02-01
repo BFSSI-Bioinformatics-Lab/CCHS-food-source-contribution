@@ -1,4 +1,4 @@
-import { SvgComponent } from "./component.js";
+import { RectSvgComponent } from "./component.js";
 import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "../../assets/assets.js";
 import { TextBox } from "./textBox.js";
 import { Box } from "./box.js";
@@ -6,7 +6,7 @@ import { Func } from "../../tools/func.js";
 
 
 // LegendItem: Class for a row itme in the legend
-export class LegendItem extends SvgComponent {
+export class LegendItem extends RectSvgComponent {
     constructor({parent = null, 
                  x = DefaultDims.pos, 
                  y = DefaultDims.pos, 
@@ -21,24 +21,29 @@ export class LegendItem extends SvgComponent {
                  name = "",
                  legendColour = Colours.None,
                  backgroundColour = Colours.None,
+                 borderColour = Colours.None,
+                 borderWidth = 0,
                  id = null,
                  opacity = DefaultAttributes.opacity,
                  textWrap = TextWrap.NoWrap,
                  onMouseEnter = null,
-                 onMouseClick = null} = {}) {
+                 onMouseClick = null,
+                 onMouseLeave = null,
+                 onMouseOver = null,
+                 onMouseMove = null} = {}) {
 
-        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin, onMouseEnter: onMouseEnter, onMouseClick: onMouseClick});
-
-        this._backgroundColour = backgroundColour;
+        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin, 
+               onMouseEnter: onMouseEnter, onMouseClick: onMouseClick, onMouseLeave: onMouseLeave, onMouseOver: onMouseOver, 
+               onMouseMove: onMouseMove, backgroundColour, borderColour, borderWidth});
 
         // different individual parts of the legend item
-        this.box = null;
         this.colourBox = new Box({x: this.paddingLeft, 
                                   y: this.paddingTop,
                                   boxWidth: colourBoxWidth,
                                   boxHeight: colourBoxHeight,
                                   backgroundColour: this.backgroundColour,
-                                  boxColour: legendColour});
+                                  boxColour: legendColour,
+                                  onMouseEnter, onMouseClick, onMouseLeave, onMouseOver, onMouseMove});
 
         this.textBox = new TextBox({x: this.paddingLeft + this.colourBoxWidth, 
                                     y: this.paddingTop, 
@@ -46,86 +51,71 @@ export class LegendItem extends SvgComponent {
                                     fontSize: fontSize, 
                                     padding: textPadding,
                                     textWrap: textWrap, 
-                                    backgroundColour: this.backgroundColour });
+                                    backgroundColour: this.backgroundColour,
+                                    onMouseEnter, onMouseClick, onMouseLeave, onMouseOver, onMouseMove});
     }
 
-    // name(): Getter for name
     get name() {
         return this.textBox.name;
     }
 
-    // name(newName): Setter for name
     set name(newName) {
         this.textBox.name = newName;
     }
 
-    // fontSize(): Getter for fontSize
     get fontSize() {
         return this.textBox.fontSize;
     }
 
-    // fontSize(newFontSize): Setter for fontSize
     set fontSize(newFontSize) {
         this.textBox.fontSize = newFontSize;
     }
 
-    // textPadding(): Getter for 'textPadding'
     get textPadding() {
         return this.textBox.padding;
     }
 
-    // textPadding(newTextPadding): Setter for 'textPadding'
     set textPadding(newTextPadding) {
         this.textBox.setupDims("padding", newTextPadding);
     }
 
-    // textWrap(): Getter for textWrap
     get textWrap() {
         return this.textBox.textWrap;
     }
 
-    // textWrap(newTextWrap): Setter for textWrap
     set textWrap(newTextWrap) {
         this.textBox.textWrap = newTextWrap;
     }
 
-    // backgroundColour(): Getter for backgroundColour
     get backgroundColour() {
         return this._backgroundColour;
     }
 
-    // backgroundColour(newBackgroundColour): Setter for backgroundColour
     set backgroundColour(newBackgroundColour) {
         this._backgroundColour = newBackgroundColour;
         this.textBox.backgroundColour = newBackgroundColour;
     }
 
-    // colourBoxWidth(): Getter for colourBoxWidth
     get colourBoxWidth() {
         return this.colourBox.boxWidth;
     }
 
-    // colourBoxWidth(newColourBoxWidth): Setter for colourBoxWidth
     set colourBoxWidth(newColourBoxWidth) {
         this.colourBox.boxWidth = newColourBoxWidth;
     }
 
-    // colourBoxHeight(): Getter for colourBoxHeight
     get colourBoxHeight() {
         return this.colourBox.boxHeight;
     }
 
-    // colourBoxHeight(colourBoxHeight): Setter for colourBoxHeight
     set colourBoxHeight(newColourBoxHeight) {
         this.colourBox.boxHeight = newColourBoxHeight;
     }
 
-    // legendColour(): Getter for legendColour
     get legendColour() {
         return this.colourBox.boxColour;
     }
 
-    // legendColour(newLegendColour): Setter for legendColour
     set legendColour(newLegendColour) {
         this.colourBox.boxColour = newLegendColour;
     }
@@ -142,7 +132,6 @@ export class LegendItem extends SvgComponent {
 
     setup(opts = {}) {
         super.setup(opts);
-        this.box = this.group.append("rect");
 
         this.colourBox.parent = this.group;
         this.colourBox.setup(opts);
@@ -164,16 +153,12 @@ export class LegendItem extends SvgComponent {
         this.updateWidth();
         this.updateHeight();
         super.redraw(opts);
-
-        this.box.attr("width", this.width)
-            .attr("height", this.height)
-            .attr("fill", this._backgroundColour);
     }
 }
 
 
 // Legend: Class for a graph legend
-export class Legend extends SvgComponent {
+export class Legend extends RectSvgComponent {
     constructor({parent = null, 
                  x = DefaultDims.pos, 
                  y = DefaultDims.pos, 
@@ -187,13 +172,21 @@ export class Legend extends SvgComponent {
                  colourBoxWidth = DefaultDims.length,
                  colourBoxHeight = DefaultDims.length,
                  backgroundColour = Colours.None,
+                 borderColour = Colours.None,
+                 borderWidth = 0,
                  id = null,
                  data = [],
                  opacity = DefaultAttributes.opacity,
                  legendItemMouseEnter = null,
-                 legendItemMouseClick = null} = {}) {
+                 legendItemMouseClick = null,
+                 legendItemMouseLeave = null,
+                 legendItemMouseOver = null,
+                 legendItemMouseMove = null,
+                 onMouseLeave = null,
+                 onMouseEnter = null} = {}) {
 
-        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin});
+        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin, 
+               onMouseLeave: onMouseLeave, backgroundColour, borderColour, borderWidth, onMouseEnter});
 
         this._textPadding = textPadding;
         this._legendItemPadding = legendItemPadding;
@@ -204,6 +197,9 @@ export class Legend extends SvgComponent {
 
         this._legendItemMouseEnter = legendItemMouseEnter;
         this._legendItemMouseClick = legendItemMouseClick;
+        this._legendItemMouseLeave = legendItemMouseLeave;
+        this._legendItemMouseOver = legendItemMouseOver;
+        this._legendItemMouseMove = legendItemMouseMove;
 
         // assume data is a list of tuples where each element is:
         //  [name, colour]
@@ -213,87 +209,95 @@ export class Legend extends SvgComponent {
 
         // different individual parts of the legend
         this.legendItems = [];
-        this.box = new Box({x: this.paddingLeft, 
-                            y: this.paddingTop,
-                            boxWidth: this.width,
-                            boxHeight: this.height,
-                            boxColour: this._backgroundColour});
     }
 
-    // data(): Getter for data
     get data() {
         return this._data;
     }
 
-    // data(newData): Setter for data
     set data(newData) {
         this._data = newData;
         this._dataChanged = true;
     }
 
-    // textPadding(): Getter for textPadding
     get textPadding() {
         return this._textPadding;
     }
 
-    // textPadding(): Setter for textPadding
-    set textPadding(newTextPadding) {
-        this._textPadding = newTextPadding;
+    // setLegendItemAtt(attName, value): Sets 'value' to the attribute 'attName'
+    //  for all of the legend items
+    setLegendItemAtt(attName, value) {
         for (const legendItem of this.legendItems) {
-            legendItem.textPadding = this._textPadding;
+            legendItem[attName] = value;
         }
     }
 
-    // legendItemPadding(): Getter for legendItemPadding
+    set textPadding(newTextPadding) {
+        this._textPadding = newTextPadding;
+        this.setLegendItemAtt("textPadding", this._textPadding);
+    }
+
     get legendItemPadding() {
         return this._legendItemPadding;
     }
 
-    // legendItemPadding(newLegendItemPadding): Setter for legendItemPadding
     set legendItemPadding(newLegendItemPadding) {
         this._legendItemPadding = newLegendItemPadding;
-        for (const legendItem of this.legendItems) {
-            legendItem.padding = this._legendItemPadding;
-        }
+        this.setLegendItemAtt("padding", this._legendItemPadding);
     }
 
-    // backgroundColour(): Getter for backgroundColour
     get backgroundColour() {
         return this._backgroundColour;
     }
 
-    // backgroundColour(newBackgroundColour): Setter for backgroundColour
     set backgroundColour(newBackgroundColour) {
         this._backgroundColour = newBackgroundColour;
-        for (const legendItem of this.legend) {
-            legendItem.backgroundColour = this._backgroundColour;
-        }
-
-        this.box.boxColour = this._backgroundColour;
+        this.setLegendItemAtt("backgroundColour", this._backgroundColour);
     }
 
-    // legendItemMouseEnter(): Getter for legendItemMouseEnter
     get legendItemMouseEnter() {
-        return this.legendItemMouseEnter;
+        return this._legendItemMouseEnter;
     }
 
-    // legendItemMouseEnter(newLegendMouseEnter): Setter for legendItemMouseEnter
     set legendItemMouseEnter(newLegendMouseEnter) {
-        this.legendItemMouseEnter = newLegendMouseEnter;
-        for (const legendItem of this.legend) {
-            legendItem.onMouseEnter = newLegendMouseEnter;
-        }
+        this._legendItemMouseEnter = newLegendMouseEnter;
+        this.setLegendItemAtt("onMouseEnter", newLegendMouseEnter);
     }
 
     get legendItemMouseClick() {
-        return this.legendItemMouseClick;
+        return this._legendItemMouseClick;
     }
 
     set legendItemMouseClick(newLegendItemMouseClick) {
-        this.legendItemMouseClick = newLegendItemMouseClick;
-        for (const legendItem of this.legend) {
-            legendItem.onMouseClick = newLegendItemMouseClick;
-        }
+        this._legendItemMouseClick = newLegendItemMouseClick;
+        this.setLegendItemAtt("onMouseClick", newLegendItemMouseClick);
+    }
+
+    get legendItemMouseLeave() {
+        return this._legendItemMouseLeave; 
+    }
+
+    set legendItemMouseLeave(newlegendItemMouseLeave) {
+        this._legendItemMouseLeave = newlegendItemMouseLeave;
+        this.setLegendItemAtt("onMouseLeave", newlegendItemMouseLeave);
+    }
+
+    get legendItemMouseOver() {
+        return this._legendItemMouseOver;
+    }
+
+    set legendItemMouseOver(newLegendItemMouseOver) {
+        this._legendItemMouseOver = newLegendItemMouseOver;
+        this.setLegendItemAtt("onMouseOver", newLegendItemMouseOver);
+    }
+
+    get legendItemMouseMove() {
+        return this._legendItemMouseMove;
+    }
+
+    set legendItemMouseMove(newLegendItemMouseMove) {
+        this._legendItemMouseOver = newLegendItemMouseMove;
+        this.setLegendItemAtt("onMouseMove", newLegendItemMouseMove);
     }
 
     // setupLegendItemMouseEvents(mouseEventFunc, name, colour): Setup the mouse event
@@ -333,6 +337,9 @@ export class Legend extends SvgComponent {
             // setup the mouse events
             const legendItemMouseEnter = this.setupLegendItemMouseEvents(this._legendItemMouseEnter, name, colour);
             const legendItemMouseClick = this.setupLegendItemMouseEvents(this._legendItemMouseClick, name, colour);
+            const legendItemMouseLeave = this.setupLegendItemMouseEvents(this._legendItemMouseLeave, name, colour);
+            const legendItemMouseOver = this.setupLegendItemMouseEvents(this._legendItemMouseOver, name, colour);
+            const legendItemMouseMove = this.setupLegendItemMouseEvents(this._legendItemMouseMove, name, colour);
 
             const legendItem = new LegendItem({parent: this.group,
                                                x: this.paddingLeft + this.marginLeft,
@@ -347,7 +354,11 @@ export class Legend extends SvgComponent {
                                                name: name,
                                                legendColour: colour,
                                                onMouseEnter: legendItemMouseEnter,
-                                               onMouseClick: legendItemMouseClick});
+                                               onMouseClick: legendItemMouseClick,
+                                               onMouseLeave: legendItemMouseLeave,
+                                               onMouseOver: legendItemMouseOver,
+                                               onMouseMove: legendItemMouseMove,
+                                            });
 
             this.legendItems.push(legendItem);
         }
@@ -360,9 +371,6 @@ export class Legend extends SvgComponent {
         for (const legendItem of this.legendItems) {
             legendItem.setup(opts);
         }
-
-        this.box.parent = this.group;
-        this.box.setup(opts);
     }
 
     clear(opts = {}) {
@@ -391,8 +399,6 @@ export class Legend extends SvgComponent {
         this.height = Math.max(this.height, currentLegendItemYPos + this.paddingBottom - this.marginTop);
         this._dataChanged = false;
 
-        this.box.boxWidth = this.width;
-        this.box.boxHeight = this.height;
-        this.box.redraw(); 
+        this.redrawBackground();
     }
 };
