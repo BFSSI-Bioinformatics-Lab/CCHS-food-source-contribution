@@ -1,7 +1,7 @@
-import { SvgComponent } from "./component.js";
+import { RectSvgComponent } from "./component.js";
 import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "../../assets/assets.js";
 
-export class TextBox extends SvgComponent {
+export class TextBox extends RectSvgComponent {
     constructor({parent = null, 
                  x = DefaultDims.pos, 
                  y = DefaultDims.pos, 
@@ -15,16 +15,18 @@ export class TextBox extends SvgComponent {
                  textAlign = DefaultAttributes.textAnchor, 
                  fontWeight = DefaultAttributes.fontWeight, 
                  textWrap = DefaultAttributes.textWrap, 
-                 backgroundColour = Colours.None, id = null, 
+                 backgroundColour = Colours.None,
+                 borderColour = Colours.None,
+                 borderWidth = 0,
+                 id = null, 
                  opacity = DefaultAttributes.opacity} = {}) {
 
-        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin});
+        super({parent: parent, x: x, y: y, width: width, height: height, id: id, opacity: opacity, padding: padding, margin: margin, backgroundColour, borderColour, borderWidth});
         this.fontSize = fontSize;
         this.lineSpacing = lineSpacing;
         this.textAlign = textAlign;
         this.fontWeight = fontWeight;
         this.textWrap = textWrap;
-        this.backgroundColour = backgroundColour;
 
         // text can either be a string or a list of strings
         this._text = text;
@@ -35,7 +37,6 @@ export class TextBox extends SvgComponent {
         this._textChanged = true;
 
         // different individual parts of the component drawn
-        this.box = null;
         this.textGroup = null;
     }
 
@@ -52,7 +53,6 @@ export class TextBox extends SvgComponent {
 
     setup(opts = {}) {
         super.setup(opts);
-        this.box = this.group.append("rect");
         this.textGroup = this.group.append("text");
     }
 
@@ -66,15 +66,6 @@ export class TextBox extends SvgComponent {
         if (this._textChanged) {
             this.redrawText();
         }
-
-        this.box.attr("height", this.height)
-            .attr("width", this.width)
-            .attr("fill", this.backgroundColour)
-            .attr("stroke-linejoin", "round")
-            .attr("stroke-width", 0)
-            .attr("stroke", Colours.None)
-            .attr("x", 0)
-            .attr("y", 0);  
     }
 
     clear(opts = {}) {
@@ -183,5 +174,102 @@ export class TextBox extends SvgComponent {
             .text(text);
 
         this.width = Math.max(textNode.node().getComputedTextLength() + this.paddingLeft + this.paddingRight, this.width);
+    }
+}
+
+
+// ToolTip: A component for the tooltip
+export class ToolTip extends TextBox {
+    constructor({parent = null, 
+                 x = DefaultDims.pos, 
+                 y = DefaultDims.pos, 
+                 width = DefaultDims.length, 
+                 height = DefaultDims.length, 
+                 id = null, 
+                 text = "",
+                 fontSize = DefaultDims.fontSize, 
+                 borderWidth = DefaultDims.borderWidth, 
+                 padding = 0, 
+                 margin = 0, 
+                 lineSpacing = DefaultDims.lineSpacing, 
+                 textAlign = DefaultAttributes.textAnchor, 
+                 fontWeight = DefaultAttributes.fontWeight, 
+                 backgroundColour = Colours.None,
+                 borderColour = Colours.None,
+                 textWrap = TextWrap.Wrap, 
+                 opacity = DefaultAttributes.opacity} = {}) {
+
+        super({parent: parent, x: x, y: y, width: width, height: height, text: text, fontSize: fontSize, 
+               padding: padding, margin: margin, lineSpacing: lineSpacing, 
+               textAlign: textAlign, fontWeight: fontWeight, 
+               textWrap: textWrap, backgroundColour: backgroundColour, id: id, opacity: opacity, borderColour, borderWidth});
+    }
+}
+
+
+// Infobox: A component for drawing the infobox
+export class Infobox extends TextBox {
+    constructor({parent = null, 
+                 x = DefaultDims.pos, 
+                 y = DefaultDims.pos, 
+                 width = DefaultDims.length, 
+                 height = DefaultDims.length, 
+                 text = "",
+                 fontSize = DefaultDims.fontSize, 
+                 borderWidth = DefaultDims.borderWidth, 
+                 padding = 0, 
+                 margin = 0,
+                 lineSpacing = DefaultDims.lineSpacing, 
+                 textAlign = DefaultAttributes.textAnchor, 
+                 fontWeight = DefaultAttributes.fontWeight, 
+                 backgroundColour = Colours.None,
+                 borderColour = Colours.None,
+                 textWrap = DefaultAttributes.textWrap, 
+                 id = null, 
+                 opacity = DefaultAttributes.opacity,
+                 onMouseEnter = null,
+                 onMouseClick = null,
+                 onMouseLeave = null,
+                 onMouseOver = null,
+                 onMouseMove = null} = {}) {
+
+        super({parent: parent, x: x, y: y, width: width, height: height, text: text, fontSize: fontSize, 
+               padding: padding, margin: margin, lineSpacing: lineSpacing, textAlign: textAlign, fontWeight: fontWeight, 
+               textWrap: textWrap, id: id, opacity: opacity, backgroundColour, borderWidth, onMouseEnter, onMouseClick, onMouseLeave, onMouseOver, onMouseMove});
+        this.borderColour = borderColour;
+        this.textX = this.borderWidth + this.paddingLeft;
+        
+        // different individual parts of the component drawn
+        this.highlight = null;
+    }
+
+    // getTextAvailableWidth(): Retrieves the text width available for the textbox
+    getTextAvailableWidth() {
+        return this.width - this.paddingLeft - this.paddingRight - this.borderWidth;
+    }
+
+    setup(opts = {}) {
+        super.setup(opts);
+        this.highlight = this.group.append("line");
+    }
+
+    redrawBackground() {
+        this.background.attr("height", this.height)
+            .attr("width", this.width)
+            .attr("fill", this._backgroundColour);
+    }
+
+    redraw(opts = {}) {
+        super.redraw(opts);
+        this.highlight.attr("x1", this.borderWidth / 2)
+            .attr("x2", this.borderWidth / 2)
+            .attr("y2", this.height)
+            .attr("stroke-width", this.borderWidth);
+
+        if (this.borderColour !== null) {
+            this.highlight
+                .attr("visibility", "visible")
+                .attr("stroke", this.borderColour);
+        }
     }
 }
