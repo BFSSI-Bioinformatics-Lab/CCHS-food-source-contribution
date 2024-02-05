@@ -302,7 +302,7 @@ export class Legend extends RectSvgComponent {
 
     // setupLegendItemMouseEvents(mouseEventFunc, name, colour): Setup the mouse event
     //  for a particular legend item
-    setupLegendItemMouseEvents(mouseEventFunc, name, colour) {
+    setupLegendItemMouseEvents(mouseEventFunc, name, colour, legendItem) {
         if (mouseEventFunc === null) {
             return null;
         }
@@ -316,6 +316,7 @@ export class Legend extends RectSvgComponent {
         let result = new Func(mouseEventFunc.func, args);
         result.setArg("name", name);
         result.setArg("colour", colour);
+        result.setArg("legendItem", legendItem);
 
         return result;
     }
@@ -334,13 +335,6 @@ export class Legend extends RectSvgComponent {
             const name = legendData[0];
             const colour = legendData[1];
 
-            // setup the mouse events
-            const legendItemMouseEnter = this.setupLegendItemMouseEvents(this._legendItemMouseEnter, name, colour);
-            const legendItemMouseClick = this.setupLegendItemMouseEvents(this._legendItemMouseClick, name, colour);
-            const legendItemMouseLeave = this.setupLegendItemMouseEvents(this._legendItemMouseLeave, name, colour);
-            const legendItemMouseOver = this.setupLegendItemMouseEvents(this._legendItemMouseOver, name, colour);
-            const legendItemMouseMove = this.setupLegendItemMouseEvents(this._legendItemMouseMove, name, colour);
-
             const legendItem = new LegendItem({parent: this.group,
                                                x: this.paddingLeft + this.marginLeft,
                                                padding: this.legendItemPadding,
@@ -352,13 +346,18 @@ export class Legend extends RectSvgComponent {
                                                fontSize: this.fontSize,
                                                backgroundColour: this._backgroundColour,
                                                name: name,
-                                               legendColour: colour,
-                                               onMouseEnter: legendItemMouseEnter,
-                                               onMouseClick: legendItemMouseClick,
-                                               onMouseLeave: legendItemMouseLeave,
-                                               onMouseOver: legendItemMouseOver,
-                                               onMouseMove: legendItemMouseMove,
+                                               legendColour: colour
                                             });
+
+            // setup the mouse events
+            const legendItemMouseEnter = this.setupLegendItemMouseEvents(this._legendItemMouseEnter, name, colour, legendItem);
+            const legendItemMouseClick = this.setupLegendItemMouseEvents(this._legendItemMouseClick, name, colour, legendItem);
+            const legendItemMouseLeave = this.setupLegendItemMouseEvents(this._legendItemMouseLeave, name, colour, legendItem);
+            const legendItemMouseOver = this.setupLegendItemMouseEvents(this._legendItemMouseOver, name, colour, legendItem);
+            const legendItemMouseMove = this.setupLegendItemMouseEvents(this._legendItemMouseMove, name, colour, legendItem);
+            
+            legendItem.updateAtts({onMouseEnter: legendItemMouseEnter, onMouseClick: legendItemMouseClick, onMouseLeave: legendItemMouseLeave,
+                                   onMouseOver: legendItemMouseOver, onMouseMove: legendItemMouseMove});
 
             this.legendItems.push(legendItem);
         }

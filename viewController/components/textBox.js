@@ -1,5 +1,6 @@
 import { RectSvgComponent } from "./component.js";
 import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "../../assets/assets.js";
+import { ViewTools } from "../tools/viewTools.js";
 
 export class TextBox extends RectSvgComponent {
     constructor({parent = null, 

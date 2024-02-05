@@ -15,6 +15,8 @@ class ViewController extends Component{
         this.updateSunburst = null;
         this.updateBarGraph = null;
 
+        this.nutrientSelectorId = "#upperGraphNutrientSelect";
+
         // === individual elements for the component ===
         this.nutrientSelector = null;
         this.sunBurst = null;
@@ -25,8 +27,8 @@ class ViewController extends Component{
 
     setup(opts = {}) {
         const nutrientOptions = Object.keys(this.model.foodIngredientData.dataGroupedByNutrientAndDemo);
-        this.nutrientSelector = d3.select("#upperGraphNutrientSelect")
-            .on("change", () => { this.redraw(); })
+        this.nutrientSelector = d3.select(this.nutrientSelectorId)
+            .on("change", () => { this.redraw(opts); })
             .selectAll("option")
             .data(nutrientOptions)
             .enter()
@@ -43,7 +45,8 @@ class ViewController extends Component{
     }
 
     redraw(opts = {}) {
-        this.model.nutrient = ViewTools.getSelector(this.nutrientSelector);
+        this.model.nutrient = ViewTools.getSelector(this.nutrientSelectorId);
+
         this.updateBarGraph();
         this.updateSunburst();
 
