@@ -44,6 +44,7 @@ export class BarGraph extends Component {
         this.upperGraphYAxisLabel = null;
         this.upperGraphXAxisLine = null;
         this.xAxisTicks = null;
+        this.yAxisTicks = null;
         this.upperGraphInfoBox = null;
 
         // table for the graph
@@ -198,10 +199,10 @@ export class BarGraph extends Component {
         let type = this.graphType;
 
         const xAxisValues = this.data.ageSexGroupHeadings;
-        this.upperGraphXAxisScale.domain(xAxisValues)
+        this.upperGraphXAxisScale.domain(xAxisValues);
         this.upperGraphXAxisLine.call(d3.axisBottom(this.upperGraphXAxisScale));
 
-        this.xAxisTicks = this.upperGraphXAxisLine.selectAll(".tick");
+        this.xAxisTicks = this.upperGraphXAxisLine.selectAll(".tick").attr("font-size", GraphDims.upperGraphXAxisTickFontSize);
 
         const nutrientTotalByAgeSexGroup = this.data.findNutrientTotalAmtPerAgeSexGroup(nutrientData, type);
         this.groupedAmount = nutrientTotalByAgeSexGroup.groupedAmount;
@@ -209,7 +210,9 @@ export class BarGraph extends Component {
 
         this.upperGraphYAxisScale.domain([0, type === "number" ? Math.round(maxAccumulatedAmount * 1.2 / 10) * 10 : 100])
         this.upperGraphYAxisLine.call(d3.axisLeft(this.upperGraphYAxisScale));
-        this.upperGraphYAxisLabel.text(TranslationTools.translateText(`upperGraph.${type}.yAxisTitle`, { nutrient, amountUnit: this.getNutrientUnit(nutrient) }))
+        this.upperGraphYAxisLabel.text(TranslationTools.translateText(`upperGraph.${type}.yAxisTitle`, { nutrient, amountUnit: this.getNutrientUnit(nutrient) }));
+
+        this.yAxisTicks = this.upperGraphYAxisLine.selectAll(".tick").attr("font-size", GraphDims.upperGraphYAxisTickFontSize);
 
         this.upperGraphBars.selectAll("g").remove();
         this.upperGraphBarHoverDetect.selectAll("g").remove();
@@ -476,13 +479,13 @@ export class BarGraph extends Component {
     
         const upperGraphAxes = self.upperGraphSvg.append("g");
     
-        const upperGraphXAxis = upperGraphAxes.append("g")
+        const upperGraphXAxis = upperGraphAxes.append("g");
         this.upperGraphXAxisLine = upperGraphXAxis.append("g")
             .attr("transform", `translate(${GraphDims.upperGraphLeft}, ${GraphDims.upperGraphTop + GraphDims.upperGraphHeight})`);
             
         this.upperGraphXAxisScale = d3.scaleBand()
             .range([0, GraphDims.upperGraphWidth])
-        const upperGraphXAxisLabel = upperGraphXAxis.append("text").attr("font-size", GraphDims.upperGraphAxesFontSize);
+        const upperGraphXAxisLabel = upperGraphXAxis.append("text");
     
         const upperGraphYAxis = upperGraphAxes.append("g")
         this.upperGraphYAxisLine = upperGraphYAxis.append("g")
