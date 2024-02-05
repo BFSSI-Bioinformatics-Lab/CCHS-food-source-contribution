@@ -1,5 +1,5 @@
-import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight } from "../../assets/assets.js";
-import { Component, SvgComponent} from "./component.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer} from "../../assets/assets.js";
+import { Component } from "./component.js";
 import { ToolTip, Infobox } from "./textBox.js";
 import { TranslationTools } from "../../tools/translationTools.js";
 import { Func } from "../../tools/func.js";
@@ -92,7 +92,7 @@ export class BarGraph extends Component {
     }
 
     /* Set the opacity of the hovered bar's info to be 1 */
-    onBarHover(d, i){
+    onBarHover(d, i, index, elements){
         this.updateInfoBox({name: d[0], d: d});
 
         const toolTipId = this.getToolTipId(i);
@@ -100,12 +100,18 @@ export class BarGraph extends Component {
 
         const toolTip = this.hoverToolTips[toolTipId];
         toolTip.update({atts: {opacity: 1, x: mousePos[0], y: mousePos[1]}});
+
+        const bar = d3.select(elements[index]);
+        bar.style("cursor", MousePointer.Pointer);
     }
 
     /* Set the opacity of the previously hovered bar's info to be 0 */
-    onBarUnHover(d, i){
+    onBarUnHover(d, i, index, elements){
         this.hideInfoBox();
         d3.select(`#barHover${i}`).attr("opacity", 0).style("pointer-events", "none");
+
+        const bar = d3.select(elements[index]);
+        bar.style("cursor", MousePointer.Default);
     }
 
     // barOnClick(dt): Focus on a particular food group when a bar is clicked
@@ -298,10 +304,10 @@ export class BarGraph extends Component {
                         (i !== groupEntries.length - 1 ? 1 : 0);
                 })
                 .attr("fill-opacity", 0)
-                .on("mouseover", (d, i) => {this.onBarHover(d, mult * 100 + i)})
-                .on("mousemove", (d, i) => this.onBarHover(d, mult * 100 + i))
-                .on("mouseenter", (d, i) => this.onBarHover(d, mult * 100 + i))
-                .on("mouseleave", (d, i) => this.onBarUnHover(d, mult * 100 + i))
+                .on("mouseover", (d, index, elements) => {this.onBarHover(d, mult * 100 + index, index, elements)})
+                .on("mousemove", (d, index, elements) => this.onBarHover(d, mult * 100 + index, index, elements))
+                .on("mouseenter", (d, index, elements) => this.onBarHover(d, mult * 100 + index, index, elements))
+                .on("mouseleave", (d, index, elements) => this.onBarUnHover(d, mult * 100 + index, index, elements))
                 .on("click", onClick);
     }
 
@@ -529,7 +535,10 @@ export class BarGraph extends Component {
     
         /* Draw the food group colour legend */
         function drawGraphLegend(titleToColours){
-            const showInfoBoxFunc = ({name = "", colour = Colours.None} = {}) => { self.updateInfoBox({name: name, colour: colour})};
+            const showInfoBoxFunc = ({name = "", colour = Colours.None, legendItem = null} = {}) => { 
+                self.updateInfoBox({name: name, colour: colour});
+                legendItem.group.style("cursor", MousePointer.Pointer);
+            };
 
             const legend = new Legend({parent: self.upperGraphSvg,
                                        x: upperGraphRightPos, 
@@ -555,7 +564,10 @@ export class BarGraph extends Component {
                                                 self.updateGraph(self.nutrient);
                                             }
                                        }, {}), 
-                                       onMouseLeave: new Func(({name = "", colour = Colours.None}) => { self.hideInfoBox() }, {}),
+                                       legendItemMouseLeave: new Func(({name = "", colour = Colours.None, legendItem = null}) => { 
+                                            self.hideInfoBox();
+                                            legendItem.group.style("cursor", MousePointer.Default);
+                                        }, {}),
                                        legendItemMouseOver: new Func(showInfoBoxFunc, {}),
                                        legendMouseMove: new Func(showInfoBoxFunc, {})});
 

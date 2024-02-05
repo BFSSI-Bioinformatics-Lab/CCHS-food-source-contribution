@@ -208,13 +208,18 @@ export class SunBurst extends Component {
     // Add some extra tolerance length to the computed text length due to
     //  the inaccuracy of the getComputedTextLength on different browsers
     getArcTextLength(elementNode, text) {
-        return elementNode.getComputedTextLength() + 3.2 * text.length;
+        return ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+    }
+
+    // getArcLabel(index): Retrieves the element for the label of the arc
+    getArcLabel(index) {
+        return d3.select(`#arcLabel${index}`);
     }
 
     /* Truncates the label based on the arc's width, replaces letters with ellipsis if too long */
     labelTextFit(d, i){
         const midRadius = this.getArcMiddleRadius(d);
-        const element = d3.select(`#arcLabel${i}`);
+        const element = this.getArcLabel(i);
         if (!element.node()) return;
         const elementNode = element.node();
         const availableLength = this.labelAvailableLength(d, midRadius); 
@@ -238,8 +243,8 @@ export class SunBurst extends Component {
 
         // center text only if the text is not truncated
         let textX = 0;
-        if ((d.x1 - d.x0) < 2 * Math.PI) {
-            textX = (d.x1 - d.x0) / 2 * midRadius - elementNode.getComputedTextLength() / 2;
+        if ((d.x1 - d.x0) < 2 * Math.PI && !textTruncated) {
+            textX = (d.x1 - d.x0) / 2.0 * midRadius - ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0;
         }
 
         if (textX < 0) {
@@ -247,8 +252,8 @@ export class SunBurst extends Component {
         }
 
         if (availableLength > 0) {
-            // console.log("NAME: ", d.data.name, " AND TEXT: ", element.text(), "AVAILA: ", availableLength, "CURRENT LEN: ", this.getArcTextLength(elementNode, text), " Y0: ", d.y0, " AND Y1: ", d.y1, " AND TEXT X: ", textX, " AND TRUNCATED: ", textTruncated);
-            // console.log("MID: ", (d.x1 - d.x0) / 2, " AND ", elementNode.getComputedTextLength() / 2, " AND ", (d.x1 - d.x0) / 2 * midRadius - elementNode.getComputedTextLength() / 2);
+            //console.log("NAME: ", d.data.name, " AND TEXT: ", element.text(), "AVAILA: ", availableLength, "CURRENT LEN: ", this.getArcTextLength(elementNode, text), " Y0: ", d.y0, " AND Y1: ", d.y1, " AND TEXT X: ", textX, " AND TRUNCATED: ", textTruncated);
+            //console.log("MID: ", (d.x1 - d.x0) / 2.0, " AND ", ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0, " AND ", (d.x1 - d.x0) / 2.0 * midRadius - ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0);
         }
 
         element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
@@ -667,10 +672,10 @@ export class SunBurst extends Component {
             /* Update food group description box */
             function updateInfoBox(d){
                 let colour = GraphColours[d.data.row[NutrientDataColNames.foodGroupLv1]];
+                colour = colour === undefined ? null : colour;
 
                 let foodGroupName = d.data.name;
                 if (self.mouseOverFoodGroupName !== null && self.mouseOverFoodGroupName == foodGroupName) {
-                    lowerGraphInfoBox.render({atts: {text: "", borderColour: Colours.None}});
                     return;
                 }
 

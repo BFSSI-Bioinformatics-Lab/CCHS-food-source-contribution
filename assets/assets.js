@@ -81,7 +81,7 @@ export const GraphDims = Object.freeze({
     lowerGraphInfoBoxWidth: 240,
     lowerGraphInfoBoxHeight: 200,
     lowerGraphArcLabelFontSize: 12,
-    lowerGraphArcPadding: 5,
+    lowerGraphArcPadding: 10,
     lowerGraphChartHeadingFontSize: 20,    
     lowerGraphInfoBoxFontSize: 14, 
     lowerGraphInfoBoxBorderWidth: 10,
@@ -117,6 +117,12 @@ export const FontWeight = {
     Bold: "bold",
     Lighter: "lighter",
     Bolder: "bolder"
+}
+
+// mouse pointers
+export const MousePointer = {
+    Pointer: "pointer",
+    Default: "default"
 }
 
 // default attributes used for different components
