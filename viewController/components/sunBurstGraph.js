@@ -467,7 +467,7 @@ export class SunBurst extends Component {
         // draw the legend
         const lowerGraphLegend = new Legend({parent: lowerGraphSvg, 
                                              x: lowerGraphRightXPos, 
-                                             y: GraphDims.lowerGraphTop, 
+                                             y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2 - GraphDims.lowerGraphArcRadius * 4 - (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius), 
                                              textPadding: [5, 0],
                                              legendItemPadding: [0, 2],
                                              fontSize: 12,
