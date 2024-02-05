@@ -77,7 +77,6 @@ export const GraphDims = Object.freeze({
     lowerGraphArcRadius: 65,
     lowerGraph2LevelFilterArcRadius: 80,
     lowerGraphCenterArcRadius: 45,
-    lowerGraphCenterArcInnerRadius: 18,
     lowerGraphCenterArcMargin: 1,
     lowerGraphCenterFontSize: 20,
     lowerGraphTooltipMinWidth: 140,
