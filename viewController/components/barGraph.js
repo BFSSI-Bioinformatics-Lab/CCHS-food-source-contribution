@@ -358,6 +358,7 @@ export class BarGraph extends Component {
                 .attr("class", "text-center")
                 .style("border-left", (d, i) => i === 0 ? "" : GraphDims.tableSectionBorderLeft)
                 .style("border-bottom", (d, i) => i === 0 ? "0px" : GraphDims.tableSectionBorderLeft)
+                .style("font-size", `${GraphDims.upperGraphTableHeadingFontSize}px`)
                 .attr("colspan", (d, i) => i === 0 ? 1 : headingsPerSexAgeGroup.length)
                 .text(d => TranslationTools.translateText(d));
 
@@ -371,7 +372,7 @@ export class BarGraph extends Component {
                 .style("min-width", (d, i) => i === 0 ? "200px" : "40px")
                 .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
-                .style("font-size", "12px")
+                .style("font-size", `${GraphDims.upperGraphTableSubHeadingFontSize}px`)
                 .style("font-weight", (d, i) => {
                     const colNum = (i + 1) % 4;
                     if (colNum === 2 || colNum === 0) {
