@@ -1,3 +1,30 @@
+///////////////////////////////////////////////////////////////////////
+//                                                                   //
+// Purpose: Defines the framework for drawing a custom made visual   //
+//      for the program                                              //
+//                                                                   //
+// What it Contains:                                                 //
+//      Component: class for drawing a visual on the website         //
+//              - used in any custom made visuals in the program     //
+//                                                                   //
+//      SvgComponent: class for drawing a visual on for a SVG        //
+//              - used in any custom made visuals that are drawn     //
+//                  on a SVG                                         //
+//                                                                   //
+//      BackgroundSVGComponent: class for drawing a visual on an SVG //
+//          where the visual contains a background backdrop          //
+//              - used in any custom made visuals that may have a    //
+//                  background colour                                //
+//                                                                   //
+//      RectSvgComponent: class for drawing a visual on an SVG that  //
+//          contains a rectangular shaped background                 //
+//              - used in any custom made visuals that may have a    //
+//                  background colour that fills the shape of a      //
+//                  rectangle                                        //
+//                                                                   //
+///////////////////////////////////////////////////////////////////////
+
+
 import { DefaultDims, DefaultAttributes, Colours } from "../../assets/assets.js";
 
 

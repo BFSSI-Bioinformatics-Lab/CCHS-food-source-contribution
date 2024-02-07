@@ -1,82 +1,41 @@
-import { CSVDataModel } from "./dataModels/dataModels.js";
-import { FoodIngredientDataModel } from "./dataModels/dataModels.js";
-import { FoodGroupDescDataColNames, NutrientDataColNames } from "../assets/assets.js";
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+// Purpose: Handles the overall backend of the website                                //
+//                                                                                    //
+// What it contains:                                                                  //
+//      - which nutrient is being selected in the nutrient dropdown                   //
+//      - any backend data related to 'Food Group descriptions.csv' or                //
+//          'FSCT data_Food_ingredients CCHS 2015 all nutrients_Infobase.csv'         //
+//      - wrapper functions for loading the data related to the CSV files, most of    //
+//          the data manipulation is handled by their respective data models in       //
+//          './dataModels.js'                                                         //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+import { FoodIngredientDataModel, FoodDescriptionDataModel } from "./dataModels.js";
 
 
 // Model: The overall model for the user interface
 export class Model {
-    #foodGroupDescriptionFileSrc;
-    #nutrientFileSrc;
-
     constructor(foodGroupDescriptionFileSrc, nutrientFileSrc) {
-        this.#foodGroupDescriptionFileSrc = foodGroupDescriptionFileSrc;
-        this.#nutrientFileSrc = nutrientFileSrc;
-
         this.nutrient = "";
-        this.foodGroupDescriptionData = null;
-        this.foodIngredientData = null;
-    }
-    
-    // convert all numeric fields into floats:
-    numToFloat(data) {
-        data.forEach(d => {
-            Object.keys(d).forEach(key => d[key] = isNaN(d[key]) ? d[key] : parseFloat(d[key]))
-        });
-
-        return data;
+        this.foodGroupDescriptionData = new FoodDescriptionDataModel(foodGroupDescriptionFileSrc);
+        this.foodIngredientData = new FoodIngredientDataModel(nutrientFileSrc);
     }
 
     // load(): Setup all the needed data for the user interface
     async load() {
-        await Promise.all([this.loadFoodGroupDescriptionData(), this.loadFoodIngredientsData()]).then((dataModels) => {
-            this.foodGroupDescriptionData = dataModels[0];
-            this.foodIngredientData = dataModels[1];
-        });
+        await Promise.all([this.loadFoodGroupDescriptionData(), this.loadFoodIngredientsData()]);
     }
 
     // loadFoodGroupDescriptionData(): Load the data for all the food group descriptions
     async loadFoodGroupDescriptionData() {
-        let data = await d3.csv(this.#foodGroupDescriptionFileSrc);
-        data = this.numToFloat(data);
-    
-        const fullyNestedDataByFoodLevel = Object.freeze(d3.nest()
-                                            .key(d => 
-                                                Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv3]) ? 
-                                                    Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv2]) ? 
-                                                        d[FoodGroupDescDataColNames.foodGroupLv1]
-                                                        : d[FoodGroupDescDataColNames.foodGroupLv2]
-                                                    : d[FoodGroupDescDataColNames.foodGroupLv3]
-                                            )
-                                            .rollup(d => d[0])
-                                            .object(data));
-        return new CSVDataModel(fullyNestedDataByFoodLevel);  
+        await this.foodGroupDescriptionData.load();
     }
 
     // loadFoodIngredientsData(): Load the data for all the food ingredients
     async loadFoodIngredientsData(){
-        let data = await d3.csv(this.#nutrientFileSrc);
-        data = this.numToFloat(data);
-
-        const dataGroupedByNutrientAndDemoList = Object.freeze(d3.nest()
-                                        .key(d => d.Nutrient)
-                                        .key(d => d[NutrientDataColNames.ageSexGroup])
-                                        .object(data));
-
-        const dataGroupedByNutrientAndDemo = Object.freeze(d3.nest()
-                                        .key(d => d.Nutrient)
-                                        .key(d => d[NutrientDataColNames.ageSexGroup])
-                                        .key(d => d[NutrientDataColNames.foodGroupLv1])
-                                        .object(data));
-
-        const fullyNestedDataByFoodGroup = Object.freeze(d3.nest()
-                                            .key(d => d.Nutrient)
-                                            .key(d => d[NutrientDataColNames.ageSexGroup])
-                                            .key(d => d[NutrientDataColNames.foodGroupLv1])
-                                            .key(d => Number.isNaN(d[NutrientDataColNames.foodGroupLv2]) ? "" : d[NutrientDataColNames.foodGroupLv2] )
-                                            .key(d => Number.isNaN(d[NutrientDataColNames.foodGroupLv3]) ? "" : d[NutrientDataColNames.foodGroupLv3] )
-                                            .rollup(d => d[0])
-                                            .object(data));
-
-        return new FoodIngredientDataModel(data, dataGroupedByNutrientAndDemoList, dataGroupedByNutrientAndDemo, fullyNestedDataByFoodGroup);
+        await this.foodIngredientData.load();
     }
 }

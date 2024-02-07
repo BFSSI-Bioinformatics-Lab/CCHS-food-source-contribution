@@ -1,11 +1,26 @@
+////////////////////////////////////////////////////////////////////
+//                                                                //
+// Purpose: Handles drawing a legend                              //
+//                                                                //
+// What it Contains:                                              //
+//      LegendItem: Class for the colour box and corresponding    //
+//          description for a single key in the legend            //
+//              - used to make the overall legend                 //
+//                                                                //
+//      Legend: a legend for some graph                           //
+//              - created by the bar graph and the sunburst       //
+//                  graph                                         //
+//                                                                //
+////////////////////////////////////////////////////////////////////
+
+
 import { RectSvgComponent } from "./component.js";
 import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "../../assets/assets.js";
-import { TextBox } from "./textBox.js";
-import { Box } from "./box.js";
-import { Func } from "../../tools/func.js";
+import { TextBox, Box } from "./textBox.js";
+import { Func } from "../../tools/tools.js";
 
 
-// LegendItem: Class for a row itme in the legend
+// LegendItem: Class for a row item in the legend
 export class LegendItem extends RectSvgComponent {
     constructor({parent = null, 
                  x = DefaultDims.pos, 

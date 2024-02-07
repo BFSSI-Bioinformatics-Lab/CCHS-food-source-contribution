@@ -1,2 +1,13 @@
+#############################################################
+#                                                           #
+# Purpose: defines which files/folders that Git should      #
+#   not track                                               #
+#                                                           #
+# What it contains:                                         #
+#   - don't track any VS code related files                 #
+#   - don't track any files in the 'data_src' folder        #
+#                                                           #
+#############################################################
+
 data_src/
 .vscode/
