@@ -1,7 +1,22 @@
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+// Purpose: Handles the display for the sunburst and all its related    //
+//      visuals                                                         //
+//                                                                      //
+// What it Contains:                                                    //
+//      - drawing the sunburst                                          //
+//      - drawing the table for the sun burst                           //
+//      - drawing the legend for the sun burst                          //
+//      - drawing the info box for the sunburst                         //
+//      - drawing the tool tip for the sunburst                         //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
+
+
 import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames, SunBurstStates, Colours } from "../../assets/assets.js";
-import { ViewTools } from "../tools/viewTools.js";
 import { Component } from "./component.js";
-import { TranslationTools } from "../../tools/translationTools.js";
+import { TranslationTools, ViewTools } from "../../tools/tools.js";
 import { TextBox, ToolTip, Infobox } from "./textBox.js";
 import { Legend } from "./legend.js";
 
@@ -337,7 +352,7 @@ export class SunBurst extends Component {
         // set back the thickness of the arcs back to its original thickness
         this.updateArcThickness();
 
-        this.transitionArcs(0);
+        this.transitionArcs(1000);
         this.setFilterButtonToLevel2Groups();
     }
 
@@ -368,7 +383,7 @@ export class SunBurst extends Component {
         // increase the thickness of the arcs
         this.updateArcThickness();
         
-        this.transitionArcs(0);
+        this.transitionArcs(1000);
         this.setFilterButtonToAllGroups();
     }
 
@@ -429,7 +444,6 @@ export class SunBurst extends Component {
 
     lowerGraph(nutrientsData){
         const self = this;
-        const data = nutrientsData.fullyNestedDataByFoodGroup;
         const tableData = nutrientsData.dataGroupedByNutrientAndDemoList;
 
         // register the save image button

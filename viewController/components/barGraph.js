@@ -1,8 +1,24 @@
+/////////////////////////////////////////////////////////////////////////
+//                                                                     //
+// Purpose: Handles the display of the bar graph and all its related   //
+//     visuals                                                         //
+//                                                                     //
+// What it Contains:                                                   //
+//      - drawing the bar graph                                        //
+//      - drawing the table for the bar graph                          //
+//      - drawing the bar graph legend                                 //
+//      - drawing the tool tips for the bar graph                      //
+//      - drawing the info box for the bar graph                       //
+//                                                                     //
+/////////////////////////////////////////////////////////////////////////
+
+
+
 import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer} from "../../assets/assets.js";
 import { Component } from "./component.js";
 import { ToolTip, Infobox } from "./textBox.js";
-import { TranslationTools } from "../../tools/translationTools.js";
-import { Func } from "../../tools/func.js";
+import { TranslationTools } from "../../tools/tools.js";
+import { Func } from "../../tools/tools.js";
 import { Legend } from "./legend.js";
 
 
