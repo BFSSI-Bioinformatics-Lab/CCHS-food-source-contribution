@@ -14,16 +14,13 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodGroupDescDataColNames, NutrientDataColNames, SunBurstStates, Colours } from "../../assets/assets.js";
-import { Component } from "./component.js";
-import { TranslationTools, ViewTools } from "../../tools/tools.js";
-import { TextBox, ToolTip, Infobox } from "./textBox.js";
-import { Legend } from "./legend.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, NutrientDataColNames, SunBurstStates, Colours, TranslationTools } from "../assets/assets.js";
+import { Visuals } from "./visuals.js";
 
 
-export class SunBurst extends Component {
+export class SunBurst {
     constructor({model = null} = {}) {
-        super({model: model});
+        this.model = model;
 
         // === Data retrieves from the model ===
         this.nutrient = ""
@@ -49,8 +46,10 @@ export class SunBurst extends Component {
         // === individual components within the sunBurst ===
 
         this.sunBurstGroup = null;
+        this.nutrientTextBox = null;
         this.lowerGraphFilterGroupsButton = null;
         this.lowerGraphSunburst = null;
+        this.lowerGraphInfoBox = null;
         this.label = null;
 
         // invisible arcs used to identify mouse hover events
@@ -69,7 +68,7 @@ export class SunBurst extends Component {
     }
 
     draw() {
-        return this.lowerGraph(this.data, this.foodGroupDescriptionss);
+        return this.lowerGraph(this.data, this.foodGroupDescriptions);
     }
 
     // getToolTipId(num): Retrieves the key id for a particular id
@@ -223,7 +222,7 @@ export class SunBurst extends Component {
     // Add some extra tolerance length to the computed text length due to
     //  the inaccuracy of the getComputedTextLength on different browsers
     getArcTextLength(elementNode, text) {
-        return ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+        return Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
     }
 
     // getArcLabel(index): Retrieves the element for the label of the arc
@@ -259,7 +258,7 @@ export class SunBurst extends Component {
         // center text only if the text is not truncated
         let textX = 0;
         if ((d.x1 - d.x0) < 2 * Math.PI && !textTruncated) {
-            textX = (d.x1 - d.x0) / 2.0 * midRadius - ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0;
+            textX = (d.x1 - d.x0) / 2.0 * midRadius - Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0;
         }
 
         if (textX < 0) {
@@ -268,7 +267,7 @@ export class SunBurst extends Component {
 
         if (availableLength > 0) {
             //console.log("NAME: ", d.data.name, " AND TEXT: ", element.text(), "AVAILA: ", availableLength, "CURRENT LEN: ", this.getArcTextLength(elementNode, text), " Y0: ", d.y0, " AND Y1: ", d.y1, " AND TEXT X: ", textX, " AND TRUNCATED: ", textTruncated);
-            //console.log("MID: ", (d.x1 - d.x0) / 2.0, " AND ", ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0, " AND ", (d.x1 - d.x0) / 2.0 * midRadius - ViewTools.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0);
+            //console.log("MID: ", (d.x1 - d.x0) / 2.0, " AND ", Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0, " AND ", (d.x1 - d.x0) / 2.0 * midRadius - Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0);
         }
 
         element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
@@ -282,7 +281,10 @@ export class SunBurst extends Component {
     /* Positions tool tip according to arc position */
     positionHoverCard(toolTip, d){
         const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
-        toolTip.update({atts: {x: GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1), y: GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth)}});
+
+        const x = GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1);
+        const y = GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth);
+        toolTip.group.attr("transform", `translate(${x}, ${y})`);
     }
 
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
@@ -435,6 +437,47 @@ export class SunBurst extends Component {
         this.hoverPath.on("click", null);
     }
 
+    /* Make the opacity of tooltip 1 */
+    arcHover(d, i){
+        d3.select(`#arcHover${i}`).attr("opacity", 1);
+        this.updateInfoBox(d);
+    }
+
+    /* Make the opacity of tooltip 0 */
+    arcUnHover(d, i){
+        d3.select(`#arcHover${i}`).attr("opacity", 0);
+        Visuals.updateInfoBox({infoBox: this.lowerGraphInfoBox, colour: Colours.None, text: ""});
+    }
+
+    /* Update food group description box */
+    updateInfoBox(d){
+        let colour = GraphColours[d.data.row[NutrientDataColNames.foodGroupLv1]];
+        colour = colour === undefined ? null : colour;
+
+        let foodGroupName = d.data.name;
+        if (this.mouseOverFoodGroupName !== null && this.mouseOverFoodGroupName == foodGroupName) {
+            return;
+        }
+
+        this.mouseOverFoodGroupName = foodGroupName;
+
+        /* XXX TO FILL XXX
+        let desc = "";
+        try {
+            desc = foodGroupDescriptions[d.data.name][FoodGroupDescDataColNames.description];
+        } catch {
+
+        }*/
+
+        if (foodGroupName == "All Items") {
+            foodGroupName = "";
+        }
+
+        Visuals.updateInfoBox({infoBox: this.lowerGraphInfoBox, colour, text: foodGroupName, width: GraphDims.lowerGraphInfoBoxWidth, 
+                               fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing,
+                               padding: GraphDims.lowerGraphInfoBoxPadding});
+    }
+
     // getUpdatedModelData(): Retrieves the updated versions of the data from the model
     getUpdatedModelData() {
         this.nutrient = this.model.nutrient;
@@ -466,29 +509,26 @@ export class SunBurst extends Component {
         .style("font", "10px sans-serif");
 
         // draw the infobox
-        const lowerGraphInfoBox = new Infobox({parent: lowerGraphSvg, 
-                                               x: lowerGraphRightXPos, 
-                                               y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight, 
-                                               width: GraphDims.lowerGraphInfoBoxWidth,
-                                               height: GraphDims.lowerGraphInfoBoxHeight,
-                                               fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
-                                               borderWidth: GraphDims.lowerGraphInfoBoxBorderWidth,
-                                               padding: GraphDims.lowerGraphInfoBoxPaddingLeft, 
-                                               lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing});
-    
-        lowerGraphInfoBox.render();
+        this.lowerGraphInfoBox = Visuals.drawInfoBox({parent: lowerGraphSvg, 
+                                                      x: lowerGraphRightXPos,
+                                                      y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight,
+                                                      height: GraphDims.lowerGraphInfoBoxHeight,
+                                                      width: GraphDims.lowerGraphInfoBoxWidth,
+                                                      fontSize: GraphDims.lowerGraphInfoBoxFontSize,
+                                                      borderWidth: GraphDims.lowerGraphInfoBoxBorderWidth,
+                                                      padding: GraphDims.lowerGraphInfoBoxPadding,
+                                                      lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing});
 
         // draw the legend
-        const lowerGraphLegend = new Legend({parent: lowerGraphSvg, 
-                                             x: lowerGraphRightXPos, 
-                                             y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2 - GraphDims.lowerGraphArcRadius * 4 - (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius), 
-                                             textPadding: [5, 0],
-                                             legendItemPadding: [0, 2],
-                                             fontSize: 12,
-                                             colourBoxWidth: GraphDims.legendSquareSize,
-                                             colourBoxHeight: GraphDims.legendSquareSize,
-                                             data: Object.entries(GraphColours)});
-        lowerGraphLegend.render();
+        Visuals.drawLegend({parent: lowerGraphSvg, 
+                            x: lowerGraphRightXPos,
+                            y: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2 - GraphDims.lowerGraphArcRadius * 4 - (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius),
+                            data: Object.entries(GraphColours), 
+                            legendItemPadding: [0, 2], 
+                            textPadding: [5, 0], 
+                            colourBoxWidth: GraphDims.legendSquareSize, 
+                            colourBoxHeight: GraphDims.legendSquareSize,
+                            fontSize: 12});
 
         const lowerGraphChartHeading = lowerGraphSvg.append("g")
         .append("text")
@@ -519,7 +559,7 @@ export class SunBurst extends Component {
                     .property("value", d => d)
                     .text(d => d);
         
-            const ageSexGroup = ViewTools.getSelector("#lowerGraphAgeSexSelect");
+            const ageSexGroup = Visuals.getSelector("#lowerGraphAgeSexSelect");
             lowerGraphChartHeading.text(TranslationTools.translateText("lowerGraph.graphTitle", {
                 nutrient: self.nutrient,
                 ageSexGroup: ageSexGroup
@@ -589,17 +629,16 @@ export class SunBurst extends Component {
             self.label.each((d, i) => self.labelTextFit(d, i));
 
             // add the nutrient title in the middle of the sunburst
-            const nutrientTextBox = new TextBox({parent: self.lowerGraphSunburst, 
-                                                 y: -GraphDims.lowerGraphCenterArcRadius,
-                                                 width: GraphDims.centerOuterRadius, 
-                                                 height: GraphDims.centerOuterRadius, 
-                                                 fontSize: GraphDims.lowerGraphCenterFontSize,  
-                                                 textAlign: TextAnchor.Middle, 
-                                                 fontWeight: FontWeight.Bold });
-            nutrientTextBox.render();
+            if (self.nutrientTextBox === null) {
+                self.nutrientTextBox = self.lowerGraphSunburst.append("text")
+            }
 
-            nutrientTextBox.text = nutrient;
-            nutrientTextBox.update();
+            self.nutrientTextBox.attr("font-weight", FontWeight.Bold)
+                .attr("font-size", GraphDims.lowerGraphCenterFontSize)
+                .attr("text-anchor", TextAnchor.Middle);
+            
+            Visuals.drawWrappedText({textGroup: self.nutrientTextBox, text: nutrient, width: GraphDims.centerOuterRadius, 
+                                     textY: -GraphDims.lowerGraphCenterArcRadius, fontSize: GraphDims.lowerGraphCenterFontSize});
         
             // TODO: check what this does, copied from the reference 
             self.sunBurstGroup = self.lowerGraphSunburst.append("circle")
@@ -625,26 +664,15 @@ export class SunBurst extends Component {
                 .attr("d", d => self.arc(d.current))
                 .style("cursor", "pointer");
         
-            self.hoverPath.on("mousemove", arcHover);
-            self.hoverPath.on("mouseenter", arcHover);
-            self.hoverPath.on("mouseover", arcHover);
-            self.hoverPath.on("mouseout", arcUnHover);
+            self.hoverPath.on("mousemove", (data, index) => { self.arcHover(data, index) });
+            self.hoverPath.on("mouseenter", (data, index) => { self.arcHover(data, index) });
+            self.hoverPath.on("mouseover", (data, index) => { self.arcHover(data, index) });
+            self.hoverPath.on("mouseout", (data, index) => { self.arcUnHover(data, index) });
             
             if (self.graphState == SunBurstStates.AllDisplayed) {
                 self.filterAllFoodGroups();
             } else {
                 self.filterOnLevel2Groups();
-            }
-        
-            /* Make the opacity of tooltip 1 */
-            function arcHover(d, i){
-                d3.select(`#arcHover${i}`).attr("opacity", 1);
-                updateInfoBox(d);
-            }
-            /* Make the opacity of tooltip 0 */
-            function arcUnHover(d, i){
-                d3.select(`#arcHover${i}`).attr("opacity", 0);
-                lowerGraphInfoBox.render({atts: {text: "", borderColour: Colours.None}});
             }
         
             /* Creation of tooltip */
@@ -664,52 +692,23 @@ export class SunBurst extends Component {
                 });
 
                 const toolTipId = self.getToolTipId(i);
-                const toolTip = new ToolTip({parent: root, 
-                                             width: width, 
-                                             height: 50,
-                                             padding: [5, 2],
-                                             fontSize: GraphDims.lowerGraphTooltipFontSize,
-                                             id: toolTipId, 
-                                             text: lines,
-                                             borderWidth: 3, 
-                                             borderColour: arcColour, 
-                                             textWrap: TextWrap.NoWrap, 
-                                             opacity: 0, 
-                                             backgroundColour: "white"});
-                
-                toolTip.render();
+                const toolTip = Visuals.drawToolTip({parent: root,
+                                                     id: toolTipId,
+                                                     height: 50, 
+                                                     width: width, 
+                                                     text: lines, 
+                                                     padding: [5, 2],
+                                                     borderColour: arcColour,
+                                                     borderWidth: 3, 
+                                                     textWrap: TextWrap.NoWrap,
+                                                     fontSize: GraphDims.lowerGraphTooltipFontSize,
+                                                     opacity: 0,
+                                                     backgroundColour: Colours.White});
+
                 self.hoverToolTips[toolTipId] = toolTip;
 
                 self.positionHoverCard(toolTip, d);
             }
-        
-            /* Update food group description box */
-            function updateInfoBox(d){
-                let colour = GraphColours[d.data.row[NutrientDataColNames.foodGroupLv1]];
-                colour = colour === undefined ? null : colour;
-
-                let foodGroupName = d.data.name;
-                if (self.mouseOverFoodGroupName !== null && self.mouseOverFoodGroupName == foodGroupName) {
-                    return;
-                }
-
-                self.mouseOverFoodGroupName = foodGroupName;
-
-                /* XXX TO FILL XXX
-                let desc = "";
-                try {
-                    desc = foodGroupDescriptions[d.data.name][FoodGroupDescDataColNames.description];
-                } catch {
-
-                }*/
-
-                if (foodGroupName == "All Items") {
-                    foodGroupName = "";
-                }
-
-                lowerGraphInfoBox.render({atts: {text: foodGroupName, borderColour: colour}});
-            }
-    
         }
     
         function drawTable(nutrient, ageSexGroup){

@@ -14,18 +14,13 @@
 
 
 
-import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer} from "../../assets/assets.js";
-import { Component } from "./component.js";
-import { ToolTip, Infobox } from "./textBox.js";
-import { TranslationTools } from "../../tools/tools.js";
-import { Func } from "../../tools/tools.js";
-import { Legend } from "./legend.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer, TranslationTools} from "../assets/assets.js";
+import { Visuals } from "./visuals.js";
 
 
-
-export class BarGraph extends Component {
+export class BarGraph {
     constructor({model = null} = {}) {
-        super({model: model});
+        this.model = model;
 
         // === Data retrieves from the model ===
         this.nutrient = "";
@@ -92,7 +87,17 @@ export class BarGraph extends Component {
     // hideInfoBox(): Hides the food group description box
     hideInfoBox() {
         this.mouseOverFoodGroupName = null;
-        this.upperGraphInfoBox.render({atts: {text: "", borderColour: Colours.None}});
+
+        this.upperGraphInfoBox.highlight.attr("stroke", Colours.None);
+        Visuals.drawWrappedText({textGroup: this.upperGraphInfoBox.textGroup});
+
+
+    }
+
+    // showInfoBox(name, colour, legendItem): Shows the info box
+    showInfoBox({name = "", colour = Colours.None, legendItem = null} = {}) {
+        this.updateInfoBox({name: name, colour: colour});
+        legendItem.group.style("cursor", MousePointer.Pointer);
     }
 
     // Update food group description box
@@ -105,7 +110,9 @@ export class BarGraph extends Component {
         this.mouseOverFoodGroupName = foodGroupName;
         const desc = this.foodGroupDescriptions[foodGroupName][FoodGroupDescDataColNames.description];
 
-        this.upperGraphInfoBox.render({atts: {text: desc, borderColour: GraphColours[foodGroupName]}});
+        Visuals.updateInfoBox({infoBox: this.upperGraphInfoBox, colour: GraphColours[foodGroupName], text: desc, width: GraphDims.upperGraphInfoBoxWidth, 
+                               fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing,
+                               padding: GraphDims.upperGraphInfoBoxPadding});
     }
 
     /* Set the opacity of the hovered bar's info to be 1 */
@@ -116,7 +123,9 @@ export class BarGraph extends Component {
         const mousePos = d3.mouse(this.upperGraphSvg.node());
 
         const toolTip = this.hoverToolTips[toolTipId];
-        toolTip.update({atts: {opacity: 1, x: mousePos[0], y: mousePos[1]}});
+
+        toolTip.group.attr("opacity", 1)
+            .attr("transform", `translate(${mousePos[0]}, ${mousePos[1]})`);
 
         const bar = d3.select(elements[index]);
         bar.style("cursor", MousePointer.Pointer);
@@ -178,22 +187,21 @@ export class BarGraph extends Component {
             nutrient: d[0]
         });
 
-        const toolTip = new ToolTip({parent: this.upperGraphTooltips, 
-                                    width: GraphDims.upperGraphTooltipMinWidth, 
-                                    height : 50,
-                                    padding: [GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding],
-                                    id: toolTipId, 
-                                    text: lines,
-                                    fontSize: GraphDims.upperGraphTooltipFontSize, 
-                                    borderWidth: 3, 
-                                    borderColour: colour,
-                                    opacity: 0, 
-                                    textWrap: TextWrap.NoWrap, 
-                                    backgroundColour: "white",
-                                    lineSpacing: GraphDims.upperGraphTooltipLineSpacing});
+        const toolTip = Visuals.drawToolTip({parent: this.upperGraphTooltips, 
+                                             id: toolTipId, 
+                                             height: 50, 
+                                             width: GraphDims.upperGraphTooltipMinWidth, 
+                                             text: lines, 
+                                             padding: [GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding],
+                                             backgroundColour: Colours.White, 
+                                             borderColour: colour, 
+                                             borderWidth: 3, 
+                                             textWrap: TextWrap.NoWrap,
+                                             fontSize: GraphDims.upperGraphTooltipFontSize, 
+                                             lineSpacing: GraphDims.upperGraphTooltipLineSpacing, 
+                                             opacity: 0});
 
         this.hoverToolTips[toolTipId] = toolTip;
-        toolTip.render();
     }
 
     // getUpdatedModelData(): Retrieves the updated versions of the data from the model
@@ -330,35 +338,56 @@ export class BarGraph extends Component {
                 .on("click", onClick);
     }
 
-    setup(opts = {}) {
-        super.setup(opts);
-        this.bars = this.parent.append("g")
-            .attr("transform", `translate(${GraphDims.upperGraphLeft}, 0)`)
-    
-        this.axes = this.parent.append("g");
-    
-        this.xAxis = axes.append("g")
-        this.xAxisLine = this.xAxis.append("g")
-            .attr("transform", `translate(${GraphDims.upperGraphLeft}, ${GraphDims.upperGraphTop + GraphDims.upperGraphHeight})`);
-            
-        this.xAxisScale = d3.scaleBand()
-            .range([0, GraphDims.upperGraphWidth])
-        this.xAxisLabel = this.xAxis.append("text")
 
-        this.yAxis = this.axes.append("g")
-        this.yAxisLine = this.yAxis.append("g")
-            .attr("transform", `translate(${GraphDims.upperGraphLeft}, ${GraphDims.upperGraphTop})`);
-    
-        this.yAxisLabel = this.yAxis.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("text-anchor", "middle")
-            .attr("y", GraphDims.upperGraphLeft / 4)
-            .attr("x", -(GraphDims.upperGraphTop + GraphDims.upperGraphHeight / 2));
-            
-        this.yAxisScale = d3.scaleLinear()
-            .range([GraphDims.upperGraphHeight, 0]);
+    // legendItemOnClick(name, colour): Event function when the user clicks on a key in the legend
+    legendItemOnClick({name = "", colour = Colours.None} = {}) {
+        let focusedFoodGroup = null;
+        if (this.focusedFoodGroup === null || name != this.focusedFoodGroup[0]) {
+            focusedFoodGroup = [name, 0];
+        }
+
+        this.focusedFoodGroup = focusedFoodGroup;
+
+        if (focusedFoodGroup !== null) {
+            this.barOnClick(focusedFoodGroup);
+        } else {
+            this.updateGraph(this.nutrient);
+        }
     }
 
+    // legendItemOnMouseLeave(name, colour, legendItem): Event function when the user's mouse leaves a key
+    //  in the legend
+    legendItemOnMouseLeave({name = "", colour = Colours.None, legendItem = null}) {
+        this.hideInfoBox();
+        legendItem.group.style("cursor", MousePointer.Default);
+    }
+
+    // drawGraphLegend(titleToColours, upperGraphRightPos): Draws the legend
+    drawGraphLegend(titleToColours, upperGraphRightPos){
+        const legend = Visuals.drawLegend({parent: this.upperGraphSvg, 
+                                           x: upperGraphRightPos, 
+                                           y: GraphDims.upperGraphTop,
+                                           data: Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items"),
+                                           legendItemPadding: [0, 2], 
+                                           textPadding: [5, 0], 
+                                           colourBoxWidth: GraphDims.legendSquareSize,
+                                           colourBoxHeight: GraphDims.legendSquareSize,
+                                           fontSize: 12});
+
+        // add the mouse events to the keys of the legend
+        for (const legendItem of legend.legendItems) {
+            const name = legendItem.name;
+            const colour = legendItem.colour;
+            const legendItemGroup = legendItem.group;
+
+            legendItemGroup.on("mouseenter", () => { this.showInfoBox({name, colour, legendItem}); });
+            legendItemGroup.on("mouseleave", () => { this.legendItemOnMouseLeave({name, colour, legendItem}); });
+            legendItemGroup.on("click", () => { this.legendItemOnClick({name, colour, legendItem}); });
+            legendItemGroup.on("mouseover", () => { this.showInfoBox({name, colour, legendItem}); });
+        }
+    }
+
+    // drawTable(nutrient): Draws the table for the graph
     drawTable(nutrient){
         const nutrientData = this.data.getNutrientData(nutrient);
         const ageSexGroupHeadings = this.data.ageSexGroupHeadings;
@@ -532,67 +561,23 @@ export class BarGraph extends Component {
         this.upperGraphSwitchTypeButton = d3.select("#upperGraphSwitchType");
         
         /* Food group description elements changed on hover */
-        self.upperGraphInfoBox = new Infobox({parent: self.upperGraphSvg, 
-                                              x: upperGraphRightPos, 
-                                              y: GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
-                                              width: GraphDims.upperGraphInfoBoxWidth, 
-                                              height: GraphDims.upperGraphInfoBoxHeight, 
-                                              fontSize: GraphDims.upperGraphInfoBoxFontSize, 
-                                              borderWidth: GraphDims.upperGraphInfoBoxBorderWidth, 
-                                              padding: GraphDims.upperGraphInfoBoxPaddingLeft,
-                                              lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing});
-
-        self.upperGraphInfoBox.render();
+        this.upperGraphInfoBox = Visuals.drawInfoBox({parent: this.upperGraphSvg, 
+                                                      x: upperGraphRightPos, 
+                                                      y: GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
+                                                      height: GraphDims.upperGraphInfoBoxHeight, 
+                                                      borderWidth: GraphDims.upperGraphInfoBoxBorderWidth,
+                                                      lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing,
+                                                      padding: GraphDims.upperGraphInfoBoxPadding,
+                                                      fontSize: GraphDims.upperGraphInfoBoxFontSize});
 
         /* Draw colour legend */
-        drawGraphLegend(GraphColours);
+        this.drawGraphLegend(GraphColours, upperGraphRightPos);
     
         self.upperGraphTooltips = self.upperGraphSvg.append("g");
         self.upperGraphBarHoverDetect = self.upperGraphSvg.append("g")
             .attr("transform", `translate(${GraphDims.upperGraphLeft}, 0)`);
 
         return (nutrient) => {self.updateGraph(nutrient)};
-    
-        /* Draw the food group colour legend */
-        function drawGraphLegend(titleToColours){
-            const showInfoBoxFunc = ({name = "", colour = Colours.None, legendItem = null} = {}) => { 
-                self.updateInfoBox({name: name, colour: colour});
-                legendItem.group.style("cursor", MousePointer.Pointer);
-            };
-
-            const legend = new Legend({parent: self.upperGraphSvg,
-                                       x: upperGraphRightPos, 
-                                       y: GraphDims.upperGraphTop,
-                                       textPadding: [5, 0],
-                                       legendItemPadding: [0, 2],
-                                       fontSize: 12,
-                                       colourBoxWidth: GraphDims.legendSquareSize,
-                                       colourBoxHeight: GraphDims.legendSquareSize,
-                                       data: Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items"),
-                                       legendItemMouseEnter: new Func(showInfoBoxFunc, {}),
-                                       legendItemMouseClick: new Func(({name = "", colour = Colours.None} = {}) =>  {
-                                            let focusedFoodGroup = null;
-                                            if (self.focusedFoodGroup === null || name != self.focusedFoodGroup[0]) {
-                                                focusedFoodGroup = [name, 0];
-                                            }
-
-                                            self.focusedFoodGroup = focusedFoodGroup;
-
-                                            if (focusedFoodGroup !== null) {
-                                                self.barOnClick(focusedFoodGroup);
-                                            } else {
-                                                self.updateGraph(self.nutrient);
-                                            }
-                                       }, {}), 
-                                       legendItemMouseLeave: new Func(({name = "", colour = Colours.None, legendItem = null}) => { 
-                                            self.hideInfoBox();
-                                            legendItem.group.style("cursor", MousePointer.Default);
-                                        }, {}),
-                                       legendItemMouseOver: new Func(showInfoBoxFunc, {}),
-                                       legendMouseMove: new Func(showInfoBoxFunc, {})});
-
-            legend.render();
-        }
     }
 
     // saveAsImage(): Saves the bar graph as an image

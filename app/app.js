@@ -12,17 +12,16 @@
 
 
 
-import { Model } from '../model/model.js'
-import { BarGraph } from './components/barGraph.js';
-import { SunBurst } from './components/sunBurstGraph.js';
-import { TranslationTools, TranslationObj, ViewTools } from '../tools/tools.js';
-import { Component } from './components/component.js';
+import { Model } from '../backend/model.js'
+import { BarGraph } from './barGraph.js';
+import { SunBurst } from './sunBurstGraph.js';
+import { Visuals } from './visuals.js';
+import { TranslationTools, TranslationObj } from '../assets/assets.js';
 
 
 // ViewController: Overall class for the view and controller
-class ViewController extends Component{
+class ViewController {
     constructor({model = null} = {}) {
-        super();
         this.model = model;
 
         this.updateSunburst = null;
@@ -38,10 +37,10 @@ class ViewController extends Component{
         // =============================================
     }
 
-    setup(opts = {}) {
+    setup() {
         const nutrientOptions = Object.keys(this.model.foodIngredientData.dataGroupedByNutrientAndDemo);
         this.nutrientSelector = d3.select(this.nutrientSelectorId)
-            .on("change", () => { this.redraw(opts); })
+            .on("change", () => { this.update(); })
             .selectAll("option")
             .data(nutrientOptions)
             .enter()
@@ -57,16 +56,28 @@ class ViewController extends Component{
         this.updateSunburst = this.sunBurst.draw();
     }
 
-    redraw(opts = {}) {
-        this.model.nutrient = ViewTools.getSelector(this.nutrientSelectorId);
-
+    // updateGraphs(): Updates the bar graph and the sunburst graph
+    updateGraphs() {
         this.updateBarGraph();
         this.updateSunburst();
+    }
+
+    // update(): Updates the entire UI
+    update() {
+        this.model.nutrient = Visuals.getSelector(this.nutrientSelectorId);
+        this.updateGraphs();
 
         // only make the graphs visible once everything is set up 
         d3.select("#foodSourceContributionTool").style("visibility", "visible");
     }
+
+    // render(): Draws the entire UI onto the website
+    render() {
+        this.setup();
+        this.update();
+    }
 };
+
 
 
 //////////

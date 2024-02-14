@@ -25,10 +25,35 @@
 
 
 import { AgeSexGroupOrder, FoodGroupDescDataColNames, NutrientDataColNames } from "../assets/assets.js";
-import { TableTools } from "../tools/tools.js";
 
+
+// ================== CONSTANTS ==========================================
 
 const SortedAgeSexGroupHeadings = Object.keys(AgeSexGroupOrder).sort((a,b) => {return AgeSexGroupOrder[a] - AgeSexGroupOrder[b]});
+
+
+// =======================================================================
+// ================== TOOLS/UTILITIES ====================================
+
+
+// TableTools: Class for handling any table-like data ex. list of lists/matrices, list of dictionaries
+//    dictionaries of dictionaries, dictionaries of lists, etc...
+export class TableTools {
+
+    // numToFloat(data): convert all numeric fields into floats
+    // Contract: data: List[Dict[str, Any]]
+    static numToFloat(data) {
+        data.forEach(d => {
+            Object.keys(d).forEach(key => d[key] = isNaN(d[key]) ? d[key] : parseFloat(d[key]))
+        });
+
+        return data;
+    }
+}
+
+
+// ================== DATA CLASSES =======================================
+// =======================================================================
 
 
 // CSVDataModel: Data model for importing data from CSV files
@@ -133,6 +158,8 @@ export class FoodIngredientDataModel extends CSVDataModel {
         return {"groupedAmount": groupedAmount, "maxAccumulatedAmount": maxAccumulatedAmount};
     }
 
+
+    // buildSunBurstTree(nutrient, ageSexGroup): Build the tree needed for the data of the sun burst graph
     buildSunBurstTree(nutrient, ageSexGroup) {
         const nutrientData = this.fullyNestedDataByFoodGroup[nutrient];
 
@@ -172,3 +199,6 @@ export class FoodIngredientDataModel extends CSVDataModel {
         return groupedPercentages;
     }
 }
+
+
+// =======================================================================
