@@ -24,10 +24,7 @@ export class SunBurst {
 
         // === Data retrieves from the model ===
         this.nutrient = ""
-        this.data = null;
         this.foodGroupDescriptions = [];
-
-        this.getUpdatedModelData();
 
         // =====================================
 
@@ -478,16 +475,10 @@ export class SunBurst {
                                padding: GraphDims.lowerGraphInfoBoxPadding});
     }
 
-    // getUpdatedModelData(): Retrieves the updated versions of the data from the model
-    getUpdatedModelData() {
-        this.nutrient = this.model.nutrient;
-        this.data = this.model.foodIngredientData;
-        this.foodGroupDescriptions = this.model.foodGroupDescriptionData.data;
-    }
 
-    lowerGraph(nutrientsData){
+    lowerGraph(){
         const self = this;
-        const tableData = nutrientsData.dataGroupedByNutrientAndDemoList;
+        const tableData = this.model.nutrientTablesByDemoGroupLv1;
 
         // register the save image button
         d3.select("#lowerGraphSaveGraph").on("click", () => this.saveAsImage());
@@ -549,11 +540,11 @@ export class SunBurst {
     
         /* Draws table, sunburst, and updates age-sex selector */
         async function drawGraph(){
-            self.getUpdatedModelData();
+            self.nutrient = self.model.nutrient;
 
             ageSexSelector.on("change", () => drawGraph(self.nutrient))
                 .selectAll("option")
-                .data(nutrientsData.ageSexGroupHeadings)
+                .data(self.model.ageSexGroupHeadings)
                 .enter()
                 .append("option")
                     .property("value", d => d)
@@ -573,7 +564,7 @@ export class SunBurst {
         // Source reference: https://observablehq.com/@d3/zoomable-sunburst
         function drawSunburst(nutrient, ageSexGroup){
             self.lowerGraphSunburst.selectAll("g").remove();
-            const groupedPercentages = nutrientsData.buildSunBurstTree(nutrient, ageSexGroup);
+            const groupedPercentages = self.model.buildSunBurstTree(nutrient, ageSexGroup);
         
             // Compute the layout.
             const hierarchy = d3.hierarchy(groupedPercentages)

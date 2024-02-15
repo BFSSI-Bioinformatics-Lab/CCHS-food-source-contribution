@@ -12,7 +12,7 @@
 
 
 
-import { Model } from '../backend/model.js'
+import { Model } from '../backend/backend.js'
 import { BarGraph } from './barGraph.js';
 import { SunBurst } from './sunBurstGraph.js';
 import { Visuals } from './visuals.js';
@@ -38,7 +38,7 @@ class ViewController {
     }
 
     setup() {
-        const nutrientOptions = Object.keys(this.model.foodIngredientData.dataGroupedByNutrientAndDemo);
+        const nutrientOptions = Object.keys(this.model.nutrientTablesByDemoGroupLv1);
         this.nutrientSelector = d3.select(this.nutrientSelectorId)
             .on("change", () => { this.update(); })
             .selectAll("option")

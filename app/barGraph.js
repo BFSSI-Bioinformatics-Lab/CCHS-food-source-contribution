@@ -24,10 +24,7 @@ export class BarGraph {
 
         // === Data retrieves from the model ===
         this.nutrient = "";
-        this.data = [];
-        this.foodGroupDescriptions = [];
-
-        this.getUpdatedModelData();
+        this.foodGroupDescriptions = this.model.foodGroupDescriptionData;
 
         // =====================================
 
@@ -80,7 +77,7 @@ export class BarGraph {
     }
 
     getNutrientUnit(nutrient){
-        const nutrientData = this.data.getNutrientData(nutrient);
+        const nutrientData = this.model.nutrientTablesByDemoGroupLv1[nutrient];
         return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
     }
 
@@ -204,31 +201,24 @@ export class BarGraph {
         this.hoverToolTips[toolTipId] = toolTip;
     }
 
-    // getUpdatedModelData(): Retrieves the updated versions of the data from the model
-    getUpdatedModelData() {
-        this.nutrient = this.model.nutrient;
-        this.data = this.model.foodIngredientData;
-        this.foodGroupDescriptions = this.model.foodGroupDescriptionData.data;
-    }
-
     /* Update bar graph given a specific nutrient */
     async updateGraph(){
         // get the updated data for the graph
-        this.getUpdatedModelData();
+        this.nutrient = this.model.nutrient;
 
         const nutrient = this.nutrient;
-        const nutrientData = this.data.getNutrientData(nutrient);
+        const nutrientData = this.model.nutrientTablesByDemoGroupLv1[nutrient];
 
         /* graphType is updated by the getGraphType function */
         let type = this.graphType;
 
-        const xAxisValues = this.data.ageSexGroupHeadings;
+        const xAxisValues = this.model.ageSexGroupHeadings;
         this.upperGraphXAxisScale.domain(xAxisValues);
         this.upperGraphXAxisLine.call(d3.axisBottom(this.upperGraphXAxisScale));
 
         this.xAxisTicks = this.upperGraphXAxisLine.selectAll(".tick").attr("font-size", GraphDims.upperGraphXAxisTickFontSize);
 
-        const nutrientTotalByAgeSexGroup = this.data.findNutrientTotalAmtPerAgeSexGroup(nutrientData, type);
+        const nutrientTotalByAgeSexGroup = this.model.findNutrientTotalAmtPerAgeSexGroup(nutrientData, type);
         this.groupedAmount = nutrientTotalByAgeSexGroup.groupedAmount;
         const maxAccumulatedAmount = nutrientTotalByAgeSexGroup.maxAccumulatedAmount;
 
@@ -389,8 +379,8 @@ export class BarGraph {
 
     // drawTable(nutrient): Draws the table for the graph
     drawTable(nutrient){
-        const nutrientData = this.data.getNutrientData(nutrient);
-        const ageSexGroupHeadings = this.data.ageSexGroupHeadings;
+        const nutrientData = this.model.nutrientTablesByDemoGroupLv1[nutrient];
+        const ageSexGroupHeadings = this.model.ageSexGroupHeadings;
         const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
         const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
 
