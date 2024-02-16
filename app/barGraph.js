@@ -10,11 +10,14 @@
 //      - drawing the tool tips for the bar graph                      //
 //      - drawing the info box for the bar graph                       //
 //                                                                     //
+// IMPORTANT NOTE:                                                     //
+//      - Visualizations in UI code will not be abstracted so that     //
+//          the visuals can be copy and pasted                         //
 /////////////////////////////////////////////////////////////////////////
 
 
 
-import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer, TranslationTools} from "../assets/assets.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer, TranslationTools, DefaultDims} from "../assets/assets.js";
 import { Visuals } from "./visuals.js";
 
 
@@ -98,6 +101,7 @@ export class BarGraph {
     }
 
     // Update food group description box
+    // Note: code for updating the infobox is the same for the Bar graph
     updateInfoBox({name = "", colour = Colours.None, amount = 0} = {}){
         const foodGroupName = name;
         if (this.mouseOverFoodGroupName !== null && this.mouseOverFoodGroupName == foodGroupName) {
@@ -107,9 +111,23 @@ export class BarGraph {
         this.mouseOverFoodGroupName = foodGroupName;
         const desc = this.foodGroupDescriptions[foodGroupName][FoodGroupDescDataColNames.description];
 
-        Visuals.updateInfoBox({infoBox: this.upperGraphInfoBox, colour: GraphColours[foodGroupName], text: desc, width: GraphDims.upperGraphInfoBoxWidth, 
-                               fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing,
-                               padding: GraphDims.upperGraphInfoBoxPadding});
+        // ---------- Updates the infobox --------------
+
+        const infoBoxPadding = Visuals.getPadding(GraphDims.upperGraphInfoBoxPadding);
+
+        // change text
+        const textDims = Visuals.drawText({textGroup: this.upperGraphInfoBox.textGroup, text: desc, width: GraphDims.upperGraphInfoBoxWidth, 
+                                           fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, padding: infoBoxPadding});
+
+        // change colour
+        this.upperGraphInfoBox.highlight.attr("stroke", GraphColours[foodGroupName]);
+
+        // update the height of the info box to be larger than the height of the text
+        let infoBoxHeight = this.upperGraphInfoBox.highlight.node().getBBox()["height"];
+        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding.paddingTop + textDims.textBottomYPos + infoBoxPadding.paddingBottom);
+        this.upperGraphInfoBox.highlight.attr("y2", infoBoxHeight);
+
+        // ---------------------------------------------
     }
 
     /* Set the opacity of the hovered bar's info to be 1 */
@@ -172,6 +190,7 @@ export class BarGraph {
     }
 
     /* Creates tooltip for hovering over bars */
+    // Note: The code for constructing a tooltip is the same as in Sun Burst graph
     hoverTooltip(d, i){
         const toolTipId = this.getToolTipId(i);
         const colour = GraphColours[d[0]];
@@ -183,22 +202,51 @@ export class BarGraph {
             percentage: d[1],
             nutrient: d[0]
         });
+        
+        // ------- draw the tooltip ------------
 
-        const toolTip = Visuals.drawToolTip({parent: this.upperGraphTooltips, 
-                                             id: toolTipId, 
-                                             height: 50, 
-                                             width: GraphDims.upperGraphTooltipMinWidth, 
-                                             text: lines, 
-                                             padding: [GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding],
-                                             backgroundColour: Colours.White, 
-                                             borderColour: colour, 
-                                             borderWidth: 3, 
-                                             textWrap: TextWrap.NoWrap,
-                                             fontSize: GraphDims.upperGraphTooltipFontSize, 
-                                             lineSpacing: GraphDims.upperGraphTooltipLineSpacing, 
-                                             opacity: 0});
+        // attributes for the tool tip
+        const toolTip = {};
+        let toolTipWidth = GraphDims.upperGraphTooltipMinWidth;
+        let toolTipHeight = 50;
+        const toolTipBorderWidth = 3;
+        const toolTipBackgroundColor = Colours.White;
+        const toolTipPadding = Visuals.getPadding([GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding]);
+        const toolTipDims = Visuals.getComponentLengths(toolTipWidth, toolTipHeight, toolTipPadding);
 
+        // draw the container for the tooltip
+        toolTip.group = this.upperGraphTooltips.append("g")
+            .attr("id",  toolTipId)
+            .attr("opacity", 0);
+
+        // draw the background for the tooltip
+        toolTip.background = toolTip.group.append("rect")
+            .attr("height", toolTipHeight)
+            .attr("width", toolTipWidth)
+            .attr("fill", toolTipBackgroundColor)
+            .attr("stroke", colour)
+            .attr("stroke-width", toolTipBorderWidth);
+
+        // draw the text
+        toolTip.textGroup = toolTip.group.append("text")
+            .attr("font-size", GraphDims.upperGraphTooltipFontSize)
+            .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft}, ${toolTipPadding.paddingTop})`);
+
+        const textDims = Visuals.drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipDims.width, fontSize: GraphDims.upperGraphTooltipFontSize, 
+                                           lineSpacing: GraphDims.upperGraphTooltipLineSpacing, textWrap: TextWrap.NoWrap, padding: toolTipPadding});
+
+        // update the height of the tooltip to be larger than the height of all the text
+        toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + textDims.textBottomYPos + toolTipPadding.paddingBottom);
+        toolTip.background.attr("height", toolTipHeight);
+
+        // update the width of the tooltip to be larger than the width of all the text
+        toolTipWidth = Math.max(toolTipWidth, toolTipPadding.paddingLeft + textDims.width + toolTipPadding.paddingRight);
+        toolTip.background.attr("width", toolTipWidth);
+
+        // -------------------------------------
+        
         this.hoverToolTips[toolTipId] = toolTip;
+        return toolTip;
     }
 
     /* Update bar graph given a specific nutrient */
@@ -353,19 +401,65 @@ export class BarGraph {
     }
 
     // drawGraphLegend(titleToColours, upperGraphRightPos): Draws the legend
+    // Note: the code for drawing the legend is the same as in the Bar graph
     drawGraphLegend(titleToColours, upperGraphRightPos){
-        const legend = Visuals.drawLegend({parent: this.upperGraphSvg, 
-                                           x: upperGraphRightPos, 
-                                           y: GraphDims.upperGraphTop,
-                                           data: Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items"),
-                                           legendItemPadding: [0, 2], 
-                                           textPadding: [5, 0], 
-                                           colourBoxWidth: GraphDims.legendSquareSize,
-                                           colourBoxHeight: GraphDims.legendSquareSize,
-                                           fontSize: 12});
+
+        // ----------------- draws the legend ---------------------
+        
+        // attributes for the legend
+        const legendItemPadding = Visuals.getPadding([0, 2]);
+        const legendItemTextPadding = Visuals.getPadding([5, 0]);
+        const legendItemFontSize = 12;
+        const legendData = Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items");
+        const colourBoxWidth = GraphDims.legendSquareSize;
+        const colourBoxHeight = GraphDims.legendSquareSize;
+        const legendItems = [];
+        let currentLegendItemYPos = 0;
+        
+        // draw the container to hold the legend
+        const legendGroup = this.upperGraphSvg.append("g")
+            .attr("transform", `translate(${upperGraphRightPos}, ${GraphDims.upperGraphTop})`);
+
+        // draw all the keys for the legend
+        for (const legendKey of legendData) {
+            let legendKeyText = legendKey[0];
+            let legendKeyColour = legendKey[1];
+
+            // ***************** draws a key in the legend *********************
+            
+            const legendItemGroup = legendGroup.append("g")
+            .attr("transform", `translate(0, ${currentLegendItemYPos})`);
+    
+            // draw the coloured box
+            const colourBox = legendItemGroup.append("rect")
+                .attr("y", legendItemPadding.paddingTop)
+                .attr("x", legendItemPadding.paddingLeft)
+                .attr("width", colourBoxWidth)
+                .attr("height", colourBoxHeight)
+                .attr("fill", legendKeyColour);
+    
+            // draw the text
+            const textX = legendItemPadding.paddingLeft + colourBoxWidth + legendItemTextPadding.paddingLeft;
+            const textY = legendItemTextPadding.paddingTop;
+            const textGroup = legendItemGroup.append("text")
+                .attr("y", legendItemPadding.paddingTop)
+                .attr("x", textX)
+                .attr("font-size", legendItemFontSize);
+    
+            Visuals.drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
+
+            const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
+
+            // *****************************************************************
+
+            currentLegendItemYPos += legendItemPadding.paddingTop + legendItemPadding.paddingBottom + legendItemGroup.node().getBBox()["height"];
+            legendItems.push(legendItem);
+        }
+
+        // --------------------------------------------------------
 
         // add the mouse events to the keys of the legend
-        for (const legendItem of legend.legendItems) {
+        for (const legendItem of legendItems) {
             const name = legendItem.name;
             const colour = legendItem.colour;
             const legendItemGroup = legendItem.group;
@@ -550,15 +644,44 @@ export class BarGraph {
     
         this.upperGraphSwitchTypeButton = d3.select("#upperGraphSwitchType");
         
-        /* Food group description elements changed on hover */
-        this.upperGraphInfoBox = Visuals.drawInfoBox({parent: this.upperGraphSvg, 
-                                                      x: upperGraphRightPos, 
-                                                      y: GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight, 
-                                                      height: GraphDims.upperGraphInfoBoxHeight, 
-                                                      borderWidth: GraphDims.upperGraphInfoBoxBorderWidth,
-                                                      lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing,
-                                                      padding: GraphDims.upperGraphInfoBoxPadding,
-                                                      fontSize: GraphDims.upperGraphInfoBoxFontSize});
+        // --------------- draws the info box ---------------------
+        // Note: The code for drawing the info box is the same in the Sun burst graph
+        
+        // attributes for the info box
+        const infoBox = {};
+        let infoBoxHeight = GraphDims.upperGraphInfoBoxHeight;
+        const infoBoxBorderWidth = GraphDims.upperGraphInfoBoxBorderWidth;
+        const infoBoxPadding = Visuals.getPadding(GraphDims.upperGraphInfoBoxPadding);
+        const infoBoxDims = Visuals.getComponentLengths(0, infoBoxHeight, infoBoxPadding);
+
+        // group for the info box
+        infoBox.group = this.upperGraphSvg.append("g")
+            .attr("transform", `translate(${upperGraphRightPos}, ${GraphDims.upperGraphTop + GraphDims.upperGraphHeight - GraphDims.upperGraphInfoBoxHeight})`);
+
+        // border line for the info box
+        infoBox.highlight = infoBox.group.append("line")
+            .attr("x1", infoBoxBorderWidth / 2)
+            .attr("x2", infoBoxBorderWidth / 2)
+            .attr("y2", infoBoxHeight)
+            .attr("stroke-width", infoBoxBorderWidth)
+            .attr("visibility", "visible");
+
+        // container to hold the text
+        infoBox.textGroup = infoBox.group.append("text")
+            .attr("font-size", GraphDims.upperGraphInfoBoxFontSize)
+            .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding.paddingLeft}, ${infoBoxPadding.paddingTop})`);
+        
+        // draw the text
+        const textDims = Visuals.drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.upperGraphInfoBoxFontSize, 
+                                           lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, padding: infoBoxPadding});
+
+        // update the height of the info box to be larger than the height of the text
+        infoBoxHeight = Math.max(infoBoxDims.height, textDims.textBottomYPos + infoBoxPadding.paddingBottom);
+        infoBox.highlight.attr("y2", infoBoxHeight);
+
+        this.upperGraphInfoBox = infoBox;
+
+        // --------------------------------------------------------
 
         /* Draw colour legend */
         this.drawGraphLegend(GraphColours, upperGraphRightPos);
