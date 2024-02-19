@@ -195,9 +195,9 @@ export class BarGraph {
         const lines = TranslationTools.translateText("upperGraph.infoBox", { 
             returnObjects: true, 
             context: this.graphType,
-            amount: d[1],
+            amount: parseFloat(d[1]).toFixed(1),
             name: d[0],
-            percentage: d[1],
+            percentage: parseFloat(d[1]).toFixed(1),
             nutrient: d[0]
         });
         

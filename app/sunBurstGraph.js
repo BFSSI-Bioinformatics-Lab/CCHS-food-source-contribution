@@ -765,7 +765,7 @@ export class SunBurst {
                     returnObjects: true, 
                     context: d.depth,
                     name: d.data.name,
-                    percentage: d.data.row.Percentage,
+                    percentage: Math.round( d.data.row.Percentage * 10) / 10,
                     parentGroup: d.depth > 1 ? d.parent.data.name : "",
                     parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
                     nutrient
