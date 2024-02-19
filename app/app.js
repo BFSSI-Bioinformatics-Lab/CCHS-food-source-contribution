@@ -38,7 +38,7 @@ class ViewController {
     }
 
     setup() {
-        const nutrientOptions = Object.keys(this.model.nutrientTablesByDemoGroupLv1);
+        const nutrientOptions = Object.keys(this.model.graphNutrientTablesByDemoGroupLv1);
         this.nutrientSelector = d3.select(this.nutrientSelectorId)
             .on("change", () => { this.update(); })
             .selectAll("option")
@@ -85,7 +85,7 @@ class ViewController {
 //////////
 // load in the view for the application
 window.addEventListener("load", () => {
-    const model = new Model("data/Food Group descriptions.csv", "data/FSCT data_Food_ingredients CCHS 2015 all nutrients_Infobase.csv");
+    const model = new Model("data/Food Group descriptions.csv", "data/GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240126.csv", "data/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126.csv");
     const viewController = new ViewController({model: model});
     TranslationTools.registerTranslation(TranslationObj);
 

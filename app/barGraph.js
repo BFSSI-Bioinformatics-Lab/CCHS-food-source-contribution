@@ -80,7 +80,7 @@ export class BarGraph {
     }
 
     getNutrientUnit(nutrient){
-        const nutrientData = this.model.nutrientTablesByDemoGroupLv1[nutrient];
+        const nutrientData = this.model.graphNutrientTablesByDemoGroupLv1[nutrient];
         return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
     }
 
@@ -109,7 +109,7 @@ export class BarGraph {
         }
 
         this.mouseOverFoodGroupName = foodGroupName;
-        const desc = this.foodGroupDescriptions[foodGroupName][FoodGroupDescDataColNames.description];
+        const desc = this.model.getFoodDescription(this.nutrient, foodGroupName);
 
         // ---------- Updates the infobox --------------
 
@@ -255,7 +255,7 @@ export class BarGraph {
         this.nutrient = this.model.nutrient;
 
         const nutrient = this.nutrient;
-        const nutrientData = this.model.nutrientTablesByDemoGroupLv1[nutrient];
+        const nutrientData = this.model.graphNutrientTablesByDemoGroupLv1[nutrient];
 
         /* graphType is updated by the getGraphType function */
         let type = this.graphType;
@@ -473,7 +473,7 @@ export class BarGraph {
 
     // drawTable(nutrient): Draws the table for the graph
     drawTable(nutrient){
-        const nutrientData = this.model.nutrientTablesByDemoGroupLv1[nutrient];
+        const nutrientData = this.model.tableNutrientTablesByDemoGroupLv1[nutrient];
         const ageSexGroupHeadings = this.model.ageSexGroupHeadings;
         const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
         const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
@@ -544,7 +544,7 @@ export class BarGraph {
         Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
             const newRow = this.upperGraphTableBody.append("tr")
                 .selectAll("td")
-                .data([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => g[key])).flat()))
+                .data([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? g["Interpretation_Notes"] : g[key])).flat()))
                 .enter()
                 .append("td")
                     .attr("colspan", 1)
