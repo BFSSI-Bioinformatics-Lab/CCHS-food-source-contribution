@@ -93,7 +93,7 @@ export const GraphDims = Object.freeze({
     lowerGraph2LevelFilterArcRadius: 80,
     lowerGraphCenterArcRadius: 45,
     lowerGraphCenterArcMargin: 1,
-    lowerGraphCenterFontSize: 20,
+    lowerGraphCenterFontSize: 18,
     lowerGraphTooltipMinWidth: 140,
     lowerGraphTooltipFontSize: 12,
     lowerGraphInfoBoxWidth: 240,
@@ -160,7 +160,7 @@ export const FoodGroupDescDataColNames = {
 };
 
 // column names in the food ingredient csv file
-export const NutrientDataColNames = {
+export const FoodIngredientDataColNames = {
     ageSexGroup: "Age-sex group (*: excludes pregnant or breastfeeding)",
     foodGroupLv1: "Food group_level1",
     foodGroupLv2: "Food group_level2",
@@ -171,10 +171,24 @@ export const NutrientDataColNames = {
 export const AgeSexGroupHeadings = {
     Population1Up: "Population age 1+", 
     Children1To8: "Children 1 to 8 y", 
-    YouthAndAdolescents: "Youth & adolescents 9 to 18 y",
+    YouthAndAdolescents: "Youth & adolescents* 9 to 18 y",
     AdultMales: "Adult males 19 y +",
     AdultFemales: "Adult females* 19 y +"
 };
+
+// certain keys in the graph's food ingredient CSV file that do not map to
+//  any keys in the food description CSV file
+export const FoodDescriptionExceptionKeys = {
+    "Spices - Seasonings & Other Ingredients": {
+        "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
+        "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
+    },
+
+    "Vegetables Including Potatoes": {
+        "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
+        "Sodium": "Vegetables Including Potatoes (sodium only)"
+    }
+}
 
 
 // Different display states of the sun burst graph

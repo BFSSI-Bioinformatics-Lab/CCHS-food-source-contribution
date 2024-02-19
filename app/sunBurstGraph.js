@@ -10,14 +10,14 @@
 //      - drawing the info box for the sunburst                         //
 //      - drawing the tool tip for the sunburst                         //
 //                                                                      //
-// IMPORTANT NOTE:                                                      //
+// NOTE:                                                                //
 //      - Visualizations in UI code will not be abstracted so that      //
 //          the visuals can be copy and pasted                          //
 //////////////////////////////////////////////////////////////////////////
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, NutrientDataColNames, SunBurstStates, Colours, TranslationTools, DefaultDims } from "../assets/assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodIngredientDataColNames, SunBurstStates, Colours, TranslationTools, FoodGroupDescDataColNames} from "../assets/assets.js";
 import { Visuals } from "./visuals.js";
 
 
@@ -27,11 +27,11 @@ export class SunBurst {
 
         // === Data retrieves from the model ===
         this.nutrient = ""
-        this.foodGroupDescriptions = [];
 
         // =====================================
 
         this.selectedNode = null;
+        this.selectedNodeIndex = 1;
         this.root = null;
         this.treeHeight = null;
         this.radius = null;
@@ -68,7 +68,7 @@ export class SunBurst {
     }
 
     draw() {
-        return this.lowerGraph(this.data, this.foodGroupDescriptions);
+        return this.lowerGraph();
     }
 
     // getToolTipId(num): Retrieves the key id for a particular id
@@ -356,6 +356,9 @@ export class SunBurst {
 
         this.transitionArcs(1000);
         this.setFilterButtonToLevel2Groups();
+
+        // get back to the previously clicked arc
+        this.arcOnClick(null, this.selectedNodeIndex);
     }
 
     // filterOnLevel2Groups(): Display only level 2 groups of the Sun Burst Graph
@@ -416,6 +419,7 @@ export class SunBurst {
         }
 
         this.selectedNode = p;
+        this.selectedNodeIndex = i;
 
         if (isTransitionArc) {
             this.transitionArcs();
@@ -446,13 +450,13 @@ export class SunBurst {
     /* Make the opacity of tooltip 0 */
     arcUnHover(d, i){
         d3.select(`#arcHover${i}`).attr("opacity", 0);
-        Visuals.updateInfoBox({infoBox: this.lowerGraphInfoBox, colour: Colours.None, text: ""});
+        Visuals.drawText({textGroup: this.lowerGraphInfoBox.textGroup});
+        this.lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
     }
 
     /* Update food group description box */
-    // Note: code for updating the infobox is the same for the Sun burst graph
     updateInfoBox(d){
-        let colour = GraphColours[d.data.row[NutrientDataColNames.foodGroupLv1]];
+        let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
         colour = colour === undefined ? null : colour;
 
         let foodGroupName = d.data.name;
@@ -462,16 +466,9 @@ export class SunBurst {
 
         this.mouseOverFoodGroupName = foodGroupName;
 
-        /* XXX TO FILL XXX
         let desc = "";
-        try {
-            desc = foodGroupDescriptions[d.data.name][FoodGroupDescDataColNames.description];
-        } catch {
-
-        }*/
-
-        if (foodGroupName == "All Items") {
-            foodGroupName = "";
+        if (foodGroupName != "All Items") {
+            desc = this.model.getFoodDescription(this.nutrient, foodGroupName);
         }
 
         // ---------- Updates the infobox --------------
@@ -479,7 +476,7 @@ export class SunBurst {
         const infoBoxPadding = Visuals.getPadding(GraphDims.lowerGraphInfoBoxPadding);
 
         // change text
-        const textDims = Visuals.drawText({textGroup: this.lowerGraphInfoBox.textGroup, text: foodGroupName, width: GraphDims.lowerGraphInfoBoxWidth, 
+        const textDims = Visuals.drawText({textGroup: this.lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
                                            fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, padding: infoBoxPadding});
 
         // change colour
@@ -496,7 +493,7 @@ export class SunBurst {
 
     lowerGraph(){
         const self = this;
-        const tableData = this.model.nutrientTablesByDemoGroupLv1;
+        const tableData = this.model.graphNutrientTablesByDemoGroupLv1;
 
         // register the save image button
         d3.select("#lowerGraphSaveGraph").on("click", () => this.saveAsImage());
@@ -518,7 +515,6 @@ export class SunBurst {
         .style("font", "10px sans-serif");
 
         // --------------- draws the info box ---------------------
-        // Note: The code for drawing the info box is the same in the Bar graph
         
         // attributes for the info box
         const infoBox = {};
@@ -557,7 +553,6 @@ export class SunBurst {
         // --------------------------------------------------------
 
         // ----------------- draws the legend ---------------------
-        // Note: The code for drawing the legend is the same in the Bar graph
         
         // attributes for the legend
         const legendItemPadding = Visuals.getPadding([0, 2]);
@@ -631,6 +626,10 @@ export class SunBurst {
         /* Draws table, sunburst, and updates age-sex selector */
         async function drawGraph(){
             self.nutrient = self.model.nutrient;
+
+            // reset the selected arc that was clicked
+            self.selectedNodeIndex = 1;
+            self.selectedNode = null;
 
             ageSexSelector.on("change", () => drawGraph(self.nutrient))
                 .selectAll("option")
@@ -757,7 +756,6 @@ export class SunBurst {
             }
         
             /* Creation of tooltip */
-            // Note: The code for constructing a tooltip is the same as in Bar Graph
             function hoverCard(d, root, i, nutrient){
                 let width = GraphDims.lowerGraphTooltipMinWidth;
                 const arcColour = d3.select(`#arcPath${i}`).attr("fill");

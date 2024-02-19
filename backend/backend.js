@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, FoodGroupDescDataColNames, NutrientDataColNames } from "../assets/assets.js";
+import { AgeSexGroupOrder, FoodGroupDescDataColNames, FoodIngredientDataColNames, FoodDescriptionExceptionKeys } from "../assets/assets.js";
 
 
 // ================== CONSTANTS ==========================================
@@ -46,20 +46,26 @@ export class TableTools {
 
 // Model: The overall model for the user interface
 export class Model {
-    constructor(foodDescriptionFilePath, foodIngredientFilePath) {
+    constructor(foodDescriptionFilePath, graphFoodIngredientFilePath, tableFoodIngredientFilePath) {
         // file paths to the CSV files
         this.foodDescriptionFilePath = foodDescriptionFilePath;
-        this.foodIngredientFilePath = foodIngredientFilePath;
+        this.graphFoodIngredientFilePath = graphFoodIngredientFilePath;
+        this.tableFoodIngredientFilePath = tableFoodIngredientFilePath;
 
         // --- different stored data  used in the UI ----
 
         this.nutrient = "";
+
+        // data from food descriptions CSV
         this.foodGroupDescriptionData = {};
 
+        // data from the GRAPH food ingredients CSV
         this.nutrientTable = [];
-        this.nutrientTablesByDemo = {};
-        this.nutrientTablesByDemoGroupLv1 = {};
-        this.nutrientTablesFullyNestedDataByFoodGroup = {};
+        this.graphNutrientTablesByDemoGroupLv1 = {};
+        this.graphNutrientTablesFullyNestedDataByFoodGroup = {};
+
+        // data from the TABLE food ingredients CSV
+        this.tableNutrientTablesByDemoGroupLv1 = {}
 
         this.ageSexGroupHeadings = SortedAgeSexGroupHeadings;
 
@@ -68,7 +74,7 @@ export class Model {
 
     // load(): Setup all the needed data for the user interface
     async load() {
-        return await Promise.all([this.loadFoodGroupDescriptionData(), this.loadFoodIngredientsData()]);
+        return await Promise.all([this.loadFoodGroupDescriptionData(), this.loadGraphFoodIngredientsData(), this.loadTableFoodIngredientsData()]);
     }
 
     // loadFoodGroupDescriptionData(): Load the data for all the food group descriptions
@@ -78,11 +84,11 @@ export class Model {
     
         data = Object.freeze(d3.nest()
                 .key(d => 
-                        Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv3]) ? 
+                        (Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv3]) ? 
                             Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv2]) ? 
                                 d[FoodGroupDescDataColNames.foodGroupLv1]
                                 : d[FoodGroupDescDataColNames.foodGroupLv2]
-                            : d[FoodGroupDescDataColNames.foodGroupLv3]
+                            : d[FoodGroupDescDataColNames.foodGroupLv3]).trim()
                     )
                     .rollup(d => d[0])
                     .object(data));
@@ -91,34 +97,38 @@ export class Model {
         return data;
     }
 
-    // loadFoodIngredientsData(): Load the data for all the food ingredients
-    async loadFoodIngredientsData(){
-        let data = await d3.csv(this.foodIngredientFilePath);
+    // loadGraphFoodIngredientsData(): Load the data for all the food ingredients used in the graphs
+    async loadGraphFoodIngredientsData(){
+        let data = await d3.csv(this.graphFoodIngredientFilePath);
         data = TableTools.numToFloat(data);
 
-        this.nutrientTablesByDemo = Object.freeze(d3.nest()
-                                        .key(d => d.Nutrient)
-                                        .key(d => d[NutrientDataColNames.ageSexGroup])
-                                        .object(data));
-
-        this.nutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
+        this.graphNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
                                                 .key(d => d.Nutrient)
-                                                .key(d => d[NutrientDataColNames.ageSexGroup])
-                                                .key(d => d[NutrientDataColNames.foodGroupLv1])
+                                                .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
+                                                .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
                                                 .object(data));
 
-        this.nutrientTablesFullyNestedDataByFoodGroup = Object.freeze(d3.nest()
+        this.graphNutrientTablesFullyNestedDataByFoodGroup = Object.freeze(d3.nest()
                                                             .key(d => d.Nutrient)
-                                                            .key(d => d[NutrientDataColNames.ageSexGroup])
-                                                            .key(d => d[NutrientDataColNames.foodGroupLv1])
-                                                            .key(d => Number.isNaN(d[NutrientDataColNames.foodGroupLv2]) ? "" : d[NutrientDataColNames.foodGroupLv2] )
-                                                            .key(d => Number.isNaN(d[NutrientDataColNames.foodGroupLv3]) ? "" : d[NutrientDataColNames.foodGroupLv3] )
+                                                            .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
+                                                            .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
+                                                            .key(d => Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv2]) ? "" : d[FoodIngredientDataColNames.foodGroupLv2].trim() )
+                                                            .key(d => Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? "" : d[FoodIngredientDataColNames.foodGroupLv3].trim() )
                                                             .rollup(d => d[0])
                                                             .object(data));
-
-        this.nutrientTablesByDemo = data;
     }
 
+    // loadTableFoodIngredientsData(): Load the data for all the food ingredients used in the tables
+    async loadTableFoodIngredientsData() {
+        let data = await d3.csv(this.tableFoodIngredientFilePath);
+        data = TableTools.numToFloat(data);
+
+        this.tableNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
+            .key(d => d.Nutrient)
+            .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
+            .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
+            .object(data));
+    }
 
     // calculate the total amount by nutrient per age-sex group
     findNutrientTotalAmtPerAgeSexGroup(nutrientData, graphType) {
@@ -142,10 +152,25 @@ export class Model {
         return {"groupedAmount": groupedAmount, "maxAccumulatedAmount": maxAccumulatedAmount};
     }
 
+    // getFoodDescription(nutrient, foodGroup): Retrieves the corresponding food description for 'foodGroup' and 'nutrient'
+    getFoodDescription(nutrient, foodGroup) {
+        foodGroup = foodGroup.trim();
+        if (FoodDescriptionExceptionKeys[foodGroup] === undefined) {
+            return this.foodGroupDescriptionData[foodGroup][FoodGroupDescDataColNames.description];
+        }
+
+        // descriptions that depend whether the nutrient is sodium or not
+        if (nutrient != "Sodium") {
+            nutrient = "OtherNutrients";
+        }
+
+        const foodDescriptionKey = FoodDescriptionExceptionKeys[foodGroup][nutrient];
+        return this.foodGroupDescriptionData[foodDescriptionKey][FoodGroupDescDataColNames.description];
+    }
 
     // buildSunBurstTree(nutrient, ageSexGroup): Build the tree needed for the data of the sun burst graph
     buildSunBurstTree(nutrient, ageSexGroup) {
-        const nutrientData = this.nutrientTablesFullyNestedDataByFoodGroup[nutrient];
+        const nutrientData = this.graphNutrientTablesFullyNestedDataByFoodGroup[nutrient];
 
         /* Group data into a tree where each node has the form of { name, value, row, children } for d3.hierarchy() */
         let groupedPercentages = Object.keys(nutrientData[ageSexGroup]).reduce((objLevel1, foodLevel1) => {
