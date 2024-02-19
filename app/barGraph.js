@@ -10,7 +10,7 @@
 //      - drawing the tool tips for the bar graph                      //
 //      - drawing the info box for the bar graph                       //
 //                                                                     //
-// IMPORTANT NOTE:                                                     //
+// NOTE:                                                               //
 //      - Visualizations in UI code will not be abstracted so that     //
 //          the visuals can be copy and pasted                         //
 /////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,6 @@ export class BarGraph {
     }
 
     // Update food group description box
-    // Note: code for updating the infobox is the same for the Bar graph
     updateInfoBox({name = "", colour = Colours.None, amount = 0} = {}){
         const foodGroupName = name;
         if (this.mouseOverFoodGroupName !== null && this.mouseOverFoodGroupName == foodGroupName) {
@@ -190,7 +189,6 @@ export class BarGraph {
     }
 
     /* Creates tooltip for hovering over bars */
-    // Note: The code for constructing a tooltip is the same as in Sun Burst graph
     hoverTooltip(d, i){
         const toolTipId = this.getToolTipId(i);
         const colour = GraphColours[d[0]];
@@ -401,7 +399,6 @@ export class BarGraph {
     }
 
     // drawGraphLegend(titleToColours, upperGraphRightPos): Draws the legend
-    // Note: the code for drawing the legend is the same as in the Bar graph
     drawGraphLegend(titleToColours, upperGraphRightPos){
 
         // ----------------- draws the legend ---------------------
@@ -645,7 +642,6 @@ export class BarGraph {
         this.upperGraphSwitchTypeButton = d3.select("#upperGraphSwitchType");
         
         // --------------- draws the info box ---------------------
-        // Note: The code for drawing the info box is the same in the Sun burst graph
         
         // attributes for the info box
         const infoBox = {};

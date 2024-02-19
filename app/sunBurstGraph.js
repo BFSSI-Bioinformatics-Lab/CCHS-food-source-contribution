@@ -10,7 +10,7 @@
 //      - drawing the info box for the sunburst                         //
 //      - drawing the tool tip for the sunburst                         //
 //                                                                      //
-// IMPORTANT NOTE:                                                      //
+// NOTE:                                                                //
 //      - Visualizations in UI code will not be abstracted so that      //
 //          the visuals can be copy and pasted                          //
 //////////////////////////////////////////////////////////////////////////
@@ -455,7 +455,6 @@ export class SunBurst {
     }
 
     /* Update food group description box */
-    // Note: code for updating the infobox is the same for the Sun burst graph
     updateInfoBox(d){
         let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
         colour = colour === undefined ? null : colour;
@@ -516,7 +515,6 @@ export class SunBurst {
         .style("font", "10px sans-serif");
 
         // --------------- draws the info box ---------------------
-        // Note: The code for drawing the info box is the same in the Bar graph
         
         // attributes for the info box
         const infoBox = {};
@@ -555,7 +553,6 @@ export class SunBurst {
         // --------------------------------------------------------
 
         // ----------------- draws the legend ---------------------
-        // Note: The code for drawing the legend is the same in the Bar graph
         
         // attributes for the legend
         const legendItemPadding = Visuals.getPadding([0, 2]);
@@ -759,7 +756,6 @@ export class SunBurst {
             }
         
             /* Creation of tooltip */
-            // Note: The code for constructing a tooltip is the same as in Bar Graph
             function hoverCard(d, root, i, nutrient){
                 let width = GraphDims.lowerGraphTooltipMinWidth;
                 const arcColour = d3.select(`#arcPath${i}`).attr("fill");
