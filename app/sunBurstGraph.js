@@ -533,7 +533,8 @@ export class SunBurst {
             .attr("x2", infoBoxBorderWidth / 2)
             .attr("y2", infoBoxHeight)
             .attr("stroke-width", infoBoxBorderWidth)
-            .attr("visibility", "visible");
+            .attr("visibility", "visible")
+            .attr("stroke-linecap", "round");
 
         // container to hold the text
         infoBox.textGroup = infoBox.group.append("text")
@@ -781,8 +782,10 @@ export class SunBurst {
                 let toolTipHeight = 50;
                 const toolTipBorderWidth = 3;
                 const toolTipBackgroundColor = Colours.White;
-                const toolTipPadding = Visuals.getPadding([5, 2]);
+                const toolTipPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipPaddingHor, GraphDims.lowerGraphTooltipPaddingVert]);
+                const toolTipTextPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipTextPaddingHor, GraphDims.lowerGraphTooltipTextPaddingVert]);
                 const toolTipDims = Visuals.getComponentLengths(toolTipWidth, toolTipHeight, toolTipPadding);
+                const toolTipHighlightXPos = toolTipPadding.paddingLeft + toolTipBorderWidth / 2;
 
                 // draw the container for the tooltip
                 toolTip.group = root.append("g")
@@ -795,19 +798,31 @@ export class SunBurst {
                     .attr("width", toolTipWidth)
                     .attr("fill", toolTipBackgroundColor)
                     .attr("stroke", arcColour)
-                    .attr("stroke-width", toolTipBorderWidth);
+                    .attr("stroke-width", 1)
+                    .attr("rx", 5);
+
+                // draw the highlight
+                toolTip.highlight = toolTip.group.append("line")
+                    .attr("x1", toolTipHighlightXPos)
+                    .attr("x2", toolTipHighlightXPos)
+                    .attr("y1", toolTipPadding.paddingTop)
+                    .attr("y2", toolTipHeight - toolTipPadding.paddingBottom)
+                    .attr("stroke", arcColour) 
+                    .attr("stroke-width", toolTipBorderWidth)
+                    .attr("stroke-linecap", "round");
 
                 // draw the text
                 toolTip.textGroup = toolTip.group.append("text")
                     .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                    .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft}, ${toolTipPadding.paddingTop})`);
+                    .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft +  toolTipTextPadding.paddingLeft}, ${toolTipPadding.paddingTop + toolTipTextPadding.paddingTop})`);
 
                 const textDims = Visuals.drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipDims.width, fontSize: GraphDims.lowerGraphTooltipFontSize, 
                                                    textWrap: TextWrap.NoWrap, padding: toolTipPadding});
 
                 // update the height of the tooltip to be larger than the height of all the text
-                toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + textDims.textBottomYPos + toolTipPadding.paddingBottom);
+                toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + toolTipTextPadding.paddingTop + textDims.textBottomYPos + toolTipTextPadding.paddingTop + toolTipPadding.paddingBottom);
                 toolTip.background.attr("height", toolTipHeight);
+                toolTip.highlight.attr("y2", toolTipHeight - toolTipPadding.paddingBottom);
 
                 // update the width of the tooltip to be larger than the width of all the text
                 toolTipWidth = Math.max(toolTipWidth, toolTipPadding.paddingLeft + textDims.width + toolTipPadding.paddingRight);

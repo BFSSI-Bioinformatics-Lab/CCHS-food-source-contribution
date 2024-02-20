@@ -39,6 +39,23 @@ export class Visuals {
     };
 
     // setupDims(dimName, values): Setups the padding and margin for the textbox
+    // Note: values can be:
+    //     value               |       example          |       explanation
+    //  =======================+========================+====================================
+    //     single number       |        8               |  top, right, bottom, left will all have the value 8
+    //  -----------------------+------------------------+------------------------------------
+    //     array of size 2     |        [2, 5]          | - horizontal directions (left, right) will have value 2
+    //                         |                        | - vertical directions (top, bottom) will have value 5
+    //  -----------------------+------------------------+------------------------------------
+    //      array of size 4    |    [1, 2, 3, 4]        | left has value 1, top has value 2,
+    //                         |                        | right has value 3, bottom has value 4 
+    //                         |                        | (directions are set in a clockwise rotation starting from left)
+    // ------------------------+------------------------+------------------------------------
+    //     dictionary          |  {paddingLeft: 1,      | left has value 1, top has value 2,
+    //                         |   paddingTop: 2,       | right has value 3, bottom has value 4
+    //                         |   paddingRight: 3,     |
+    //                         |   paddingBottom: 4}    |
+    //      
     static setupDims(dimName, values) {
         const result = {}
         const leftDimName = `${dimName}Left`;
@@ -88,6 +105,23 @@ export class Visuals {
     }
 
     // getPadding(values): Retrieves the padding for all directions on a 2D plane
+    // Note: values can be:
+    //     value               |       example          |       explanation
+    //  =======================+========================+====================================
+    //     single number       |        8               |  top, right, bottom, left will all have the value 8
+    //  -----------------------+------------------------+------------------------------------
+    //     array of size 2     |        [2, 5]          | - horizontal directions (left, right) will have value 2
+    //                         |                        | - vertical directions (top, bottom) will have value 5
+    //  -----------------------+------------------------+------------------------------------
+    //      array of size 4    |    [1, 2, 3, 4]        | left has value 1, top has value 2,
+    //                         |                        | right has value 3, bottom has value 4 
+    //                         |                        | (directions are set in a clockwise rotation starting from left)
+    // ------------------------+------------------------+------------------------------------
+    //     dictionary          |  {paddingLeft: 1,      | left has value 1, top has value 2,
+    //                         |   paddingTop: 2,       | right has value 3, bottom has value 4
+    //                         |   paddingRight: 3,     |
+    //                         |   paddingBottom: 4}    |
+    //      
     static getPadding(values) {
         return this.setupDims("padding", values);
     }
