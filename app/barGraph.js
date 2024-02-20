@@ -210,7 +210,9 @@ export class BarGraph {
         const toolTipBorderWidth = 3;
         const toolTipBackgroundColor = Colours.White;
         const toolTipPadding = Visuals.getPadding([GraphDims.upperGraphTooltipLeftPadding, GraphDims.upperGraphTooltipTopPadding]);
+        const toolTipTextPadding = Visuals.getPadding([GraphDims.upperGraphTooltipTextPaddingHor, GraphDims.upperGraphTooltipTextPaddingVert]);
         const toolTipDims = Visuals.getComponentLengths(toolTipWidth, toolTipHeight, toolTipPadding);
+        const toolTipHighlightXPos = toolTipPadding.paddingLeft + toolTipBorderWidth / 2;
 
         // draw the container for the tooltip
         toolTip.group = this.upperGraphTooltips.append("g")
@@ -223,22 +225,34 @@ export class BarGraph {
             .attr("width", toolTipWidth)
             .attr("fill", toolTipBackgroundColor)
             .attr("stroke", colour)
-            .attr("stroke-width", toolTipBorderWidth);
+            .attr("stroke-width", 1)
+            .attr("rx", 5);
+
+        // draw the highlight
+        toolTip.highlight = toolTip.group.append("line")
+            .attr("x1", toolTipHighlightXPos)
+            .attr("x2", toolTipHighlightXPos)
+            .attr("y1", toolTipPadding.paddingTop)
+            .attr("y2", toolTipHeight - toolTipPadding.paddingBottom)
+            .attr("stroke", colour) 
+            .attr("stroke-width", toolTipBorderWidth)
+            .attr("stroke-linecap", "round");
 
         // draw the text
         toolTip.textGroup = toolTip.group.append("text")
             .attr("font-size", GraphDims.upperGraphTooltipFontSize)
-            .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft}, ${toolTipPadding.paddingTop})`);
+            .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft +  toolTipTextPadding.paddingLeft}, ${toolTipPadding.paddingTop + toolTipTextPadding.paddingTop})`);
 
         const textDims = Visuals.drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipDims.width, fontSize: GraphDims.upperGraphTooltipFontSize, 
                                            lineSpacing: GraphDims.upperGraphTooltipLineSpacing, textWrap: TextWrap.NoWrap, padding: toolTipPadding});
 
         // update the height of the tooltip to be larger than the height of all the text
-        toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + textDims.textBottomYPos + toolTipPadding.paddingBottom);
+        toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + toolTipTextPadding.paddingTop + textDims.textBottomYPos + toolTipTextPadding.paddingTop + toolTipPadding.paddingBottom);
         toolTip.background.attr("height", toolTipHeight);
+        toolTip.highlight.attr("y2", toolTipHeight - toolTipPadding.paddingBottom - toolTipPadding.paddingTop);
 
         // update the width of the tooltip to be larger than the width of all the text
-        toolTipWidth = Math.max(toolTipWidth, toolTipPadding.paddingLeft + textDims.width + toolTipPadding.paddingRight);
+        toolTipWidth = Math.max(toolTipWidth, toolTipPadding.paddingLeft + toolTipBorderWidth + toolTipTextPadding.paddingLeft + textDims.width + toolTipTextPadding.paddingRight + toolTipPadding.paddingRight);
         toolTip.background.attr("width", toolTipWidth);
 
         // -------------------------------------
@@ -660,7 +674,8 @@ export class BarGraph {
             .attr("x2", infoBoxBorderWidth / 2)
             .attr("y2", infoBoxHeight)
             .attr("stroke-width", infoBoxBorderWidth)
-            .attr("visibility", "visible");
+            .attr("visibility", "visible")
+            .attr("stroke-linecap", "round");
 
         // container to hold the text
         infoBox.textGroup = infoBox.group.append("text")
