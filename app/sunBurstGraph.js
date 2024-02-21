@@ -19,6 +19,7 @@
 
 import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodIngredientDataColNames, SunBurstStates, Colours, TranslationTools, FoodGroupDescDataColNames} from "../assets/assets.js";
 import { Visuals } from "./visuals.js";
+import { Model } from "../backend/backend.js";
 
 
 export class SunBurst {
@@ -63,6 +64,12 @@ export class SunBurst {
 
         // all the hover tooltips for the graph
         this.hoverToolTips = {};
+
+        // elements needed for the table
+        this.lowerGraphTable = null;
+        this.lowerGraphTableHeading = null;
+        this.lowerGraphTableBody = null;
+        this.lowerGraphTableTitle = null;
 
         // =================================================
     }
@@ -490,10 +497,92 @@ export class SunBurst {
         // ---------------------------------------------
     }
 
+    // draws the table for the sun burst graph
+    drawTable(nutrient, ageSexGroup){
+        const nutrientData = this.model.tableNutrientTablesByDemoGroupLv1[nutrient][ageSexGroup];
+        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
+
+        // --------------- draws the table -------------------------
+
+        /* Create subheading columns */
+        const subHeadingColumns = ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"];
+        const amountLeftIndex = 3;
+
+        this.lowerGraphTableHeading.selectAll("tr").remove();
+        this.lowerGraphTableHeading.append("tr")
+            .selectAll("td")
+            .data(subHeadingColumns)
+            .enter()
+            .append("td")
+                .style("min-width", (d, i) => i < amountLeftIndex ? "50px" : "40px")
+                .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
+                .style("border-top", "0px")
+                .style("font-size", `${GraphDims.lowerGraphTableSubHeadingFontSize}px`)
+                .style("font-weight", (d, i) => {
+                    const colNum = (i - amountLeftIndex) % 4;
+                    if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
+                        return FontWeight.Bold;
+                    }
+
+                    return FontWeight.Normal;
+                })
+                .style("opacity", (d, i) => {
+                    const colNum = (i - amountLeftIndex) % 4;
+                    if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
+                        return 0.8;
+                    }
+
+                    return 1;
+                })
+                .attr("colspan", 1)
+                .text(d => TranslationTools.translateText(d))
+        
+        this.lowerGraphTableBody.selectAll("tr").remove();
+
+        /* Create rows */
+        let tableRows = [];
+        for (const foodGroup in nutrientData) {
+            tableRows = tableRows.concat(nutrientData[foodGroup]);
+        }
+
+        for (const row of tableRows) {
+            let foodGroupData = [row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
+            foodGroupData = foodGroupData.map(foodGroupLv => Number.isNaN(foodGroupLv) ? "" : foodGroupLv);
+            const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
+
+            const newRow = this.lowerGraphTableBody.append("tr")
+                .selectAll("td")
+                .data(foodGroupData.concat(amountData))
+                .enter()
+                .append("td")
+                    .attr("colspan", 1)
+                    .text((d) => Number.isNaN(d) ? "" : d)
+                    .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
+                    .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
+                    .style("font-size", "12px")
+                    .style("font-weight", (d, i) => {
+                        const colNum = (i - amountLeftIndex) % 4;
+                        if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
+                            return FontWeight.Bold;
+                        }
+
+                        return FontWeight.Normal; 
+                    })
+                    .style("opacity", (d, i) => {
+                        const colNum = (i - amountLeftIndex) % 4;
+                        if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
+                            return 0.8;
+                        }
+
+                        return 1;
+                    });
+        }
+
+        // ---------------------------------------------------------
+    }
 
     lowerGraph(){
         const self = this;
-        const tableData = this.model.graphNutrientTablesByDemoGroupLv1;
 
         // register the save image button
         d3.select("#lowerGraphSaveGraph").on("click", () => this.saveAsImage());
@@ -619,10 +708,17 @@ export class SunBurst {
     
         self.lowerGraphFilterGroupsButton = d3.select("#lowerGraphFilterGroupsButton");
     
-        const lowerGraphTable = d3.select("#lowerGraphTable");
-        const lowerGraphTableHeading = lowerGraphTable.append("thead");
-        const lowerGraphTableBody = lowerGraphTable.append("tbody");
-        const lowerGraphTableTitle = d3.select("#lowerGraphTableTitle");
+        this.lowerGraphTable = d3.select("#lowerGraphTable");
+        this.lowerGraphTableTitle = d3.select("#lowerGraphTableTitle");
+
+        // remove any dummy tables that says "no data available in table" produced by JQuery due to a
+        //  race condition of D3 adding rows into the scroll table and JQuery setting up the scroll table
+        this.lowerGraphTable.selectAll("thead").remove();
+        this.lowerGraphTable.selectAll("tbody").remove();
+        d3.select("#lowerGraphTable_wrapper .dataTables_scroll .dataTables_scrollHead").remove();
+
+        this.lowerGraphTableHeading = this.lowerGraphTable.append("thead");
+        this.lowerGraphTableBody = this.lowerGraphTable.append("tbody");
     
         /* Draws table, sunburst, and updates age-sex selector */
         async function drawGraph(){
@@ -648,7 +744,7 @@ export class SunBurst {
             .attr("font-weight", FontWeight.Bold);
         
             drawSunburst(self.nutrient, ageSexGroup);
-            drawTable(self.nutrient, ageSexGroup);
+            self.drawTable(self.nutrient, ageSexGroup);
         }
     
         // Source reference: https://observablehq.com/@d3/zoomable-sunburst
@@ -833,11 +929,6 @@ export class SunBurst {
                 self.hoverToolTips[toolTipId] = toolTip;
                 self.positionHoverCard(toolTip, d);
             }
-        }
-    
-        function drawTable(nutrient, ageSexGroup){
-        const nutrientTableData = tableData[nutrient][ageSexGroup];
-        /** TODO: Create the lower graph table here **/
         }
     
         /* Return function defined above that updates the graph */

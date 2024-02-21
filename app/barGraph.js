@@ -19,6 +19,7 @@
 
 import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer, TranslationTools, DefaultDims} from "../assets/assets.js";
 import { Visuals } from "./visuals.js";
+import { Model } from "../backend/backend.js";
 
 
 export class BarGraph {
@@ -278,7 +279,7 @@ export class BarGraph {
 
         this.xAxisTicks = this.upperGraphXAxisLine.selectAll(".tick").attr("font-size", GraphDims.upperGraphXAxisTickFontSize);
 
-        const nutrientTotalByAgeSexGroup = this.model.findNutrientTotalAmtPerAgeSexGroup(nutrientData, type);
+        const nutrientTotalByAgeSexGroup = Model.findNutrientTotalAmtPerAgeSexGroup(nutrientData, type);
         this.groupedAmount = nutrientTotalByAgeSexGroup.groupedAmount;
         const maxAccumulatedAmount = nutrientTotalByAgeSexGroup.maxAccumulatedAmount;
 
@@ -490,6 +491,9 @@ export class BarGraph {
         const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
 
         const nutrientAgeGroups = Object.keys(nutrientData);
+        const amountLeftIndex = 1;
+
+        // --------------- draws the table -------------------------
 
         /* Create top-level heading */
         this.upperGraphTableHeading.selectAll("tr").remove();
@@ -517,16 +521,16 @@ export class BarGraph {
                 .style("border-top", "0px")
                 .style("font-size", `${GraphDims.upperGraphTableSubHeadingFontSize}px`)
                 .style("font-weight", (d, i) => {
-                    const colNum = (i + 1) % 4;
-                    if (colNum === 2 || colNum === 0) {
+                    const colNum = (i - amountLeftIndex) % 4;
+                    if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
                         return FontWeight.Bold;
                     }
 
                     return FontWeight.Normal;
                 })
                 .style("opacity", (d, i) => {
-                    const colNum = (i + 1) % 4;
-                    if (colNum === 3 || colNum === 1) {
+                    const colNum = (i - amountLeftIndex) % 4;
+                    if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
                         return 0.8;
                     }
 
@@ -555,7 +559,7 @@ export class BarGraph {
         Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
             const newRow = this.upperGraphTableBody.append("tr")
                 .selectAll("td")
-                .data([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? g["Interpretation_Notes"] : g[key])).flat()))
+                .data([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()))
                 .enter()
                 .append("td")
                     .attr("colspan", 1)
@@ -564,16 +568,16 @@ export class BarGraph {
                     .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
                     .style("font-size", "12px")
                     .style("font-weight", (d, i) => {
-                        const colNum = (i + 1) % 4;
-                        if (colNum === 2 || colNum === 0) {
+                        const colNum = (i - amountLeftIndex) % 4;
+                        if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
                             return FontWeight.Bold;
                         }
     
                         return FontWeight.Normal; 
                     })
                     .style("opacity", (d, i) => {
-                        const colNum = (i + 1) % 4;
-                        if (colNum === 3 || colNum === 1) {
+                        const colNum = (i - amountLeftIndex) % 4;
+                        if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
                             return 0.8;
                         }
     
@@ -582,6 +586,8 @@ export class BarGraph {
         });
 
         this.upperGraphTableTitle.text(TranslationTools.translateText("upperGraph.tableTitle", { amountUnit: this.getNutrientUnit(nutrient), nutrient }))
+
+        // ---------------------------------------------------------
     }
 
     upperGraph(){
