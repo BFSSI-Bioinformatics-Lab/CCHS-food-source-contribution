@@ -16,3 +16,8 @@
 #lowerGraphFilterGroupsButton {
     position:relative;
 }
+
+.lowerGraphTableScroll {
+    overflow:auto;
+    height: 400px;
+}

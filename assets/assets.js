@@ -113,6 +113,8 @@ export const GraphDims = Object.freeze({
     lowerGraphInfoBoxBorderWidth: 10,
     lowerGraphInfoBoxPadding: 10,
     lowerGraphInfoBoxLineSpacing: 10,
+    lowerGraphTableSubHeadingFontSize: 12,
+    lowerGraphTableHeadingFontSize: 16,
     legendFontSize: 12,
     legendSquareSize: 12,
     legendRowHeight: 20,

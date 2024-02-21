@@ -130,8 +130,18 @@ export class Model {
             .object(data));
     }
 
+    // getInterpretationValue(interpretationValue): Retrieves the interpretation value to be displayed
+    //  in the table of the visual's
+    static getInterpretationValue(interpretationValue) {
+        if (interpretationValue == "<10") {
+            return "X"
+        }
+
+        return interpretationValue;
+    }
+
     // calculate the total amount by nutrient per age-sex group
-    findNutrientTotalAmtPerAgeSexGroup(nutrientData, graphType) {
+    static findNutrientTotalAmtPerAgeSexGroup(nutrientData, graphType) {
         let maxAccumulatedAmount = 0;
 
         /* If graph type is number, get data from "Amount" col, otherwise use "Percentage" */
