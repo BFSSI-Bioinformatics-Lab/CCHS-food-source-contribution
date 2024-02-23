@@ -13,6 +13,9 @@
 // NOTE:                                                                //
 //      - Visualizations in UI code will not be abstracted so that      //
 //          the visuals can be copy and pasted                          //
+//      - We use nested functions to not get confused with state        //
+//          information in class attributes and to not pass in many     //
+//          arguments to functions                                      //
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -22,484 +25,576 @@ import { Visuals } from "./visuals.js";
 import { Model } from "../backend/backend.js";
 
 
-export class SunBurst {
-    constructor({model = null} = {}) {
-        this.model = model;
+export function lowerGraph(model){
+    // nutrient selected
+    let nutrient = model.nutrient;
 
-        // === Data retrieves from the model ===
-        this.nutrient = ""
+    // state of the display for the sunburst graph
+    let graphState = SunBurstStates.AllDisplayed;
 
-        // =====================================
+    // register the save image button
+    d3.select("#lowerGraphSaveGraph").on("click", () => saveAsImage());
 
-        this.selectedNode = null;
-        this.selectedNodeIndex = 1;
-        this.root = null;
-        this.treeHeight = null;
-        this.radius = null;
-        this.centerOuterRadius = null;
-        this.radiusDiffFromCenterArc = null;
+    // all the hover tooltips for the graph
+    const hoverToolTips = {};
 
-        // state of the display for the sunburst graph
-        this.graphState = SunBurstStates.AllDisplayed;
+    // Specify the chart’s dimensions.
+    const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
+    const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
+    const lowerGraphRightXPos = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth;
 
-        this.mouseOverFoodGroupName = null;
+    // used for calculating the radius
+    let radiusDiffFromCenterArc;
+    let centerOuterRadius;
+
+    // textbox for the nutrient at the center of the sun burst
+    let nutrientTextBox;
+
+    // the food group that the mouse is over
+    let mouseOverFoodGroupName = null;
+
+    const ageSexSelector = d3.select("#lowerGraphAgeSexSelect");
+
+    const lowerGraphSvg = d3.select("#lowerGraph").append("svg")
+    .attr("overflow", "visible")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [0, 0, width, height])
+    .attr("style", "max-width: 100%; height: auto;")
+    .style("font", "10px sans-serif");
+
+    // --------------- draws the info box ---------------------
+    
+    // attributes for the info box
+    const infoBox = {};
+    let infoBoxHeight = GraphDims.lowerGraphInfoBoxHeight;
+    const infoBoxBorderWidth = GraphDims.lowerGraphInfoBoxBorderWidth;
+    const infoBoxPadding = Visuals.getPadding(GraphDims.lowerGraphInfoBoxPadding);
+    const infoBoxDims = Visuals.getComponentLengths(0, infoBoxHeight, infoBoxPadding);
+
+    // group for the info box
+    infoBox.group = lowerGraphSvg.append("g")
+        .attr("transform", `translate(${lowerGraphRightXPos}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight})`);
+
+    // border line for the info box
+    infoBox.highlight = infoBox.group.append("line")
+        .attr("x1", infoBoxBorderWidth / 2)
+        .attr("x2", infoBoxBorderWidth / 2)
+        .attr("y2", infoBoxHeight)
+        .attr("stroke-width", infoBoxBorderWidth)
+        .attr("visibility", "visible")
+        .attr("stroke-linecap", "round");
+
+    // container to hold the text
+    infoBox.textGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding.paddingLeft}, ${infoBoxPadding.paddingTop})`);
+    
+    // draw the text
+    const textDims = Visuals.drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
+                                       lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, padding: infoBoxPadding});
+
+    // update the height of the info box to be larger than the height of the text
+    infoBoxHeight = Math.max(infoBoxDims.height, textDims.textBottomYPos + infoBoxPadding.paddingBottom);
+    infoBox.highlight.attr("y2", infoBoxHeight);
+
+    const lowerGraphInfoBox = infoBox;
+
+    // --------------------------------------------------------
+
+    // ----------------- draws the legend ---------------------
+    
+    // attributes for the legend
+    const legendItemPadding = Visuals.getPadding([0, 2]);
+    const legendItemTextPadding = Visuals.getPadding([5, 0]);
+    const legendItemFontSize = 12;
+    const legendData = Object.entries(GraphColours);
+    const colourBoxWidth = GraphDims.legendSquareSize;
+    const colourBoxHeight = GraphDims.legendSquareSize;
+    const legendItems = [];
+    let currentLegendItemYPos = 0;
+    
+    // draw the container to hold the legend
+    const legendGroup = lowerGraphSvg.append("g")
+        .attr("transform", `translate(${lowerGraphRightXPos}, ${ GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2 - GraphDims.lowerGraphArcRadius * 4 - (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius)})`);
+
+    // draw all the keys for the legend
+    for (const legendKey of legendData) {
+        let legendKeyText = legendKey[0];
+        let legendKeyColour = legendKey[1];
+
+        // ***************** draws a key in the legend *********************
         
-        // === individual components within the sunBurst ===
+        const legendItemGroup = legendGroup.append("g")
+        .attr("transform", `translate(0, ${currentLegendItemYPos})`);
 
-        this.sunBurstGroup = null;
-        this.nutrientTextBox = null;
-        this.lowerGraphFilterGroupsButton = null;
-        this.lowerGraphSunburst = null;
-        this.lowerGraphInfoBox = null;
-        this.label = null;
+        // draw the coloured box
+        const colourBox = legendItemGroup.append("rect")
+            .attr("y", legendItemPadding.paddingTop)
+            .attr("x", legendItemPadding.paddingLeft)
+            .attr("width", colourBoxWidth)
+            .attr("height", colourBoxHeight)
+            .attr("fill", legendKeyColour);
 
-        // invisible arcs used to identify mouse hover events
-        this.hoverPath = null;
+        // draw the text
+        const textX = legendItemPadding.paddingLeft + colourBoxWidth + legendItemTextPadding.paddingLeft;
+        const textY = legendItemTextPadding.paddingTop;
+        const textGroup = legendItemGroup.append("text")
+            .attr("y", legendItemPadding.paddingTop)
+            .attr("x", textX)
+            .attr("font-size", legendItemFontSize);
 
-        // the path for the text labels of the graph to follow        
-        this.path = null;
+        Visuals.drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
 
-        // generator for the display of the arcs on the graph
-        this.arc = null;
+        const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
 
-        // all the hover tooltips for the graph
-        this.hoverToolTips = {};
+        // *****************************************************************
 
-        // elements needed for the table
-        this.lowerGraphTable = null;
-        this.lowerGraphTableHeading = null;
-        this.lowerGraphTableBody = null;
-        this.lowerGraphTableTitle = null;
-
-        // =================================================
+        currentLegendItemYPos += legendItemPadding.paddingTop + legendItemPadding.paddingBottom + legendItemGroup.node().getBBox()["height"];
+        legendItems.push(legendItem);
     }
 
-    draw() {
-        return this.lowerGraph();
+    // --------------------------------------------------------
+
+    const lowerGraphChartHeading = lowerGraphSvg.append("g")
+    .append("text")
+    .attr("text-anchor", "middle")
+    .attr("font-size", GraphDims.lowerGraphChartHeadingFontSize)
+    .attr("x", width / 2)
+    .attr("y", GraphDims.lowerGraphTop - GraphDims.lowerGraphChartHeadingFontSize * 0.75);
+
+    const lowerGraphSunburst = lowerGraphSvg.append("g")
+    .attr("transform", `translate(${GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2})`)
+
+    const lowerGraphFilterGroupsButton = d3.select("#lowerGraphFilterGroupsButton");
+
+    const lowerGraphTable = d3.select("#lowerGraphTable");
+    const lowerGraphTableTitle = d3.select("#lowerGraphTableTitle");
+
+    // remove any dummy tables that says "no data available in table" produced by JQuery due to a
+    //  race condition of D3 adding rows into the scroll table and JQuery setting up the scroll table
+    lowerGraphTable.selectAll("thead").remove();
+    lowerGraphTable.selectAll("tbody").remove();
+    d3.select("#lowerGraphTable_wrapper .dataTables_scroll .dataTables_scrollHead").remove();
+
+    const lowerGraphTableHeading = lowerGraphTable.append("thead");
+    const lowerGraphTableBody = lowerGraphTable.append("tbody");
+
+    /* Draws table, sunburst, and updates age-sex selector */
+    async function drawGraph(){
+        nutrient = model.nutrient;
+
+        ageSexSelector.on("change", () => drawGraph(nutrient))
+            .selectAll("option")
+            .data(Model.ageSexGroupHeadings)
+            .enter()
+            .append("option")
+                .property("value", d => d)
+                .text(d => d);
+    
+        const ageSexGroup = Visuals.getSelector("#lowerGraphAgeSexSelect");
+        lowerGraphChartHeading.text(TranslationTools.translateText("lowerGraph.graphTitle", {
+            nutrient: nutrient,
+            ageSexGroup: ageSexGroup
+        }))
+        .attr("font-weight", FontWeight.Bold);
+    
+        drawSunburst(nutrient, ageSexGroup);
+        drawTable(nutrient, ageSexGroup);
     }
 
-    // getToolTipId(num): Retrieves the key id for a particular id
-    getToolTipId(num) {
-        return `arcHover${num}`
-    }
+    // Source reference: https://observablehq.com/@d3/zoomable-sunburst
+    function drawSunburst(nutrient, ageSexGroup){
+        // reset the selected arc that was clicked
+        let selectedNodeIndex = 1;
+        let selectedNode = null;
 
-    // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
-    //  retrieves the colour of the most recent ancestor to the current node
-    getArcColour(treeNode) {
-        let foundColour;
+        lowerGraphSunburst.selectAll("g").remove();
+        const groupedPercentages = model.buildSunBurstTree(nutrient, ageSexGroup);
+    
+        // Compute the layout.
+        const hierarchy = d3.hierarchy(groupedPercentages)
+            .sum(d => d.value)
+            .sort((a, b) => b.value - a.value);
 
-        while(foundColour === undefined && treeNode.depth > 1) {
-            foundColour = GraphColours[treeNode.data.name];
-            treeNode = treeNode.parent;
-        }
-
-        if (foundColour === undefined) {
-            foundColour = GraphColours["All Items"];
-        }
-
-        return foundColour;
-    }
-
-
-    // getRadius(treeNode): Retrieves the dimensions for the radius
-    //  of the arc of a particular tree node
-    getRadius(treeNode) {
-        let radius = this.radius;
-        if (treeNode.depth <= 1) {
-            radius = GraphDims.lowerGraphCenterArcRadius;
-        } else if (this.graphState == SunBurstStates.FilterOnlyLevel2) {
-            radius = GraphDims.lowerGraph2LevelFilterArcRadius;
-        }
+        const treeHeight = hierarchy.height;
+    
+        const root = d3.partition()
+            .size([2 * Math.PI, hierarchy.height + 1])
+            (hierarchy);
+    
+        root.each(d => d.current = d);
+    
+        // Create the arc generator.
+        const arc = d3.arc()
+            .startAngle(d => d.x0)
+            .endAngle(d => d.x1)
+            .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+            .padRadius(d => getRadius(d) * 1.5)
+            .innerRadius(d => getArcInnerRadius(d))
+            .outerRadius(d => getArcOuterRadius(d));
+    
+        // Append the arcs and pass in the data
+        const path = lowerGraphSunburst.append("g")
+            .selectAll("path")
+            .data(root.descendants().slice(1))
+            .join("path")
+            .attr("fill", d => getArcColour(d))
+            .attr("fill-opacity", d => arcVisible(d.current) ? 1 : 0)
+            .property("id", (d, i) => `arcPath${i}`)
+            .attr("d", d => arc(d.current))
+    
+        /* Update title of each individual arc, which appears when hovering over label */
+        const format = d3.format(",d");
+        path.append("title")
+            .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${format(d.value)}`);
         
-        return radius;
-    }
+        /* Name of each arc */
+        const label = lowerGraphSunburst.append("g")
+            .attr("pointer-events", "none")
+            .style("user-select", "none")
+            .selectAll("text")
+            .data(root.descendants().slice(1))
+            .join("text")
+            .attr("dy", d => getLabelDY(d))
+            .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
+            .attr("fill-opacity", d => +labelVisible(d.current))
+                .append("textPath") // make the text following the shape of the arc
+                .attr("id", (d, i) => `arcLabel${i}`)
+                .attr("href", (d, i) => `#arcPath${i}`);
+    
+        label.each((d, i) => labelTextFit(d, i));
 
-    computeArcOuterRadius(treeNode, radius) {
-        return Math.max(treeNode.y0 * radius, treeNode.y1 * radius - 1);
-    }
+        // add the nutrient title in the middle of the sunburst
+        if (nutrientTextBox === undefined) {
+            nutrientTextBox = lowerGraphSunburst.append("text")
+        }
 
-    computeArcInnerRadius(treeNode, radius) {
-        return treeNode.y0 * radius;
-    }
-
-    // getArcOuterRadius(treeNode): Retrieves the dimensions for the outer radius
-    //  of the arc of a particular tree node
-    getArcOuterRadius(treeNode) {
-        const radius = this.getRadius(treeNode);
-        let result = this.computeArcOuterRadius(treeNode, radius);
-
-        if (treeNode.depth <= 1) {
-            this.centerOuterRadius = result;
+        nutrientTextBox.attr("font-weight", FontWeight.Bold)
+            .attr("font-size", GraphDims.lowerGraphCenterFontSize)
+            .attr("text-anchor", TextAnchor.Middle);
+        
+        Visuals.drawWrappedText({textGroup: nutrientTextBox, text: nutrient, width: GraphDims.centerOuterRadius, 
+                                 textY: -GraphDims.lowerGraphCenterArcRadius, fontSize: GraphDims.lowerGraphCenterFontSize});
+    
+        // TODO: check what this does, copied from the reference 
+        const sunBurstGroup = lowerGraphSunburst.append("circle")
+            .datum(root.descendants())
+            .attr("r", d => getRadius(d))
+            .attr("fill", "none")
+            .attr("pointer-events", "all");
+    
+        // filter on level 2 groups on button click
+        lowerGraphFilterGroupsButton.on("click", filterOnLevel2Groups);
+    
+        const mouseOverBoxes = lowerGraphSunburst.append("g");
+    
+        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i));
+    
+        /* Create invisible arc paths on top of graph in order to detect hovering */
+        const hoverPath = lowerGraphSunburst.append("g")
+            .selectAll("path")
+            .data(root.descendants().slice(1))
+            .join("path")
+            .attr("fill-opacity", 0)
+            .attr("pointer-events", "auto")
+            .attr("d", d => arc(d.current))
+            .style("cursor", "pointer");
+    
+        hoverPath.on("mousemove", (data, index) => { arcHover(data, index) });
+        hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
+        hoverPath.on("mouseover", (data, index) => { arcHover(data, index) });
+        hoverPath.on("mouseout", (data, index) => { arcUnHover(data, index) });
+        
+        if (graphState == SunBurstStates.AllDisplayed) {
+            filterAllFoodGroups();
         } else {
-            result -= this.radiusDiffFromCenterArc;
+            filterOnLevel2Groups();
         }
+    
+        /* Creation of tooltip */
+        function hoverCard(d, root, i, nutrient){
+            let width = GraphDims.lowerGraphTooltipMinWidth;
+            const arcColour = d3.select(`#arcPath${i}`).attr("fill");
 
-        return result;
-    }
-
-    // getArcInnerRadius(treeNode): Retrives the dimensions for the inner radius
-    //  of the arc of a particular tree node
-    getArcInnerRadius(treeNode) {
-        const radius = this.radius;
-        let result = treeNode.y0 * radius;
-
-        if (treeNode.depth == 2 && this.radiusDiffFromCenterArc === null) {
-            this.radiusDiffFromCenterArc = result - this.centerOuterRadius - GraphDims.lowerGraphCenterArcMargin;
-        }
-
-        if (treeNode.depth > 1) {
-            result -= this.radiusDiffFromCenterArc;
-        }
-
-        return result;
-    }
-
-    // getArcMiddleRadius(treeNode): Retrives the dimensions for the middle radius
-    //   of the arc of a particular tree node
-    getArcMiddleRadius(treeNode) {
-        const outerRadius = this.getArcOuterRadius(treeNode);
-        const innerRadius = this.getArcInnerRadius(treeNode);
-
-        return innerRadius + (outerRadius - innerRadius) / 2;
-    }
-
-    // setFilterButton(translationKey, onClickAction): Changes the state of the filter button
-    //  based on 'translationKey' and 'onClickAction'
-    setFilterButton(translationKey, onClickAction) {
-        this.lowerGraphFilterGroupsButton.text(TranslationTools.translateText(translationKey));
-        this.lowerGraphFilterGroupsButton.on("click", onClickAction);
-    }
-
-    setFilterButtonToLevel2Groups() {
-        return this.setFilterButton("lowerGraph.seeLevel2Groups", () => this.filterOnLevel2Groups());
-    }
-
-    setFilterButtonToAllGroups() {
-        return this.setFilterButton("lowerGraph.seeAllGroups", () => this.filterAllFoodGroups());
-    }
-
-    /* Shows arc only when the arc has a depth between 1-4 and a nonzero angle */
-    arcVisible(d) {
-        return d.depth <= this.treeHeight && d.depth >= 1 && d.x1 > d.x0;
-    }
-
-    // updateArcThickness(): Updates the thickness for the arcs based on what state the sunburst is in
-    updateArcThickness() {
-        // update the outer-radius for the arc generators
-        this.arc.outerRadius(d => this.getArcOuterRadius(d));
-
-        // Update the radius for the arcs
-        this.path.attr("d", (d) => { this.arc(d.current); }); 
-        this.hoverPath.attr("d", (d) =>{ this.arc(d.current); });
-
-        // center the position of the arc text labels
-        this.label.each((d, i) => {
-            const element = d3.select(`#arcLabel${i}`);
-            const parent = d3.select(element.node().parentNode);
-            parent.attr("dy", (parentNode) => { return this.getLabelDY(parentNode); });
-        });
-    }
-
-    // getLabelDY(treeNode): Retrieves the y positioning of the label text on the arc
-    getLabelDY(treeNode) {
-        let radius = this.getRadius(treeNode);
-        if (this.graphState == SunBurstStates.FilterOnlyLevel2) {
-            radius += (GraphDims.lowerGraph2LevelFilterArcRadius - GraphDims.lowerGraphArcRadius) * 2;
-        }
-
-        if (treeNode.depth > 1) {
-            return radius / 2;
-        }
-
-        return (this.radius - GraphDims.lowerGraphCenterArcRadius) / 2 + 5;
-    }
-
-    // labelAvailableLength(d): Retrieves the length of available space in a particular arc 'd'
-    labelAvailableLength(d, midRadius, ){
-        const angle = d.x1 - d.x0;
-        const arcLength = midRadius * angle - 2 * GraphDims.lowerGraphArcPadding;
-        return arcLength;
-    }
-
-    /* Make label appear in the middle of the arc */
-    labelTransform() {
-        return `translate(${30},0)`;
-    }
-
-    // Add some extra tolerance length to the computed text length due to
-    //  the inaccuracy of the getComputedTextLength on different browsers
-    getArcTextLength(elementNode, text) {
-        return Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
-    }
-
-    // getArcLabel(index): Retrieves the element for the label of the arc
-    getArcLabel(index) {
-        return d3.select(`#arcLabel${index}`);
-    }
-
-    /* Truncates the label based on the arc's width, replaces letters with ellipsis if too long */
-    labelTextFit(d, i){
-        const midRadius = this.getArcMiddleRadius(d);
-        const element = this.getArcLabel(i);
-        if (!element.node()) return;
-        const elementNode = element.node();
-        const availableLength = this.labelAvailableLength(d, midRadius); 
-        let text = d.data.name;
-
-        element.attr("startOffset", 0);
-        element.text(text);
-        let textLength = this.getArcTextLength(elementNode, text);
-        let textTruncated = false;
-
-        while (textLength > availableLength && text){
-            text = text.slice(0, text.length - 1);
-            element.text(`${text}...`);
-            textLength = this.getArcTextLength(elementNode, text);
-            textTruncated = true;
-        }
-
-        if (textLength > availableLength) {
-            element.text("");
-        }
-
-        // center text only if the text is not truncated
-        let textX = 0;
-        if ((d.x1 - d.x0) < 2 * Math.PI && !textTruncated) {
-            textX = (d.x1 - d.x0) / 2.0 * midRadius - Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0;
-        }
-
-        if (textX < 0) {
-            textX = 0;
-        }
-
-        if (availableLength > 0) {
-            //console.log("NAME: ", d.data.name, " AND TEXT: ", element.text(), "AVAILA: ", availableLength, "CURRENT LEN: ", this.getArcTextLength(elementNode, text), " Y0: ", d.y0, " AND Y1: ", d.y1, " AND TEXT X: ", textX, " AND TRUNCATED: ", textTruncated);
-            //console.log("MID: ", (d.x1 - d.x0) / 2.0, " AND ", Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0, " AND ", (d.x1 - d.x0) / 2.0 * midRadius - Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0);
-        }
-
-        element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
-    }
-
-    /* Shows label only when the arc has an angle over 0.05 */
-    labelVisible(d) {
-        return d.x1 - d.x0 > 0.05
-    }
-
-    /* Positions tool tip according to arc position */
-    positionHoverCard(toolTip, d){
-        const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
-
-        const x = GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1);
-        const y = GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth);
-        toolTip.group.attr("transform", `translate(${x}, ${y})`);
-    }
-
-    // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
-    transitionArcs(duration = 750){
-        const self = this
-        const t = this.lowerGraphSunburst.transition().duration(duration);
-        const s = this.lowerGraphSunburst.transition().duration(duration * 1.5);
-
-        this.label.filter(function(d) {
-            return +this.getAttribute("fill-opacity") || self.labelVisible(d.target);
-        }).transition(s)
-            .attr("fill-opacity", (d) => +this.arcVisible(d.target))
-            .attrTween("transform", d => () => this.labelTransform(d.current))
-            .attr("fill", d => {
-                if (this.selectedNode !== null && this.selectedNode.target.data.name == d.target.data.name) {
-                    return "white";
-                }
-
-                return "black";
+            /* Content of tooltip */
+            const lines = TranslationTools.translateText("lowerGraph.infoBoxLevel", { 
+                returnObjects: true, 
+                context: d.depth,
+                name: d.data.name,
+                percentage: Math.round( d.data.row.Percentage * 10) / 10,
+                parentGroup: d.depth > 1 ? d.parent.data.name : "",
+                parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
+                nutrient
             });
 
-        /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
-        this.label.attr("href", (d, i) => this.arcVisible(d.target) ? `#arcPath${i}` : "none" )
-            .call((d) => d.attr("fill-opacity", 0))
-            .each((d, i) => this.labelTextFit(d.target, i));
+            const toolTipId = `arcHover${i}`;
 
-        // Transition the data on all arcs, even the ones that aren’t visible,
-        // so that if this transition is interrupted, entering arcs will start
-        // the next transition from the desired position.
-        this.path.each((d,i) => this.positionHoverCard(self.hoverToolTips[self.getToolTipId(i)], d.target))
-            .transition(t)
-            .tween("data", d => {
-            const i = d3.interpolate(d.current, d.target);
-            return t => d.current = i(t);
+            // ------- draw the tooltip ------------
+
+            // attributes for the tool tip
+            const toolTip = {};
+            let toolTipWidth = width;
+            let toolTipHeight = 50;
+            const toolTipBorderWidth = 3;
+            const toolTipBackgroundColor = Colours.White;
+            const toolTipPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipPaddingHor, GraphDims.lowerGraphTooltipPaddingVert]);
+            const toolTipTextPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipTextPaddingHor, GraphDims.lowerGraphTooltipTextPaddingVert]);
+            const toolTipDims = Visuals.getComponentLengths(toolTipWidth, toolTipHeight, toolTipPadding);
+            const toolTipHighlightXPos = toolTipPadding.paddingLeft + toolTipBorderWidth / 2;
+
+            // draw the container for the tooltip
+            toolTip.group = root.append("g")
+                .attr("id",  toolTipId)
+                .attr("opacity", 0);
+
+            // draw the background for the tooltip
+            toolTip.background = toolTip.group.append("rect")
+                .attr("height", toolTipHeight)
+                .attr("width", toolTipWidth)
+                .attr("fill", toolTipBackgroundColor)
+                .attr("stroke", arcColour)
+                .attr("stroke-width", 1)
+                .attr("rx", 5);
+
+            // draw the highlight
+            toolTip.highlight = toolTip.group.append("line")
+                .attr("x1", toolTipHighlightXPos)
+                .attr("x2", toolTipHighlightXPos)
+                .attr("y1", toolTipPadding.paddingTop)
+                .attr("y2", toolTipHeight - toolTipPadding.paddingBottom)
+                .attr("stroke", arcColour) 
+                .attr("stroke-width", toolTipBorderWidth)
+                .attr("stroke-linecap", "round");
+
+            // draw the text
+            toolTip.textGroup = toolTip.group.append("text")
+                .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
+                .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft +  toolTipTextPadding.paddingLeft}, ${toolTipPadding.paddingTop + toolTipTextPadding.paddingTop})`);
+
+            const textDims = Visuals.drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipDims.width, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+                                               textWrap: TextWrap.NoWrap, padding: toolTipPadding});
+
+            // update the height of the tooltip to be larger than the height of all the text
+            toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + toolTipTextPadding.paddingTop + textDims.textBottomYPos + toolTipTextPadding.paddingTop + toolTipPadding.paddingBottom);
+            toolTip.background.attr("height", toolTipHeight);
+            toolTip.highlight.attr("y2", toolTipHeight - toolTipPadding.paddingBottom);
+
+            // update the width of the tooltip to be larger than the width of all the text
+            toolTipWidth = Math.max(toolTipWidth, toolTipPadding.paddingLeft + textDims.width + toolTipPadding.paddingRight);
+            toolTip.background.attr("width", toolTipWidth);
+
+            // -------------------------------------
+
+            hoverToolTips[toolTipId] = toolTip;
+            positionHoverCard(toolTip, d);
+        }
+
+        /* Shows arc only when the arc has a depth between 1-4 and a nonzero angle */
+        function arcVisible(d) {
+            return d.depth <= treeHeight && d.depth >= 1 && d.x1 > d.x0;
+        }
+
+        /* Make the opacity of tooltip 1 */
+        function arcHover(d, i){
+            d3.select(`#arcHover${i}`).attr("opacity", 1);
+            updateInfoBox(d);
+        }
+
+        /* Make the opacity of tooltip 0 */
+        function arcUnHover(d, i){
+            d3.select(`#arcHover${i}`).attr("opacity", 0);
+            Visuals.drawText({textGroup: lowerGraphInfoBox.textGroup});
+            lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
+        }
+
+        // updateArcThickness(): Updates the thickness for the arcs based on what state the sunburst is in
+        function updateArcThickness() {
+            // update the outer-radius for the arc generators
+            arc.outerRadius(d => getArcOuterRadius(d));
+
+            // Update the radius for the arcs
+            path.attr("d", (d) => { arc(d.current); }); 
+            hoverPath.attr("d", (d) =>{ arc(d.current); });
+
+            // center the position of the arc text labels
+            label.each((d, i) => {
+                const element = d3.select(`#arcLabel${i}`);
+                const parent = d3.select(element.node().parentNode);
+                parent.attr("dy", (parentNode) => { return getLabelDY(parentNode); });
+            });
+        }
+
+        /* Positions tool tip according to arc position */
+        function positionHoverCard(toolTip, d){
+            const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
+
+            const x = GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1);
+            const y = GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth);
+            toolTip.group.attr("transform", `translate(${x}, ${y})`);
+        }
+
+        // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
+        function transitionArcs(duration = 750){
+            const t = lowerGraphSunburst.transition().duration(duration);
+            const s = lowerGraphSunburst.transition().duration(duration * 1.5);
+
+            label.filter(function(d) {
+                return +this.getAttribute("fill-opacity") || labelVisible(d.target);
+            }).transition(s)
+                .attr("fill-opacity", (d) => +arcVisible(d.target))
+                .attrTween("transform", d => () => `translate(30,0)`)
+                .attr("fill", d => {
+                    if (selectedNode !== null && selectedNode.target.data.name == d.target.data.name) {
+                        return "white";
+                    }
+
+                    return "black";
+                });
+
+            /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
+            label.attr("href", (d, i) => arcVisible(d.target) ? `#arcPath${i}` : "none" )
+                .call((d) => d.attr("fill-opacity", 0))
+                .each((d, i) => labelTextFit(d.target, i));
+
+            // Transition the data on all arcs, even the ones that aren’t visible,
+            // so that if this transition is interrupted, entering arcs will start
+            // the next transition from the desired position.
+            path.each((d,i) => positionHoverCard(hoverToolTips[`arcHover${i}`], d.target))
+                .transition(t)
+                .tween("data", d => {
+                const i = d3.interpolate(d.current, d.target);
+                return t => d.current = i(t);
+                })
+            .filter(function(d) {
+                return +this.getAttribute("fill-opacity") || arcVisible(d.target);
             })
-        .filter(function(d) {
-            return +this.getAttribute("fill-opacity") || self.arcVisible(d.target);
-        })
-            .attr("fill-opacity", d => this.arcVisible(d.target) ? 1 : 0)
-            .attr("pointer-events", d => this.arcVisible(d.target) ? "auto" : "none") 
-            .attrTween("d", d => () => this.arc(d.current));
+                .attr("fill-opacity", d => arcVisible(d.target) ? 1 : 0)
+                .attr("pointer-events", d => arcVisible(d.target) ? "auto" : "none") 
+                .attrTween("d", d => () => arc(d.current));
+                
+            hoverPath.transition(t)
+                .tween("data", d => {
+                    const i = d3.interpolate(d.current, d.target);
+                    return t => d.current = i(t);
+                })
+                .attrTween("d", d => () => arc(d.current))
+        }
+
+        // setFilterButton(translationKey, onClickAction): Changes the state of the filter button
+        //  based on 'translationKey' and 'onClickAction'
+        function setFilterButton(translationKey, onClickAction) {
+            lowerGraphFilterGroupsButton.text(TranslationTools.translateText(translationKey));
+            lowerGraphFilterGroupsButton.on("click", onClickAction);
+        }
+
+        // setFilterButtonToLevel2Groups(): Changes the filter button to be to filter on level 2 groups
+        function setFilterButtonToLevel2Groups() {
+            setFilterButton("lowerGraph.seeLevel2Groups", () => filterOnLevel2Groups());
+        }
+
+        // filterOnLevel2Groups(): Display only level 2 groups of the Sun Burst Graph
+        function filterOnLevel2Groups(){
+            graphState = SunBurstStates.FilterOnlyLevel2;
+            const highestDepth = 3;
+            let acc = 0;
+
+            /* Sort level 2 arcs by value amount */
+            const sortedGroups = root.descendants().slice(1).sort((a, b) => d3.descending(a.value, b.value));
+            sortedGroups.forEach((d, i) => {
+                root.descendants().find(r => r.data.name === d.data.name).target = {
+                    depth: d.depth,
+                    data: d.data,
+                    value: d.value,
+                    x0: d.depth === highestDepth ? acc : 0,
+                    x1: d.depth === highestDepth ? acc + (d.x1 - d.x0) : 0,
+                    y0: d.y0,
+                    y1: d.y1
+                }
+                acc += d.depth === highestDepth ? (d.x1 - d.x0) : 0;
+            });
+
+            // disable the on-click event for the arcs
+            hoverPath.on("click", null);
+
+            // increase the thickness of the arcs
+            updateArcThickness();
             
-        this.hoverPath.transition(t)
-            .tween("data", d => {
-            const i = d3.interpolate(d.current, d.target);
-            return t => d.current = i(t);
-            })
-            .attrTween("d", d => () => self.arc(d.current))
-    }
+            transitionArcs(1000);
+            setFilterButton("lowerGraph.seeAllGroups", () => filterAllFoodGroups());
+        }
 
-    // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
-    filterAllFoodGroups() {
-        this.graphState = SunBurstStates.AllDisplayed;
-        this.root.each(d => d.target = {
-            depth: d.depth,
-            data: d.data,
-            value: d.value,
-            x0: d.x0,
-            x1: d.x1,
-            y0: d.y0,
-            y1: d.y1,
-        });
-
-        // enable the on-click event for the arcs
-        this.enableArcOnClick();
-
-        // set back the thickness of the arcs back to its original thickness
-        this.updateArcThickness();
-
-        this.transitionArcs(1000);
-        this.setFilterButtonToLevel2Groups();
-
-        // get back to the previously clicked arc
-        this.arcOnClick(null, this.selectedNodeIndex);
-    }
-
-    // filterOnLevel2Groups(): Display only level 2 groups of the Sun Burst Graph
-    filterOnLevel2Groups(){
-        this.graphState = SunBurstStates.FilterOnlyLevel2;
-        const highestDepth = 3;
-        let acc = 0;
-
-        /* Sort level 2 arcs by value amount */
-        const sortedGroups = this.root.descendants().slice(1).sort((a, b) => d3.descending(a.value, b.value));
-        sortedGroups.forEach((d, i) => {
-            this.root.descendants().find(r => r.data.name === d.data.name).target = {
+        // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
+        function filterAllFoodGroups() {
+            graphState = SunBurstStates.AllDisplayed;
+            root.each(d => d.target = {
                 depth: d.depth,
                 data: d.data,
                 value: d.value,
-                x0: d.depth === highestDepth ? acc : 0,
-                x1: d.depth === highestDepth ? acc + (d.x1 - d.x0) : 0,
+                x0: d.x0,
+                x1: d.x1,
                 y0: d.y0,
-                y1: d.y1
-            }
-            acc += d.depth === highestDepth ? (d.x1 - d.x0) : 0;
-        });
-
-        // disable the on-click event for the arcs
-        this.disableArcOnClick();
-
-        // increase the thickness of the arcs
-        this.updateArcThickness();
-        
-        this.transitionArcs(1000);
-        this.setFilterButtonToAllGroups();
-    }
-
-    // arcOnClick(event, i): Handle zoom on click when clicking on an arc.
-    arcOnClick(event, i) {
-        const children = this.root.descendants();
-        this.sunBurstGroup.datum(children[i] ?? this.root);
-
-        // the node that has been clicked
-        const p = children[i] ?? children;
-
-        const isTransitionArc = (!p.target || (p.target.x1 - p.target.x0) < 2 * Math.PI || this.selectedNode != p);
-
-        /* Transition only if the clicked arc does not already span a full circle or the arc has not been already selected */
-        if (isTransitionArc) {
-            this.root.each(d => {
-                if (d.data.row)
-                    d.target = {
-                        depth: d.depth,
-                        data: d.data,
-                        value: d.value,
-                        x0: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 0 : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
-                        x1: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 2 * Math.PI : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
-                        y0: d.y0,
-                        y1: d.y1
-                    }
+                y1: d.y1,
             });
+
+            // enable the on-click event for the arcs
+            hoverPath.on("click", (e, i) => { arcOnClick(e,i + 1); });
+
+            // set back the thickness of the arcs back to its original thickness
+            updateArcThickness();
+
+            transitionArcs(1000);
+            setFilterButtonToLevel2Groups();
+
+            // get back to the previously clicked arc
+            arcOnClick(null, selectedNodeIndex);
         }
 
-        this.selectedNode = p;
-        this.selectedNodeIndex = i;
+        // arcOnClick(event, i): Handle zoom on click when clicking on an arc.
+        function arcOnClick(event, i) {
+            const children = root.descendants();
+            sunBurstGroup.datum(children[i] ?? root);
 
-        if (isTransitionArc) {
-            this.transitionArcs();
+            // the node that has been clicked
+            const p = children[i] ?? children;
+
+            const isTransitionArc = (!p.target || (p.target.x1 - p.target.x0) < 2 * Math.PI || selectedNode != p);
+
+            /* Transition only if the clicked arc does not already span a full circle or the arc has not been already selected */
+            if (isTransitionArc) {
+                root.each(d => {
+                    if (d.data.row)
+                        d.target = {
+                            depth: d.depth,
+                            data: d.data,
+                            value: d.value,
+                            x0: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 0 : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
+                            x1: d.value && d == p || (d.children && d.children.find(r => p == r)) ? 2 * Math.PI : (p.data.row["Food group_level1"] == d.data.row["Food group_level1"] || d.depth == 1 || p.depth == 1) ? Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI : 0,
+                            y0: d.y0,
+                            y1: d.y1
+                        }
+                });
+            }
+
+            selectedNode = p;
+            selectedNodeIndex = i;
+
+            if (isTransitionArc) {
+                transitionArcs();
+            }
+
+            // set the correct state for the filter button
+            setFilterButtonToLevel2Groups();
         }
-
-        // set the correct state for the filter button
-        this.setFilterButtonToLevel2Groups();
     }
 
-    // enableArcOnClick(): Register the on-click event for the arcs to be clickable
-    enableArcOnClick() {
-        this.hoverPath.on("click", (e, i) => {
-            this.arcOnClick(e,i + 1);
-        });
-    }
+    /* Return function defined above that updates the graph */
+    return drawGraph;
 
-    // disableArcOnClick(): Disables the on-click event for the arcs
-    disableArcOnClick() {
-        this.hoverPath.on("click", null);
-    }
-
-    /* Make the opacity of tooltip 1 */
-    arcHover(d, i){
-        d3.select(`#arcHover${i}`).attr("opacity", 1);
-        this.updateInfoBox(d);
-    }
-
-    /* Make the opacity of tooltip 0 */
-    arcUnHover(d, i){
-        d3.select(`#arcHover${i}`).attr("opacity", 0);
-        Visuals.drawText({textGroup: this.lowerGraphInfoBox.textGroup});
-        this.lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
-    }
-
-    /* Update food group description box */
-    updateInfoBox(d){
-        let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
-        colour = colour === undefined ? null : colour;
-
-        let foodGroupName = d.data.name;
-        if (this.mouseOverFoodGroupName !== null && this.mouseOverFoodGroupName == foodGroupName) {
-            return;
-        }
-
-        this.mouseOverFoodGroupName = foodGroupName;
-
-        let desc = "";
-        if (foodGroupName != "All Items") {
-            desc = this.model.getFoodDescription(this.nutrient, foodGroupName);
-        }
-
-        // ---------- Updates the infobox --------------
-
-        const infoBoxPadding = Visuals.getPadding(GraphDims.lowerGraphInfoBoxPadding);
-
-        // change text
-        const textDims = Visuals.drawText({textGroup: this.lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
-                                           fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, padding: infoBoxPadding});
-
-        // change colour
-        this.lowerGraphInfoBox.highlight.attr("stroke", colour);
-
-        // update the height of the info box to be larger than the height of the text
-        let infoBoxHeight = this.lowerGraphInfoBox.highlight.node().getBBox()["height"];
-        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding.paddingTop + textDims.textBottomYPos + infoBoxPadding.paddingBottom);
-        this.lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
-
-        // ---------------------------------------------
-    }
 
     // draws the table for the sun burst graph
-    drawTable(nutrient, ageSexGroup){
-        const nutrientData = this.model.tableNutrientTablesByDemoGroupLv1[nutrient][ageSexGroup];
+    function drawTable(nutrient, ageSexGroup){
+        const nutrientData = model.tableNutrientTablesByDemoGroupLv1[nutrient][ageSexGroup];
         const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
 
         // --------------- draws the table -------------------------
@@ -508,8 +603,8 @@ export class SunBurst {
         const subHeadingColumns = ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"];
         const amountLeftIndex = 3;
 
-        this.lowerGraphTableHeading.selectAll("tr").remove();
-        this.lowerGraphTableHeading.append("tr")
+        lowerGraphTableHeading.selectAll("tr").remove();
+        lowerGraphTableHeading.append("tr")
             .selectAll("td")
             .data(subHeadingColumns)
             .enter()
@@ -537,7 +632,7 @@ export class SunBurst {
                 .attr("colspan", 1)
                 .text(d => TranslationTools.translateText(d))
         
-        this.lowerGraphTableBody.selectAll("tr").remove();
+        lowerGraphTableBody.selectAll("tr").remove();
 
         /* Create rows */
         let tableRows = [];
@@ -550,7 +645,7 @@ export class SunBurst {
             foodGroupData = foodGroupData.map(foodGroupLv => Number.isNaN(foodGroupLv) ? "" : foodGroupLv);
             const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
 
-            const newRow = this.lowerGraphTableBody.append("tr")
+            const newRow = lowerGraphTableBody.append("tr")
                 .selectAll("td")
                 .data(foodGroupData.concat(amountData))
                 .enter()
@@ -581,362 +676,175 @@ export class SunBurst {
         // ---------------------------------------------------------
     }
 
-    lowerGraph(){
-        const self = this;
+    // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
+    //  retrieves the colour of the most recent ancestor to the current node
+    function getArcColour(treeNode) {
+        let foundColour;
 
-        // register the save image button
-        d3.select("#lowerGraphSaveGraph").on("click", () => this.saveAsImage());
+        while(foundColour === undefined && treeNode.depth > 1) {
+            foundColour = GraphColours[treeNode.data.name];
+            treeNode = treeNode.parent;
+        }
 
-        // Specify the chart’s dimensions.
-        const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
-        const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
-        const lowerGraphRightXPos = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth;
-        self.radius = GraphDims.lowerGraphArcRadius;
-    
-        const ageSexSelector = d3.select("#lowerGraphAgeSexSelect");
-    
-        const lowerGraphSvg = d3.select("#lowerGraph").append("svg")
-        .attr("overflow", "visible")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", [0, 0, width, height])
-        .attr("style", "max-width: 100%; height: auto;")
-        .style("font", "10px sans-serif");
+        if (foundColour === undefined) {
+            foundColour = GraphColours["All Items"];
+        }
 
-        // --------------- draws the info box ---------------------
+        return foundColour;
+    }
+
+    // getRadius(treeNode): Retrieves the dimensions for the radius
+    //  of the arc of a particular tree node
+    function getRadius(treeNode) {
+        if (treeNode.depth <= 1) {
+            return GraphDims.lowerGraphCenterArcRadius;
+        } else if (graphState == SunBurstStates.FilterOnlyLevel2) {
+            return GraphDims.lowerGraph2LevelFilterArcRadius;
+        }
         
-        // attributes for the info box
-        const infoBox = {};
-        let infoBoxHeight = GraphDims.lowerGraphInfoBoxHeight;
-        const infoBoxBorderWidth = GraphDims.lowerGraphInfoBoxBorderWidth;
+        return GraphDims.lowerGraphArcRadius;
+    }
+
+    // getArcOuterRadius(treeNode): Retrieves the dimensions for the outer radius
+    //  of the arc of a particular tree node
+    function getArcOuterRadius(treeNode) {
+        const radius = getRadius(treeNode);
+        let result = Math.max(treeNode.y0 * radius, treeNode.y1 * radius - 1);
+
+        if (treeNode.depth <= 1) {
+            centerOuterRadius = result;
+        } else {
+            result -= radiusDiffFromCenterArc;
+        }
+
+        return result;
+    }
+
+    // getArcInnerRadius(treeNode): Retrives the dimensions for the inner radius
+    //  of the arc of a particular tree node
+    function getArcInnerRadius(treeNode) {
+        let result = treeNode.y0 * GraphDims.lowerGraphArcRadius;
+
+        if (treeNode.depth == 2 && radiusDiffFromCenterArc === undefined) {
+            radiusDiffFromCenterArc = result - centerOuterRadius - GraphDims.lowerGraphCenterArcMargin;
+        }
+
+        return treeNode.depth > 1 ? result - radiusDiffFromCenterArc : result
+    }
+
+    // getArcMiddleRadius(treeNode): Retrives the dimensions for the middle radius
+    //   of the arc of a particular tree node
+    function getArcMiddleRadius(treeNode) {
+        const outerRadius = getArcOuterRadius(treeNode);
+        const innerRadius = getArcInnerRadius(treeNode);
+
+        return innerRadius + (outerRadius - innerRadius) / 2;
+    }
+
+    // getLabelDY(treeNode): Retrieves the y positioning of the label text on the arc
+    function getLabelDY(treeNode) {
+        if (graphState == SunBurstStates.FilterOnlyLevel2) {
+            return GraphDims.lowerGraph2LevelFilterArcRadius / 2 + (GraphDims.lowerGraph2LevelFilterArcRadius - GraphDims.lowerGraphArcRadius);
+        } else if (treeNode.depth > 1) {
+            return GraphDims.lowerGraphArcRadius / 2;
+        }
+
+        return (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius) / 2 + 5;
+    }
+
+    /* Shows label only when the arc has an angle over 0.05 */
+    function labelVisible(d) {
+        return d.x1 - d.x0 > 0.05
+    }
+
+    // getArcLabel(index): Retrieves the element for the label of the arc
+    function getArcLabel(index) {
+        return d3.select(`#arcLabel${index}`);
+    }
+
+    // labelAvailableLength(d): Retrieves the length of available space in a particular arc 'd'
+    function labelAvailableLength(d, midRadius){
+        const angle = d.x1 - d.x0;
+        const arcLength = midRadius * angle - 2 * GraphDims.lowerGraphArcPadding;
+        return arcLength;
+    }
+
+    /* Truncates the label based on the arc's width, replaces letters with ellipsis if too long */
+    function labelTextFit(d, i){
+        const midRadius = getArcMiddleRadius(d);
+        const element = getArcLabel(i);
+        if (!element.node()) return;
+        const elementNode = element.node();
+        const availableLength = labelAvailableLength(d, midRadius); 
+        let text = d.data.name;
+
+        element.attr("startOffset", 0);
+        element.text(text);
+        let textLength = Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+        let textTruncated = false;
+
+        while (textLength > availableLength && text){
+            text = text.slice(0, text.length - 1);
+            element.text(`${text}...`);
+            textLength = Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+            textTruncated = true;
+        }
+
+        if (textLength > availableLength) {
+            element.text("");
+        }
+
+        // center text only if the text is not truncated
+        let textX = 0;
+        if ((d.x1 - d.x0) < 2 * Math.PI && !textTruncated) {
+            textX = (d.x1 - d.x0) / 2.0 * midRadius - Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0;
+        }
+
+        if (textX < 0) {
+            textX = 0;
+        }
+
+        element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
+    }
+
+    /* Update food group description box */
+    function updateInfoBox(d){
+        let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
+        colour = colour === undefined ? null : colour;
+
+        let foodGroupName = d.data.name;
+        if (mouseOverFoodGroupName !== null && mouseOverFoodGroupName == foodGroupName) {
+            return;
+        }
+
+        mouseOverFoodGroupName = foodGroupName;
+
+        let desc = "";
+        if (foodGroupName != "All Items") {
+            desc = model.getFoodDescription(nutrient, foodGroupName);
+        }
+
+        // ---------- Updates the infobox --------------
+
         const infoBoxPadding = Visuals.getPadding(GraphDims.lowerGraphInfoBoxPadding);
-        const infoBoxDims = Visuals.getComponentLengths(0, infoBoxHeight, infoBoxPadding);
 
-        // group for the info box
-        infoBox.group = lowerGraphSvg.append("g")
-            .attr("transform", `translate(${lowerGraphRightXPos}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight})`);
+        // change text
+        const textDims = Visuals.drawText({textGroup: lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
+                                           fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, padding: infoBoxPadding});
 
-        // border line for the info box
-        infoBox.highlight = infoBox.group.append("line")
-            .attr("x1", infoBoxBorderWidth / 2)
-            .attr("x2", infoBoxBorderWidth / 2)
-            .attr("y2", infoBoxHeight)
-            .attr("stroke-width", infoBoxBorderWidth)
-            .attr("visibility", "visible")
-            .attr("stroke-linecap", "round");
-
-        // container to hold the text
-        infoBox.textGroup = infoBox.group.append("text")
-            .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
-            .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding.paddingLeft}, ${infoBoxPadding.paddingTop})`);
-        
-        // draw the text
-        const textDims = Visuals.drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
-                                           lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, padding: infoBoxPadding});
+        // change colour
+        lowerGraphInfoBox.highlight.attr("stroke", colour);
 
         // update the height of the info box to be larger than the height of the text
-        infoBoxHeight = Math.max(infoBoxDims.height, textDims.textBottomYPos + infoBoxPadding.paddingBottom);
-        infoBox.highlight.attr("y2", infoBoxHeight);
+        let infoBoxHeight = lowerGraphInfoBox.highlight.node().getBBox()["height"];
+        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding.paddingTop + textDims.textBottomYPos + infoBoxPadding.paddingBottom);
+        lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
 
-        this.lowerGraphInfoBox = infoBox;
-
-        // --------------------------------------------------------
-
-        // ----------------- draws the legend ---------------------
-        
-        // attributes for the legend
-        const legendItemPadding = Visuals.getPadding([0, 2]);
-        const legendItemTextPadding = Visuals.getPadding([5, 0]);
-        const legendItemFontSize = 12;
-        const legendData = Object.entries(GraphColours);
-        const colourBoxWidth = GraphDims.legendSquareSize;
-        const colourBoxHeight = GraphDims.legendSquareSize;
-        const legendItems = [];
-        let currentLegendItemYPos = 0;
-        
-        // draw the container to hold the legend
-        const legendGroup = lowerGraphSvg.append("g")
-            .attr("transform", `translate(${lowerGraphRightXPos}, ${ GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2 - GraphDims.lowerGraphArcRadius * 4 - (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius)})`);
-
-        // draw all the keys for the legend
-        for (const legendKey of legendData) {
-            let legendKeyText = legendKey[0];
-            let legendKeyColour = legendKey[1];
-
-            // ***************** draws a key in the legend *********************
-            
-            const legendItemGroup = legendGroup.append("g")
-            .attr("transform", `translate(0, ${currentLegendItemYPos})`);
-    
-            // draw the coloured box
-            const colourBox = legendItemGroup.append("rect")
-                .attr("y", legendItemPadding.paddingTop)
-                .attr("x", legendItemPadding.paddingLeft)
-                .attr("width", colourBoxWidth)
-                .attr("height", colourBoxHeight)
-                .attr("fill", legendKeyColour);
-    
-            // draw the text
-            const textX = legendItemPadding.paddingLeft + colourBoxWidth + legendItemTextPadding.paddingLeft;
-            const textY = legendItemTextPadding.paddingTop;
-            const textGroup = legendItemGroup.append("text")
-                .attr("y", legendItemPadding.paddingTop)
-                .attr("x", textX)
-                .attr("font-size", legendItemFontSize);
-    
-            Visuals.drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
-
-            const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
-
-            // *****************************************************************
-
-            currentLegendItemYPos += legendItemPadding.paddingTop + legendItemPadding.paddingBottom + legendItemGroup.node().getBBox()["height"];
-            legendItems.push(legendItem);
-        }
-
-        // --------------------------------------------------------
-
-        const lowerGraphChartHeading = lowerGraphSvg.append("g")
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("font-size", GraphDims.lowerGraphChartHeadingFontSize)
-        .attr("x", width / 2)
-        .attr("y", GraphDims.lowerGraphTop - GraphDims.lowerGraphChartHeadingFontSize * 0.75);
-    
-        self.lowerGraphSunburst = lowerGraphSvg.append("g")
-        .attr("transform", `translate(${GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2})`)
-    
-        self.lowerGraphFilterGroupsButton = d3.select("#lowerGraphFilterGroupsButton");
-    
-        this.lowerGraphTable = d3.select("#lowerGraphTable");
-        this.lowerGraphTableTitle = d3.select("#lowerGraphTableTitle");
-
-        // remove any dummy tables that says "no data available in table" produced by JQuery due to a
-        //  race condition of D3 adding rows into the scroll table and JQuery setting up the scroll table
-        this.lowerGraphTable.selectAll("thead").remove();
-        this.lowerGraphTable.selectAll("tbody").remove();
-        d3.select("#lowerGraphTable_wrapper .dataTables_scroll .dataTables_scrollHead").remove();
-
-        this.lowerGraphTableHeading = this.lowerGraphTable.append("thead");
-        this.lowerGraphTableBody = this.lowerGraphTable.append("tbody");
-    
-        /* Draws table, sunburst, and updates age-sex selector */
-        async function drawGraph(){
-            self.nutrient = self.model.nutrient;
-
-            // reset the selected arc that was clicked
-            self.selectedNodeIndex = 1;
-            self.selectedNode = null;
-
-            ageSexSelector.on("change", () => drawGraph(self.nutrient))
-                .selectAll("option")
-                .data(self.model.ageSexGroupHeadings)
-                .enter()
-                .append("option")
-                    .property("value", d => d)
-                    .text(d => d);
-        
-            const ageSexGroup = Visuals.getSelector("#lowerGraphAgeSexSelect");
-            lowerGraphChartHeading.text(TranslationTools.translateText("lowerGraph.graphTitle", {
-                nutrient: self.nutrient,
-                ageSexGroup: ageSexGroup
-            }))
-            .attr("font-weight", FontWeight.Bold);
-        
-            drawSunburst(self.nutrient, ageSexGroup);
-            self.drawTable(self.nutrient, ageSexGroup);
-        }
-    
-        // Source reference: https://observablehq.com/@d3/zoomable-sunburst
-        function drawSunburst(nutrient, ageSexGroup){
-            self.lowerGraphSunburst.selectAll("g").remove();
-            const groupedPercentages = self.model.buildSunBurstTree(nutrient, ageSexGroup);
-        
-            // Compute the layout.
-            const hierarchy = d3.hierarchy(groupedPercentages)
-                .sum(d => d.value)
-                .sort((a, b) => b.value - a.value);
-
-            self.treeHeight = hierarchy.height;
-        
-            self.root = d3.partition()
-                .size([2 * Math.PI, hierarchy.height + 1])
-                (hierarchy);
-        
-            self.root.each(d => d.current = d);
-        
-            // Create the arc generator.
-            self.arc = d3.arc()
-                .startAngle(d => d.x0)
-                .endAngle(d => d.x1)
-                .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
-                .padRadius(self.radius * 1.5)
-                .innerRadius(d => self.getArcInnerRadius(d))
-                .outerRadius(d => self.getArcOuterRadius(d));
-        
-            // Append the arcs and pass in the data
-            self.path = self.lowerGraphSunburst.append("g")
-                .selectAll("path")
-                .data(self.root.descendants().slice(1))
-                .join("path")
-                .attr("fill", d => self.getArcColour(d))
-                .attr("fill-opacity", d => self.arcVisible(d.current) ? 1 : 0)
-                .property("id", (d, i) => `arcPath${i}`)
-                .attr("d", d => self.arc(d.current))
-        
-            /* Update title of each individual arc, which appears when hovering over label */
-            const format = d3.format(",d");
-            self.path.append("title")
-                .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${format(d.value)}`);
-            
-            /* Name of each arc */
-            self.label = self.lowerGraphSunburst.append("g")
-                .attr("pointer-events", "none")
-                .style("user-select", "none")
-                .selectAll("text")
-                .data(self.root.descendants().slice(1))
-                .join("text")
-                .attr("dy", d => self.getLabelDY(d))
-                .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
-                .attr("fill-opacity", d => +self.labelVisible(d.current))
-                    .append("textPath") // make the text following the shape of the arc
-                    .attr("id", (d, i) => `arcLabel${i}`)
-                    .attr("href", (d, i) => `#arcPath${i}`);
-        
-            self.label.each((d, i) => self.labelTextFit(d, i));
-
-            // add the nutrient title in the middle of the sunburst
-            if (self.nutrientTextBox === null) {
-                self.nutrientTextBox = self.lowerGraphSunburst.append("text")
-            }
-
-            self.nutrientTextBox.attr("font-weight", FontWeight.Bold)
-                .attr("font-size", GraphDims.lowerGraphCenterFontSize)
-                .attr("text-anchor", TextAnchor.Middle);
-            
-            Visuals.drawWrappedText({textGroup: self.nutrientTextBox, text: nutrient, width: GraphDims.centerOuterRadius, 
-                                     textY: -GraphDims.lowerGraphCenterArcRadius, fontSize: GraphDims.lowerGraphCenterFontSize});
-        
-            // TODO: check what this does, copied from the reference 
-            self.sunBurstGroup = self.lowerGraphSunburst.append("circle")
-                .datum(self.root.descendants())
-                .attr("r", d => self.getRadius(d))
-                .attr("fill", "none")
-                .attr("pointer-events", "all");
-        
-            // filter on level 2 groups on button click
-            self.lowerGraphFilterGroupsButton.on("click", self.filterOnLevel2Groups);
-        
-            const mouseOverBoxes = self.lowerGraphSunburst.append("g");
-        
-            self.root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i));
-        
-            /* Create invisible arc paths on top of graph in order to detect hovering */
-            self.hoverPath = self.lowerGraphSunburst.append("g")
-                .selectAll("path")
-                .data(self.root.descendants().slice(1))
-                .join("path")
-                .attr("fill-opacity", 0)
-                .attr("pointer-events", "auto")
-                .attr("d", d => self.arc(d.current))
-                .style("cursor", "pointer");
-        
-            self.hoverPath.on("mousemove", (data, index) => { self.arcHover(data, index) });
-            self.hoverPath.on("mouseenter", (data, index) => { self.arcHover(data, index) });
-            self.hoverPath.on("mouseover", (data, index) => { self.arcHover(data, index) });
-            self.hoverPath.on("mouseout", (data, index) => { self.arcUnHover(data, index) });
-            
-            if (self.graphState == SunBurstStates.AllDisplayed) {
-                self.filterAllFoodGroups();
-            } else {
-                self.filterOnLevel2Groups();
-            }
-        
-            /* Creation of tooltip */
-            function hoverCard(d, root, i, nutrient){
-                let width = GraphDims.lowerGraphTooltipMinWidth;
-                const arcColour = d3.select(`#arcPath${i}`).attr("fill");
-
-                /* Content of tooltip */
-                const lines = TranslationTools.translateText("lowerGraph.infoBoxLevel", { 
-                    returnObjects: true, 
-                    context: d.depth,
-                    name: d.data.name,
-                    percentage: Math.round( d.data.row.Percentage * 10) / 10,
-                    parentGroup: d.depth > 1 ? d.parent.data.name : "",
-                    parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
-                    nutrient
-                });
-
-                const toolTipId = self.getToolTipId(i);
-
-                // ------- draw the tooltip ------------
-
-                // attributes for the tool tip
-                const toolTip = {};
-                let toolTipWidth = width;
-                let toolTipHeight = 50;
-                const toolTipBorderWidth = 3;
-                const toolTipBackgroundColor = Colours.White;
-                const toolTipPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipPaddingHor, GraphDims.lowerGraphTooltipPaddingVert]);
-                const toolTipTextPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipTextPaddingHor, GraphDims.lowerGraphTooltipTextPaddingVert]);
-                const toolTipDims = Visuals.getComponentLengths(toolTipWidth, toolTipHeight, toolTipPadding);
-                const toolTipHighlightXPos = toolTipPadding.paddingLeft + toolTipBorderWidth / 2;
-
-                // draw the container for the tooltip
-                toolTip.group = root.append("g")
-                    .attr("id",  toolTipId)
-                    .attr("opacity", 0);
-
-                // draw the background for the tooltip
-                toolTip.background = toolTip.group.append("rect")
-                    .attr("height", toolTipHeight)
-                    .attr("width", toolTipWidth)
-                    .attr("fill", toolTipBackgroundColor)
-                    .attr("stroke", arcColour)
-                    .attr("stroke-width", 1)
-                    .attr("rx", 5);
-
-                // draw the highlight
-                toolTip.highlight = toolTip.group.append("line")
-                    .attr("x1", toolTipHighlightXPos)
-                    .attr("x2", toolTipHighlightXPos)
-                    .attr("y1", toolTipPadding.paddingTop)
-                    .attr("y2", toolTipHeight - toolTipPadding.paddingBottom)
-                    .attr("stroke", arcColour) 
-                    .attr("stroke-width", toolTipBorderWidth)
-                    .attr("stroke-linecap", "round");
-
-                // draw the text
-                toolTip.textGroup = toolTip.group.append("text")
-                    .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                    .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft +  toolTipTextPadding.paddingLeft}, ${toolTipPadding.paddingTop + toolTipTextPadding.paddingTop})`);
-
-                const textDims = Visuals.drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipDims.width, fontSize: GraphDims.lowerGraphTooltipFontSize, 
-                                                   textWrap: TextWrap.NoWrap, padding: toolTipPadding});
-
-                // update the height of the tooltip to be larger than the height of all the text
-                toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + toolTipTextPadding.paddingTop + textDims.textBottomYPos + toolTipTextPadding.paddingTop + toolTipPadding.paddingBottom);
-                toolTip.background.attr("height", toolTipHeight);
-                toolTip.highlight.attr("y2", toolTipHeight - toolTipPadding.paddingBottom);
-
-                // update the width of the tooltip to be larger than the width of all the text
-                toolTipWidth = Math.max(toolTipWidth, toolTipPadding.paddingLeft + textDims.width + toolTipPadding.paddingRight);
-                toolTip.background.attr("width", toolTipWidth);
-
-                // -------------------------------------
-
-                self.hoverToolTips[toolTipId] = toolTip;
-                self.positionHoverCard(toolTip, d);
-            }
-        }
-    
-        /* Return function defined above that updates the graph */
-        return drawGraph;
+        // ---------------------------------------------
     }
 
     // saveAsImage(): Saves the bar graph as an image
-    saveAsImage() {
+    function saveAsImage() {
         const svg = document.getElementById("lowerGraph").firstChild;
         saveSvgAsPng(svg, "SunburstGraph.png", {backgroundColor: "white"});
     }

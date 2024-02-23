@@ -13,8 +13,8 @@
 
 
 import { Model } from '../backend/backend.js'
-import { BarGraph } from './barGraph.js';
-import { SunBurst } from './sunBurstGraph.js';
+import { upperGraph } from './barGraph.js';
+import { lowerGraph } from './sunBurstGraph.js';
 import { Visuals } from './visuals.js';
 import { TranslationTools, TranslationObj } from '../assets/assets.js';
 
@@ -32,7 +32,6 @@ class ViewController {
         // === individual elements for the component ===
         this.nutrientSelector = null;
         this.sunBurst = null;
-        this.barGraph = null;
 
         // =============================================
     }
@@ -49,11 +48,8 @@ class ViewController {
                 .property("value", d => d)
                 .text(d => d);
 
-        this.barGraph = new BarGraph({model: this.model});
-        this.sunBurst = new SunBurst({model: this.model});
-
-        this.updateBarGraph = this.barGraph.draw();
-        this.updateSunburst = this.sunBurst.draw();
+        this.updateBarGraph = upperGraph(this.model);
+        this.updateSunburst = lowerGraph(this.model);
     }
 
     // updateGraphs(): Updates the bar graph and the sunburst graph
@@ -85,7 +81,7 @@ class ViewController {
 //////////
 // load in the view for the application
 window.addEventListener("load", () => {
-    const model = new Model("data/Food Group descriptions.csv", "data/GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240126.csv", "data/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126.csv");
+    const model = new Model();
     const viewController = new ViewController({model: model});
     TranslationTools.registerTranslation(TranslationObj);
 
