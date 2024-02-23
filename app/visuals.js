@@ -38,7 +38,7 @@ export class Visuals {
         return context.measureText(text).width;
     };
 
-    // setupDims(dimName, values): Setups the padding and margin for the textbox
+    // setupDims(dimName, values): Setups the dimensions for the directions top, bottom, left, right
     // Note: values can be:
     //     value               |       example          |       explanation
     //  =======================+========================+====================================

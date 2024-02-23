@@ -46,31 +46,7 @@ export class TableTools {
 
 // Model: The overall model for the user interface
 export class Model {
-    constructor(foodDescriptionFilePath, graphFoodIngredientFilePath, tableFoodIngredientFilePath) {
-        // file paths to the CSV files
-        this.foodDescriptionFilePath = foodDescriptionFilePath;
-        this.graphFoodIngredientFilePath = graphFoodIngredientFilePath;
-        this.tableFoodIngredientFilePath = tableFoodIngredientFilePath;
-
-        // --- different stored data  used in the UI ----
-
-        this.nutrient = "";
-
-        // data from food descriptions CSV
-        this.foodGroupDescriptionData = {};
-
-        // data from the GRAPH food ingredients CSV
-        this.nutrientTable = [];
-        this.graphNutrientTablesByDemoGroupLv1 = {};
-        this.graphNutrientTablesFullyNestedDataByFoodGroup = {};
-
-        // data from the TABLE food ingredients CSV
-        this.tableNutrientTablesByDemoGroupLv1 = {}
-
-        this.ageSexGroupHeadings = SortedAgeSexGroupHeadings;
-
-        // ----------------------------------------------
-    }
+    static ageSexGroupHeadings = SortedAgeSexGroupHeadings;
 
     // load(): Setup all the needed data for the user interface
     async load() {
@@ -79,7 +55,7 @@ export class Model {
 
     // loadFoodGroupDescriptionData(): Load the data for all the food group descriptions
     async loadFoodGroupDescriptionData() {
-        let data = await d3.csv(this.foodDescriptionFilePath);
+        let data = await d3.csv("data/Food Group descriptions.csv");
         data = TableTools.numToFloat(data);
     
         data = Object.freeze(d3.nest()
@@ -99,7 +75,7 @@ export class Model {
 
     // loadGraphFoodIngredientsData(): Load the data for all the food ingredients used in the graphs
     async loadGraphFoodIngredientsData(){
-        let data = await d3.csv(this.graphFoodIngredientFilePath);
+        let data = await d3.csv("data/GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240126.csv");
         data = TableTools.numToFloat(data);
 
         this.graphNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
@@ -116,11 +92,13 @@ export class Model {
                                                             .key(d => Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? "" : d[FoodIngredientDataColNames.foodGroupLv3].trim() )
                                                             .rollup(d => d[0])
                                                             .object(data));
+
+        return {tableByDemoGroupLv1: this.graphNutrientTablesByDemoGroupLv1, tableByDemoAndFoodGroup: this.graphNutrientTablesFullyNestedDataByFoodGroup};
     }
 
     // loadTableFoodIngredientsData(): Load the data for all the food ingredients used in the tables
     async loadTableFoodIngredientsData() {
-        let data = await d3.csv(this.tableFoodIngredientFilePath);
+        let data = await d3.csv("data/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126.csv");
         data = TableTools.numToFloat(data);
 
         this.tableNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
@@ -128,16 +106,14 @@ export class Model {
             .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
             .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
             .object(data));
+
+        return this.tableNutrientTablesByDemoGroupLv1;
     }
 
     // getInterpretationValue(interpretationValue): Retrieves the interpretation value to be displayed
     //  in the table of the visual's
     static getInterpretationValue(interpretationValue) {
-        if (interpretationValue == "<10") {
-            return "X"
-        }
-
-        return interpretationValue;
+        return interpretationValue == "<10" ? "X" : interpretationValue;
     }
 
     // calculate the total amount by nutrient per age-sex group
