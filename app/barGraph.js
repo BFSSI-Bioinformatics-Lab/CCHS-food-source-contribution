@@ -57,6 +57,9 @@ export function upperGraph(model){
     // register the button to save the bar graph as a png
     d3.select("#upperGraphSaveGraph").on("click", () => saveAsImage());
 
+    // register the download table button
+    const downloadButton = d3.select("#upperGraphSaveTable").on("click", () => downloadTable());
+
     /* Create svg component */
     const upperGraphSvg = d3.select("#upperGraph")
         .append("svg")
@@ -357,12 +360,7 @@ export function upperGraph(model){
 
     // drawTable(nutrient): Draws the table for the graph
     function drawTable(nutrient){
-        const nutrientData = model.tableNutrientTablesByDemoGroupLv1[nutrient];
-        const ageSexGroupHeadings = Model.ageSexGroupHeadings;
-        const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
-        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
-
-        const nutrientAgeGroups = Object.keys(nutrientData);
+        const barGraphTable = model.createBarGraphTable();
         const amountLeftIndex = 1;
 
         // --------------- draws the table -------------------------
@@ -371,21 +369,20 @@ export function upperGraph(model){
         upperGraphTableHeading.selectAll("tr").remove();
         upperGraphTableHeading.append("tr")
             .selectAll("th")
-            .data(["", ...ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))])
+            .data(barGraphTable.headings)
             .enter()
             .append("th")
                 .attr("class", "text-center")
                 .style("border-left", (d, i) => i === 0 ? "" : GraphDims.tableSectionBorderLeft)
                 .style("border-bottom", (d, i) => i === 0 ? "0px" : GraphDims.tableSectionBorderLeft)
                 .style("font-size", `${GraphDims.upperGraphTableHeadingFontSize}px`)
-                .attr("colspan", (d, i) => i === 0 ? 1 : headingsPerSexAgeGroup.length)
+                .attr("colspan", (d, i) => i === 0 ? 1 : barGraphTable.headingsPerSexAgeGroup.length)
                 .text(d => TranslationTools.translateText(d));
 
         /* Create subheading columns */
-        const subHeadingColumns = Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat();
         upperGraphTableHeading.append("tr")
             .selectAll("td")
-            .data([""].concat(subHeadingColumns))
+            .data(barGraphTable.subHeadings)
             .enter()
             .append("td")
                 .style("min-width", (d, i) => i === 0 ? "200px" : "40px")
@@ -412,50 +409,35 @@ export function upperGraph(model){
                 .text(d => TranslationTools.translateText(d))
         
         upperGraphTableBody.selectAll("tr").remove();
-        const tableRows = {};
-        /* Create rows */
-        Object.entries(nutrientData).map((entry) => {
-            const [ageSexGroup, foodLevelGroup] = entry;            
-            Object.entries(foodLevelGroup).map(foodLevelGroupEntry => {
-                const [foodLevelName, foodLevelGroupData] = foodLevelGroupEntry;
-                const foodLevelRowData = (tableRows[foodLevelName] ?? []);
-                foodLevelRowData.splice(
-                    ageSexGroupHeadings.indexOf(ageSexGroup), 
-                    0, 
-                    foodLevelGroupData.find(d => !d["Food group_level2"] && !d["Food group_level3"])
-                )
-                tableRows[foodLevelName] = foodLevelRowData;
-            })
-        })
 
-        Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
+        for (const row of barGraphTable.table) {
             const newRow = upperGraphTableBody.append("tr")
-                .selectAll("td")
-                .data([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()))
-                .enter()
-                .append("td")
-                    .attr("colspan", 1)
-                    .text((d) => Number.isNaN(d) ? "" : d)
-                    .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
-                    .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
-                    .style("font-size", "12px")
-                    .style("font-weight", (d, i) => {
-                        const colNum = (i - amountLeftIndex) % 4;
-                        if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
-                            return FontWeight.Bold;
-                        }
-    
-                        return FontWeight.Normal; 
-                    })
-                    .style("opacity", (d, i) => {
-                        const colNum = (i - amountLeftIndex) % 4;
-                        if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
-                            return 0.8;
-                        }
-    
-                        return 1;
-                    });
-        });
+            .selectAll("td")
+            .data(row)
+            .enter()
+            .append("td")
+                .attr("colspan", 1)
+                .text((d) => Number.isNaN(d) ? "" : d)
+                .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
+                .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
+                .style("font-size", "12px")
+                .style("font-weight", (d, i) => {
+                    const colNum = (i - amountLeftIndex) % 4;
+                    if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
+                        return FontWeight.Bold;
+                    }
+
+                    return FontWeight.Normal; 
+                })
+                .style("opacity", (d, i) => {
+                    const colNum = (i - amountLeftIndex) % 4;
+                    if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
+                        return 0.8;
+                    }
+
+                    return 1;
+                });
+        }
 
         upperGraphTableTitle.text(TranslationTools.translateText("upperGraph.tableTitle", { amountUnit: getNutrientUnit(nutrient), nutrient }))
 
@@ -673,391 +655,23 @@ export function upperGraph(model){
         return toolTip;
     }
 
-
     // saveAsImage(): Saves the bar graph as an image
     function saveAsImage() {
         const svg = document.getElementById("upperGraph").firstChild;
         saveSvgAsPng(svg, "BarGraph.png", {backgroundColor: "white"});
     }
-}
 
-
-
-export class BarGraph {
-    constructor({model = null} = {}) {
-        this.model = model;
-
-        // === Data retrieves from the model ===
-        this.nutrient = "";
-        this.foodGroupDescriptions = this.model.foodGroupDescriptionData;
-
-        // =====================================
-
-
-        this.groupedAmount = {};
-        
-        this.focusedFoodGroup = null;
-        this.mouseOverFoodGroupName = null;
-        this.hoverToolTips = {};
-
-        // whether to display numbers/percentae for the graph
-        this.graphType = "";
-        this.typeIterator = this.getGraphType();
-
-        // === different individual elements for the component ===
-        this.upperGraphSvg = null;
-        this.upperGraphSvgBackground = null;
-        this.upperGraphBars = null;
-        this.upperGraphHeading = null;
-        this.upperGraphTooltips = null;
-        this.upperGraphBarHoverDetect = null;
-        this.upperGraphSwitchTypeButton = null;
-
-        this.upperGraphYAxisScale = null;
-        this.upperGraphYAxisLabel = null;
-        this.upperGraphXAxisLine = null;
-        this.xAxisTicks = null;
-        this.yAxisTicks = null;
-        this.upperGraphInfoBox = null;
-
-        // table for the graph
-        this.upperGraphTableHeading = null;
-        this.upperGraphTableBody = null;
-        this.upperGraphTableTitle = null;
-
-        // =======================================================
-    }
-
-    // getToolTipId(num): Retrieves the key id for a particular id
-    getToolTipId(num) {
-        return `barHover${num}`
-    }
-
-    /* This generator function is used to set the value for the "graphType" and "type" variable */
-    *getGraphType(){
-        while(true){
-            yield "number";
-            yield "percentage";
-        }
-    }
-
-    getNutrientUnit(nutrient){
-        const nutrientData = this.model.graphNutrientTablesByDemoGroupLv1[nutrient];
-        return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
-    }
-
-    // hideInfoBox(): Hides the food group description box
-    hideInfoBox() {
-        this.mouseOverFoodGroupName = null;
-
-        this.upperGraphInfoBox.highlight.attr("stroke", Colours.None);
-        Visuals.drawWrappedText({textGroup: this.upperGraphInfoBox.textGroup});
-
-
-    }
-
-    // showInfoBox(name, colour, legendItem): Shows the info box
-    showInfoBox({name = "", colour = Colours.None, legendItem = null} = {}) {
-        this.updateInfoBox({name: name, colour: colour});
-        legendItem.group.style("cursor", MousePointer.Pointer);
-    }
-
-    // Update food group description box
-    updateInfoBox({name = "", colour = Colours.None, amount = 0} = {}){
-        const foodGroupName = name;
-        if (this.mouseOverFoodGroupName !== null && this.mouseOverFoodGroupName == foodGroupName) {
-            return;
-        }
-
-        this.mouseOverFoodGroupName = foodGroupName;
-        const desc = this.model.getFoodDescription(this.nutrient, foodGroupName);
-
-        // ---------- Updates the infobox --------------
-
-        const infoBoxPadding = Visuals.getPadding(GraphDims.upperGraphInfoBoxPadding);
-
-        // change text
-        const textDims = Visuals.drawText({textGroup: this.upperGraphInfoBox.textGroup, text: desc, width: GraphDims.upperGraphInfoBoxWidth, 
-                                           fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, padding: infoBoxPadding});
-
-        // change colour
-        this.upperGraphInfoBox.highlight.attr("stroke", GraphColours[foodGroupName]);
-
-        // update the height of the info box to be larger than the height of the text
-        let infoBoxHeight = this.upperGraphInfoBox.highlight.node().getBBox()["height"];
-        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding.paddingTop + textDims.textBottomYPos + infoBoxPadding.paddingBottom);
-        this.upperGraphInfoBox.highlight.attr("y2", infoBoxHeight);
-
-        // ---------------------------------------------
-    }
-
-    /* Set the opacity of the hovered bar's info to be 1 */
-    onBarHover(d, i, index, elements){
-        this.updateInfoBox({name: d[0], d: d});
-
-        const toolTipId = this.getToolTipId(i);
-        const mousePos = d3.mouse(this.upperGraphSvg.node());
-
-        const toolTip = this.hoverToolTips[toolTipId];
-
-        toolTip.group.attr("opacity", 1)
-            .attr("transform", `translate(${mousePos[0]}, ${mousePos[1]})`);
-
-        const bar = d3.select(elements[index]);
-        bar.style("cursor", MousePointer.Pointer);
-    }
-
-    /* Set the opacity of the previously hovered bar's info to be 0 */
-    onBarUnHover(d, i, index, elements){
-        this.hideInfoBox();
-        d3.select(`#barHover${i}`).attr("opacity", 0).style("pointer-events", "none");
-
-        const bar = d3.select(elements[index]);
-        bar.style("cursor", MousePointer.Default);
-    }
-
-    // barOnClick(dt): Focus on a particular food group when a bar is clicked
-    barOnClick(dt) {
-        /* Zooming in on a specific category */
-        this.upperGraphTooltips.selectAll("g").remove();
-
-        const category = dt[0];
-        this.focusedFoodGroup = dt;
-
-        const barData = Object.values(this.groupedAmount).map(g => {
-            const obj = {};
-            obj[category] = g[category];
-            return obj;
-        });
-
-        // the commented line below scales the y-axis to be fit with the focused bars
-        // this.upperGraphYAxisScale.domain([0, d3.max(Object.values(barData).map(b => b[category])) * 1.15]);
-        this.upperGraphYAxisLine.call(d3.axisLeft(this.upperGraphYAxisScale));
-
-        this.upperGraphBars.selectAll("g").remove();
-        this.upperGraphBarHoverDetect.selectAll("g").remove();
-
-        this.upperGraphBars.selectAll("g")
-            .data(barData)
-            .enter()
-            .each(
-                (d, i) => 
-                    this.drawUpperGraphStackedBars(this.upperGraphBars, d, this.xAxisTicks.nodes()[i].getAttribute("transform"), 
-                    () => {
-                        this.focusedFoodGroup = null;
-                        this.updateGraph(this.nutrient);
-                    }, i + 1)  
-            )         
-    }
-
-    draw() {
-        return this.upperGraph();
-    }
-
-    // legendItemOnClick(name, colour): Event function when the user clicks on a key in the legend
-    legendItemOnClick({name = "", colour = Colours.None} = {}) {
-        let focusedFoodGroup = null;
-        if (this.focusedFoodGroup === null || name != this.focusedFoodGroup[0]) {
-            focusedFoodGroup = [name, 0];
-        }
-
-        this.focusedFoodGroup = focusedFoodGroup;
-
-        if (focusedFoodGroup !== null) {
-            this.barOnClick(focusedFoodGroup);
-        } else {
-            this.updateGraph(this.nutrient);
-        }
-    }
-
-    // legendItemOnMouseLeave(name, colour, legendItem): Event function when the user's mouse leaves a key
-    //  in the legend
-    legendItemOnMouseLeave({name = "", colour = Colours.None, legendItem = null}) {
-        this.hideInfoBox();
-        legendItem.group.style("cursor", MousePointer.Default);
-    }
-
-    // drawGraphLegend(titleToColours, upperGraphRightPos): Draws the legend
-    drawGraphLegend(titleToColours, upperGraphRightPos){
-
-        // ----------------- draws the legend ---------------------
-        
-        // attributes for the legend
-        const legendItemPadding = Visuals.getPadding([0, 2]);
-        const legendItemTextPadding = Visuals.getPadding([5, 0]);
-        const legendItemFontSize = 12;
-        const legendData = Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items");
-        const colourBoxWidth = GraphDims.legendSquareSize;
-        const colourBoxHeight = GraphDims.legendSquareSize;
-        const legendItems = [];
-        let currentLegendItemYPos = 0;
-        
-        // draw the container to hold the legend
-        const legendGroup = this.upperGraphSvg.append("g")
-            .attr("transform", `translate(${upperGraphRightPos}, ${GraphDims.upperGraphTop})`);
-
-        // draw all the keys for the legend
-        for (const legendKey of legendData) {
-            let legendKeyText = legendKey[0];
-            let legendKeyColour = legendKey[1];
-
-            // ***************** draws a key in the legend *********************
-            
-            const legendItemGroup = legendGroup.append("g")
-            .attr("transform", `translate(0, ${currentLegendItemYPos})`);
-    
-            // draw the coloured box
-            const colourBox = legendItemGroup.append("rect")
-                .attr("y", legendItemPadding.paddingTop)
-                .attr("x", legendItemPadding.paddingLeft)
-                .attr("width", colourBoxWidth)
-                .attr("height", colourBoxHeight)
-                .attr("fill", legendKeyColour);
-    
-            // draw the text
-            const textX = legendItemPadding.paddingLeft + colourBoxWidth + legendItemTextPadding.paddingLeft;
-            const textY = legendItemTextPadding.paddingTop;
-            const textGroup = legendItemGroup.append("text")
-                .attr("y", legendItemPadding.paddingTop)
-                .attr("x", textX)
-                .attr("font-size", legendItemFontSize);
-    
-            Visuals.drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
-
-            const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
-
-            // *****************************************************************
-
-            currentLegendItemYPos += legendItemPadding.paddingTop + legendItemPadding.paddingBottom + legendItemGroup.node().getBBox()["height"];
-            legendItems.push(legendItem);
-        }
-
-        // --------------------------------------------------------
-
-        // add the mouse events to the keys of the legend
-        for (const legendItem of legendItems) {
-            const name = legendItem.name;
-            const colour = legendItem.colour;
-            const legendItemGroup = legendItem.group;
-
-            legendItemGroup.on("mouseenter", () => { this.showInfoBox({name, colour, legendItem}); });
-            legendItemGroup.on("mouseleave", () => { this.legendItemOnMouseLeave({name, colour, legendItem}); });
-            legendItemGroup.on("click", () => { this.legendItemOnClick({name, colour, legendItem}); });
-            legendItemGroup.on("mouseover", () => { this.showInfoBox({name, colour, legendItem}); });
-        }
-    }
-
-    // drawTable(nutrient): Draws the table for the graph
-    drawTable(nutrient){
-        const nutrientData = this.model.tableNutrientTablesByDemoGroupLv1[nutrient];
-        const ageSexGroupHeadings = Model.ageSexGroupHeadings;
-        const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
-        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
-
-        const nutrientAgeGroups = Object.keys(nutrientData);
-        const amountLeftIndex = 1;
-
-        // --------------- draws the table -------------------------
-
-        /* Create top-level heading */
-        this.upperGraphTableHeading.selectAll("tr").remove();
-        this.upperGraphTableHeading.append("tr")
-            .selectAll("th")
-            .data(["", ...ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))])
-            .enter()
-            .append("th")
-                .attr("class", "text-center")
-                .style("border-left", (d, i) => i === 0 ? "" : GraphDims.tableSectionBorderLeft)
-                .style("border-bottom", (d, i) => i === 0 ? "0px" : GraphDims.tableSectionBorderLeft)
-                .style("font-size", `${GraphDims.upperGraphTableHeadingFontSize}px`)
-                .attr("colspan", (d, i) => i === 0 ? 1 : headingsPerSexAgeGroup.length)
-                .text(d => TranslationTools.translateText(d));
-
-        /* Create subheading columns */
-        const subHeadingColumns = Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat();
-        this.upperGraphTableHeading.append("tr")
-            .selectAll("td")
-            .data([""].concat(subHeadingColumns))
-            .enter()
-            .append("td")
-                .style("min-width", (d, i) => i === 0 ? "200px" : "40px")
-                .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
-                .style("border-top", "0px")
-                .style("font-size", `${GraphDims.upperGraphTableSubHeadingFontSize}px`)
-                .style("font-weight", (d, i) => {
-                    const colNum = (i - amountLeftIndex) % 4;
-                    if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
-                        return FontWeight.Bold;
-                    }
-
-                    return FontWeight.Normal;
-                })
-                .style("opacity", (d, i) => {
-                    const colNum = (i - amountLeftIndex) % 4;
-                    if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
-                        return 0.8;
-                    }
-
-                    return 1;
-                })
-                .attr("colspan", 1)
-                .text(d => TranslationTools.translateText(d))
-        
-        this.upperGraphTableBody.selectAll("tr").remove();
-        const tableRows = {};
-        /* Create rows */
-        Object.entries(nutrientData).map((entry) => {
-            const [ageSexGroup, foodLevelGroup] = entry;            
-            Object.entries(foodLevelGroup).map(foodLevelGroupEntry => {
-                const [foodLevelName, foodLevelGroupData] = foodLevelGroupEntry;
-                const foodLevelRowData = (tableRows[foodLevelName] ?? []);
-                foodLevelRowData.splice(
-                    ageSexGroupHeadings.indexOf(ageSexGroup), 
-                    0, 
-                    foodLevelGroupData.find(d => !d["Food group_level2"] && !d["Food group_level3"])
-                )
-                tableRows[foodLevelName] = foodLevelRowData;
-            })
-        })
-
-        Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
-            const newRow = this.upperGraphTableBody.append("tr")
-                .selectAll("td")
-                .data([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()))
-                .enter()
-                .append("td")
-                    .attr("colspan", 1)
-                    .text((d) => Number.isNaN(d) ? "" : d)
-                    .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
-                    .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
-                    .style("font-size", "12px")
-                    .style("font-weight", (d, i) => {
-                        const colNum = (i - amountLeftIndex) % 4;
-                        if (i >= amountLeftIndex && (colNum === 2 || colNum === 0)) {
-                            return FontWeight.Bold;
-                        }
-    
-                        return FontWeight.Normal; 
-                    })
-                    .style("opacity", (d, i) => {
-                        const colNum = (i - amountLeftIndex) % 4;
-                        if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
-                            return 0.8;
-                        }
-    
-                        return 1;
-                    });
-        });
-
-        this.upperGraphTableTitle.text(TranslationTools.translateText("upperGraph.tableTitle", { amountUnit: this.getNutrientUnit(nutrient), nutrient }))
-
-        // ---------------------------------------------------------
-    }
-
-    // saveAsImage(): Saves the bar graph as an image
-    saveAsImage() {
-        const svg = document.getElementById("upperGraph").firstChild;
-        saveSvgAsPng(svg, "BarGraph.png", {backgroundColor: "white"});
+    // downloadTable(): Exports the table of the bar graph as a CSV file
+    function downloadTable() {
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.barGraphTable.csvContent);
+
+        // creates a temporary link for exporting the table
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'BarGraphTable.csv');
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
-

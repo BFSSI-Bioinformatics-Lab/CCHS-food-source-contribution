@@ -39,6 +39,26 @@ export class TableTools {
 
         return data;
     }
+
+    // createCSVContent(matrix, numOfCols): Creates the string needed for exporting to CSV
+    static createCSVContent(matrix) {
+        let result = "";
+        for (const row of matrix) {
+            const colLen = row.length;
+            const csvRow = [];
+
+            // clean up the text for each cell
+            for (let i = 0; i < colLen; ++i) {
+                let cleanedText = `${row[i]}`.replace(/"/g, '\\"').replace(/'/g, "\\'");
+                cleanedText = `"${cleanedText}"`;
+                csvRow.push(cleanedText);
+            }
+
+            result += csvRow.join(",") + "\r\n";
+        }
+
+        return result;
+    }
 }
 
 // =======================================================================
@@ -192,5 +212,86 @@ export class Model {
 
         groupedPercentages = {name: "data", children: [groupedPercentages]}
         return groupedPercentages;
+    }
+
+    // createBarGraphTable(): Creates the data for the table of the bar graph
+    createBarGraphTable() {
+        const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
+        const ageSexGroupHeadings = Model.ageSexGroupHeadings;
+        const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
+        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
+
+        const nutrientAgeGroups = Object.keys(nutrientData);
+
+        // headings for the top most level of the table
+        const tableHeadings = ["", ...ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))];
+
+        // sub-headings of the table
+        const subHeadings = [""].concat(Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat());
+
+        // Get the rows needed for the table
+        const tableRows = {};
+        Object.entries(nutrientData).map((entry) => {
+            const [ageSexGroup, foodLevelGroup] = entry;            
+            Object.entries(foodLevelGroup).map(foodLevelGroupEntry => {
+                const [foodLevelName, foodLevelGroupData] = foodLevelGroupEntry;
+                const foodLevelRowData = (tableRows[foodLevelName] ?? []);
+                foodLevelRowData.splice(
+                    ageSexGroupHeadings.indexOf(ageSexGroup), 
+                    0, 
+                    foodLevelGroupData.find(d => !d["Food group_level2"] && !d["Food group_level3"])
+                )
+                tableRows[foodLevelName] = foodLevelRowData;
+            })
+        })
+
+        // Retrieve the specific value for each row
+        const result = [];
+        Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
+            result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()));
+        });
+
+        // get the text neeeded for the CSV export
+        let csvHeadings = tableHeadings.map((ageSexGroup) => {
+            const result = headingsPerSexAgeGroup.map(heading => "");
+            result[0] = ageSexGroup;
+            return result;
+        });
+        csvHeadings.shift();
+        csvHeadings = csvHeadings.flat();
+        csvHeadings.splice(0, 0, "");
+
+        const csvContent = TableTools.createCSVContent([csvHeadings, subHeadings].concat(result), 1 + tableHeadings.length * headingsPerSexAgeGroup.length);
+
+        this.barGraphTable = { headings: tableHeadings, subHeadings, table: result, headingsPerSexAgeGroup, csvContent};
+        return this.barGraphTable;
+    }
+
+    // createSunburstTable(ageSexGroup): Creates the data for the table of the sunburst graph
+    createSunburstTable(ageSexGroup) {
+        const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
+        const tableHeadings = ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"];
+        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
+
+        // append the rows for the table
+        let result = [];
+        for (const foodGroup in nutrientData) {
+            result = result.concat(nutrientData[foodGroup]);
+        }
+
+        // get the specific values for each row
+        result = result.map((row) => {
+            let foodGroupData = [row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
+            foodGroupData = foodGroupData.map(foodGroupLv => Number.isNaN(foodGroupLv) ? "" : foodGroupLv);
+
+            const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
+            return foodGroupData.concat(amountData);
+        });
+
+        // get the text needed for the CSV export
+        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result), tableHeadings.length);
+
+        this.sunburstTable = { headings: tableHeadings, table: result, csvContent };
+        return this.sunburstTable;
     }
 }

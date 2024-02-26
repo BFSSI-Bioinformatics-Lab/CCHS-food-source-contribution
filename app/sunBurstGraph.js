@@ -35,6 +35,9 @@ export function lowerGraph(model){
     // register the save image button
     d3.select("#lowerGraphSaveGraph").on("click", () => saveAsImage());
 
+    // register the download table button
+    const downloadButton = d3.select("#lowerGraphSaveTable").on("click", () => downloadTable());
+
     // all the hover tooltips for the graph
     const hoverToolTips = {};
 
@@ -594,19 +597,17 @@ export function lowerGraph(model){
 
     // draws the table for the sun burst graph
     function drawTable(nutrient, ageSexGroup){
-        const nutrientData = model.tableNutrientTablesByDemoGroupLv1[nutrient][ageSexGroup];
-        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
+        const sunBurstTable = model.createSunburstTable(ageSexGroup);
 
         // --------------- draws the table -------------------------
 
         /* Create subheading columns */
-        const subHeadingColumns = ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"];
         const amountLeftIndex = 3;
 
         lowerGraphTableHeading.selectAll("tr").remove();
         lowerGraphTableHeading.append("tr")
             .selectAll("td")
-            .data(subHeadingColumns)
+            .data(sunBurstTable.headings)
             .enter()
             .append("td")
                 .style("min-width", (d, i) => i < amountLeftIndex ? "50px" : "40px")
@@ -634,20 +635,10 @@ export function lowerGraph(model){
         
         lowerGraphTableBody.selectAll("tr").remove();
 
-        /* Create rows */
-        let tableRows = [];
-        for (const foodGroup in nutrientData) {
-            tableRows = tableRows.concat(nutrientData[foodGroup]);
-        }
-
-        for (const row of tableRows) {
-            let foodGroupData = [row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
-            foodGroupData = foodGroupData.map(foodGroupLv => Number.isNaN(foodGroupLv) ? "" : foodGroupLv);
-            const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
-
+        for (const row of sunBurstTable.table) {
             const newRow = lowerGraphTableBody.append("tr")
                 .selectAll("td")
-                .data(foodGroupData.concat(amountData))
+                .data(row)
                 .enter()
                 .append("td")
                     .attr("colspan", 1)
@@ -847,5 +838,19 @@ export function lowerGraph(model){
     function saveAsImage() {
         const svg = document.getElementById("lowerGraph").firstChild;
         saveSvgAsPng(svg, "SunburstGraph.png", {backgroundColor: "white"});
+    }
+
+    // downloadTable(): Exports the table of the bar graph as a CSV file
+    function downloadTable() {
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunburstTable.csvContent);
+
+        // creates a temporary link for exporting the table
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'SunBurstTable.csv');
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
