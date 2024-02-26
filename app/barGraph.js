@@ -20,7 +20,7 @@
 
 
 
-import { Colours, GraphColours, GraphDims, TextWrap, FoodGroupDescDataColNames, FontWeight, MousePointer, TranslationTools, DefaultDims} from "../assets/assets.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, TranslationTools } from "../assets/assets.js";
 import { Visuals } from "./visuals.js";
 import { Model } from "../backend/backend.js";
 
