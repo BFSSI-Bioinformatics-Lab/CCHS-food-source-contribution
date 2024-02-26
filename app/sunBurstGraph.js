@@ -20,7 +20,7 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodIngredientDataColNames, SunBurstStates, Colours, TranslationTools, FoodGroupDescDataColNames} from "../assets/assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodIngredientDataColNames, SunBurstStates, Colours, TranslationTools } from "../assets/assets.js";
 import { Visuals } from "./visuals.js";
 import { Model } from "../backend/backend.js";
 
