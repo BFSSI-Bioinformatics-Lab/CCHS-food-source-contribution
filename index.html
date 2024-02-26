@@ -659,5 +659,60 @@ What it contains:
     <script src="https://cdnjs.cloudflare.com/ajax/libs/save-svg-as-png/1.4.17/saveSvgAsPng.min.js"></script>
 
     <script type="module" src="./app/app.js"></script>
+    <script>
+        jQuery.fn.tableToCSV = function () {
+            let clean_text = function (text) {
+                text = text.replace(/"/g, '\\"').replace(/'/g, "\\'");
+                return '"' + text + '"';
+            };
+    
+            $(this).each(function () {
+                let table = $(this);
+                let caption = $(this).find('caption').text();
+                let title = [];
+                let rows = [];
+    
+                $(this).find('tr').each(function () {
+                    let data = [];
+                    $(this).find('th').each(function (th) {
+                        let text = clean_text($(this).text());
+                        title.push(text);
+                        // leave empty cells for the headers than span multiple columns
+                        for (let i = 1; i < $(this).attr("colspan"); i++){
+                            title.push("")
+                        }
+                    });
+                    $(this).find('td').each(function () {
+                        let text = clean_text($(this).text());
+                        data.push(text);
+                    });
+                    data = data.join(",");
+                    rows.push(data);
+                });
+                title = title.join(",");
+                rows = rows.join("\n");
+    
+                let csv = title + rows;
+                let uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+                let download_link = document.createElement('a');
+                download_link.href = uri;
+                let ts = new Date().getTime();
+                if (caption == "") {
+                    download_link.download = ts + ".csv";
+                } else {
+                    download_link.download = caption + "-" + ts + ".csv";
+                }
+                document.body.appendChild(download_link);
+                download_link.click();
+                document.body.removeChild(download_link);
+            });
+        };
+    
+        // Add download functionality for Filtered Data button
+        $("#upperGraphSaveTable").click(function () {
+            $("#upperGraphTable").tableToCSV()
+        })
+    
+    </script>
     </body>
     </html>
