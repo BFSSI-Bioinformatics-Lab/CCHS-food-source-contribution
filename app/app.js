@@ -11,69 +11,41 @@
 ////////////////////////////////////////////////////////////////////      
 
 
-
-import { Model } from '../backend/backend.js'
+import { Model } from './backend.js'
 import { upperGraph } from './barGraph.js';
 import { lowerGraph } from './sunBurstGraph.js';
 import { Visuals } from './visuals.js';
-import { TranslationTools, TranslationObj } from '../assets/assets.js';
+import { TranslationTools, TranslationObj } from './assets.js';
 
 
-// ViewController: Overall class for the view and controller
-class ViewController {
-    constructor({model = null} = {}) {
-        this.model = model;
+function setup(model) {
+    const nutrientSelectorId = "#upperGraphNutrientSelect";
+    const updateBarGraph = upperGraph(model);
+    const updateSunburst = lowerGraph(model);
 
-        this.updateSunburst = null;
-        this.updateBarGraph = null;
+    const nutrientOptions = Object.keys(model.graphNutrientTablesByDemoGroupLv1);
+    d3.select(nutrientSelectorId)
+        .on("change", () => { update() })
+        .selectAll("option")
+        .data(nutrientOptions)
+        .enter()
+        .append("option")
+            .attr("title", d => d)
+            .property("value", d => d)
+            .text(d => d);
 
-        this.nutrientSelectorId = "#upperGraphNutrientSelect";
+    update();
 
-        // === individual elements for the component ===
-        this.nutrientSelector = null;
-        this.sunBurst = null;
-
-        // =============================================
-    }
-
-    setup() {
-        const nutrientOptions = Object.keys(this.model.graphNutrientTablesByDemoGroupLv1);
-        this.nutrientSelector = d3.select(this.nutrientSelectorId)
-            .on("change", () => { this.update(); })
-            .selectAll("option")
-            .data(nutrientOptions)
-            .enter()
-            .append("option")
-                .attr("title", d => d)
-                .property("value", d => d)
-                .text(d => d);
-
-        this.updateBarGraph = upperGraph(this.model);
-        this.updateSunburst = lowerGraph(this.model);
-    }
-
-    // updateGraphs(): Updates the bar graph and the sunburst graph
-    updateGraphs() {
-        this.updateBarGraph();
-        this.updateSunburst();
-    }
-
-    // update(): Updates the entire UI
-    update() {
-        this.model.nutrient = Visuals.getSelector(this.nutrientSelectorId);
-        this.updateGraphs();
+    // update(): Updates how the bar graph and sunburst graph looks
+    function update() {
+        model.nutrient = Visuals.getSelector(nutrientSelectorId);
+        updateBarGraph();
+        updateSunburst();
 
         // only make the graphs visible once everything is set up 
         d3.select("#foodSourceContributionTool").style("visibility", "visible");
     }
-
-    // render(): Draws the entire UI onto the website
-    render() {
-        this.setup();
-        this.update();
-    }
-};
-
+}
 
 
 //////////
@@ -82,10 +54,9 @@ class ViewController {
 // load in the view for the application
 window.addEventListener("load", () => {
     const model = new Model();
-    const viewController = new ViewController({model: model});
     TranslationTools.registerTranslation(TranslationObj);
 
     Promise.all([model.load()]).then(() => {
-        viewController.render();
+        setup(model);
     });
 });

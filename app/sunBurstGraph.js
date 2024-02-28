@@ -20,9 +20,9 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodIngredientDataColNames, SunBurstStates, Colours, TranslationTools } from "../assets/assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodIngredientDataColNames, SunBurstStates, Colours, TranslationTools } from "./assets.js";
 import { Visuals } from "./visuals.js";
-import { Model } from "../backend/backend.js";
+import { Model } from "./backend.js";
 
 
 export function lowerGraph(model){

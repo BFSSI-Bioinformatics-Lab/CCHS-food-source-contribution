@@ -20,9 +20,9 @@
 
 
 
-import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, TranslationTools } from "../assets/assets.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, TranslationTools } from "./assets.js";
 import { Visuals } from "./visuals.js";
-import { Model } from "../backend/backend.js";
+import { Model } from "./backend.js";
 
 
 

@@ -8,7 +8,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 
-import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "../assets/assets.js";
+import { Colours, DefaultDims, TextWrap, DefaultAttributes } from "./assets.js";
 
 
 // Visuals: a Helper class for any visual related functions
@@ -190,9 +190,9 @@ export class Visuals {
             textGroup.selectAll("tspan").remove();
         }
 
-        const textNode = textGroup.append("tspan")
-            .attr("x", textX).attr("y", textY)
-            .text(text);
+            const textNode = textGroup.append("tspan")
+                .attr("x", textX).attr("y", textY)
+                .text(text);
 
         return textNode;
     }
