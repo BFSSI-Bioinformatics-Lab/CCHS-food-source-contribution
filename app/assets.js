@@ -174,7 +174,11 @@ export const FoodIngredientDataColNames = {
     ageSexGroup: "Age-sex group (*: excludes pregnant or breastfeeding)",
     foodGroupLv1: "Food group_level1",
     foodGroupLv2: "Food group_level2",
-    foodGroupLv3: "Food group_level3"
+    foodGroupLv3: "Food group_level3",
+    amount: "Amount",
+    amountSE: "Amount_SE",
+    percentage: "Percentage",
+    percentageSE: "Percentage_SE"
 };
 
 // heading names for the age sex group

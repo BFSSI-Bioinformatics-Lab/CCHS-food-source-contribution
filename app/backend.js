@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, FoodGroupDescDataColNames, FoodIngredientDataColNames, FoodDescriptionExceptionKeys } from "../assets/assets.js";
+import { AgeSexGroupOrder, FoodGroupDescDataColNames, FoodIngredientDataColNames, FoodDescriptionExceptionKeys } from "./assets.js";
 
 
 // ================== CONSTANTS ==========================================
@@ -41,6 +41,8 @@ export class TableTools {
     }
 
     // createCSVContent(matrix, numOfCols): Creates the string needed for exporting to CSV
+    // Note: This part replaces JQuery in the html doc of the original (lines 671-689 with its nested .find functions)
+    //  git commit hash: 58aaf7a62118cdcd7e7364cbe3f6959a825a862b
     static createCSVContent(matrix) {
         let result = "";
         for (const row of matrix) {
@@ -78,7 +80,7 @@ export class Model {
         let data = await d3.csv("data/Food Group descriptions.csv");
         data = TableTools.numToFloat(data);
     
-        data = Object.freeze(d3.nest()
+        this.foodGroupDescriptionData = Object.freeze(d3.nest()
                 .key(d => 
                         (Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv3]) ? 
                             Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv2]) ? 
@@ -88,9 +90,8 @@ export class Model {
                     )
                     .rollup(d => d[0])
                     .object(data));
-        
-        this.foodGroupDescriptionData = data;
-        return data;
+
+        return this.foodGroupDescriptionData;
     }
 
     // loadGraphFoodIngredientsData(): Load the data for all the food ingredients used in the graphs
@@ -113,7 +114,7 @@ export class Model {
                                                             .rollup(d => d[0])
                                                             .object(data));
 
-        return {tableByDemoGroupLv1: this.graphNutrientTablesByDemoGroupLv1, tableByDemoAndFoodGroup: this.graphNutrientTablesFullyNestedDataByFoodGroup};
+        return [this.graphNutrientTablesByDemoGroupLv1, this.graphNutrientTablesFullyNestedDataByFoodGroup];
     }
 
     // loadTableFoodIngredientsData(): Load the data for all the food ingredients used in the tables
@@ -219,7 +220,7 @@ export class Model {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
         const ageSexGroupHeadings = Model.ageSexGroupHeadings;
         const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
-        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
+        const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         const nutrientAgeGroups = Object.keys(nutrientData);
 
@@ -251,6 +252,9 @@ export class Model {
             result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()));
         });
 
+        // ------ this part used to be the JQuery part in the html doc of the original code -------
+        //      git commit hash: 58aaf7a62118cdcd7e7364cbe3f6959a825a862b
+
         // get the text neeeded for the CSV export
         let csvHeadings = tableHeadings.map((ageSexGroup) => {
             const result = headingsPerSexAgeGroup.map(heading => "");
@@ -263,6 +267,8 @@ export class Model {
 
         const csvContent = TableTools.createCSVContent([csvHeadings, subHeadings].concat(result), 1 + tableHeadings.length * headingsPerSexAgeGroup.length);
 
+        // -----------------------------------------------------------------------------------------
+
         this.barGraphTable = { headings: tableHeadings, subHeadings, table: result, headingsPerSexAgeGroup, csvContent};
         return this.barGraphTable;
     }
@@ -271,7 +277,7 @@ export class Model {
     createSunburstTable(ageSexGroup) {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
         const tableHeadings = ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"];
-        const headingsPerSexAgeGroupKeys = ["Amount", "Amount_SE", "Percentage", "Percentage_SE"];
+        const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         // append the rows for the table
         let result = [];
