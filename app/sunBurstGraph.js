@@ -20,8 +20,8 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, FoodIngredientDataColNames, SunBurstStates, Colours, TranslationTools } from "./assets.js";
-import { Visuals } from "./visuals.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation } from "./assets.js";
+import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 import { Model } from "./backend.js";
 
 
@@ -72,8 +72,9 @@ export function lowerGraph(model){
     const infoBox = {};
     let infoBoxHeight = GraphDims.lowerGraphInfoBoxHeight;
     const infoBoxBorderWidth = GraphDims.lowerGraphInfoBoxBorderWidth;
-    const infoBoxPadding = Visuals.getPadding(GraphDims.lowerGraphInfoBoxPadding);
-    const infoBoxDims = Visuals.getComponentLengths(0, infoBoxHeight, infoBoxPadding);
+    const infoBoxPadding = GraphDims.lowerGraphInfoBoxPadding;
+
+    const infoBoxTextGroupHeight = Math.max(infoBoxHeight, infoBoxHeight - infoBoxPadding - infoBoxPadding);
 
     // group for the info box
     infoBox.group = lowerGraphSvg.append("g")
@@ -91,14 +92,14 @@ export function lowerGraph(model){
     // container to hold the text
     infoBox.textGroup = infoBox.group.append("text")
         .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding.paddingLeft}, ${infoBoxPadding.paddingTop})`);
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`);
     
     // draw the text
-    const textDims = Visuals.drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
-                                       lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, padding: infoBoxPadding});
+    const textDims = drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
+                               lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
 
     // update the height of the info box to be larger than the height of the text
-    infoBoxHeight = Math.max(infoBoxDims.height, textDims.textBottomYPos + infoBoxPadding.paddingBottom);
+    infoBoxHeight = Math.max(infoBoxTextGroupHeight, textDims.textBottomYPos + infoBoxPadding);
     infoBox.highlight.attr("y2", infoBoxHeight);
 
     const lowerGraphInfoBox = infoBox;
@@ -108,9 +109,12 @@ export function lowerGraph(model){
     // ----------------- draws the legend ---------------------
     
     // attributes for the legend
-    const legendItemPadding = Visuals.getPadding([0, 2]);
-    const legendItemTextPadding = Visuals.getPadding([5, 0]);
+    const legendItemPaddingHor = 0;
+    const legendItemPaddingVert = 2;
+    const legendItemTextPaddingHor = 5;
+    const legendItemTextPaddingVert = 0;
     const legendItemFontSize = 12;
+
     const legendData = Object.entries(GraphColours);
     const colourBoxWidth = GraphDims.legendSquareSize;
     const colourBoxHeight = GraphDims.legendSquareSize;
@@ -133,27 +137,27 @@ export function lowerGraph(model){
 
         // draw the coloured box
         const colourBox = legendItemGroup.append("rect")
-            .attr("y", legendItemPadding.paddingTop)
-            .attr("x", legendItemPadding.paddingLeft)
+            .attr("y", legendItemPaddingVert)
+            .attr("x", legendItemPaddingHor)
             .attr("width", colourBoxWidth)
             .attr("height", colourBoxHeight)
             .attr("fill", legendKeyColour);
 
         // draw the text
-        const textX = legendItemPadding.paddingLeft + colourBoxWidth + legendItemTextPadding.paddingLeft;
-        const textY = legendItemTextPadding.paddingTop;
+        const textX = legendItemPaddingHor + colourBoxWidth + legendItemTextPaddingHor;
+        const textY = legendItemTextPaddingVert;
         const textGroup = legendItemGroup.append("text")
-            .attr("y", legendItemPadding.paddingTop)
+            .attr("y", legendItemPaddingVert)
             .attr("x", textX)
             .attr("font-size", legendItemFontSize);
 
-        Visuals.drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
+        drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
 
         const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
 
         // *****************************************************************
 
-        currentLegendItemYPos += legendItemPadding.paddingTop + legendItemPadding.paddingBottom + legendItemGroup.node().getBBox()["height"];
+        currentLegendItemYPos += legendItemPaddingVert + legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
         legendItems.push(legendItem);
     }
 
@@ -195,8 +199,8 @@ export function lowerGraph(model){
                 .property("value", d => d)
                 .text(d => d);
     
-        const ageSexGroup = Visuals.getSelector("#lowerGraphAgeSexSelect");
-        lowerGraphChartHeading.text(TranslationTools.translateText("lowerGraph.graphTitle", {
+        const ageSexGroup = getSelector("#lowerGraphAgeSexSelect");
+        lowerGraphChartHeading.text(Translation.translate("lowerGraph.graphTitle", {
             nutrient: nutrient,
             ageSexGroup: ageSexGroup
         }))
@@ -277,8 +281,8 @@ export function lowerGraph(model){
             .attr("font-size", GraphDims.lowerGraphCenterFontSize)
             .attr("text-anchor", TextAnchor.Middle);
         
-        Visuals.drawWrappedText({textGroup: nutrientTextBox, text: nutrient, width: GraphDims.centerOuterRadius, 
-                                 textY: -GraphDims.lowerGraphCenterArcRadius, fontSize: GraphDims.lowerGraphCenterFontSize});
+        drawWrappedText({textGroup: nutrientTextBox, text: nutrient, width: GraphDims.centerOuterRadius, 
+                         textY: -GraphDims.lowerGraphCenterArcRadius, fontSize: GraphDims.lowerGraphCenterFontSize});
     
         // TODO: check what this does, copied from the reference 
         const sunBurstGroup = lowerGraphSunburst.append("circle")
@@ -321,7 +325,7 @@ export function lowerGraph(model){
             const arcColour = d3.select(`#arcPath${i}`).attr("fill");
 
             /* Content of tooltip */
-            const lines = TranslationTools.translateText("lowerGraph.infoBoxLevel", { 
+            const lines = Translation.translate("lowerGraph.infoBoxLevel", { 
                 returnObjects: true, 
                 context: d.depth,
                 name: d.data.name,
@@ -341,10 +345,13 @@ export function lowerGraph(model){
             let toolTipHeight = 50;
             const toolTipBorderWidth = 3;
             const toolTipBackgroundColor = Colours.White;
-            const toolTipPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipPaddingHor, GraphDims.lowerGraphTooltipPaddingVert]);
-            const toolTipTextPadding = Visuals.getPadding([GraphDims.lowerGraphTooltipTextPaddingHor, GraphDims.lowerGraphTooltipTextPaddingVert]);
-            const toolTipDims = Visuals.getComponentLengths(toolTipWidth, toolTipHeight, toolTipPadding);
-            const toolTipHighlightXPos = toolTipPadding.paddingLeft + toolTipBorderWidth / 2;
+            const toolTipPaddingHor = GraphDims.lowerGraphTooltipPaddingHor;
+            const toolTipPaddingVert = GraphDims.lowerGraphTooltipPaddingVert;
+            const toolTipTextPaddingHor = GraphDims.lowerGraphTooltipTextPaddingHor;
+            const toolTipTextPaddingVert = GraphDims.lowerGraphTooltipTextPaddingVert;
+
+            const toolTipTextGroupWidth = Math.max(width, width - toolTipPaddingHor - toolTipPaddingHor);
+            const toolTipHighlightXPos = toolTipPaddingHor + toolTipBorderWidth / 2;
 
             // draw the container for the tooltip
             toolTip.group = root.append("g")
@@ -364,8 +371,8 @@ export function lowerGraph(model){
             toolTip.highlight = toolTip.group.append("line")
                 .attr("x1", toolTipHighlightXPos)
                 .attr("x2", toolTipHighlightXPos)
-                .attr("y1", toolTipPadding.paddingTop)
-                .attr("y2", toolTipHeight - toolTipPadding.paddingBottom)
+                .attr("y1", toolTipPaddingVert)
+                .attr("y2", toolTipHeight - toolTipPaddingVert)
                 .attr("stroke", arcColour) 
                 .attr("stroke-width", toolTipBorderWidth)
                 .attr("stroke-linecap", "round");
@@ -373,18 +380,18 @@ export function lowerGraph(model){
             // draw the text
             toolTip.textGroup = toolTip.group.append("text")
                 .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                .attr("transform", `translate(${toolTipBorderWidth + toolTipPadding.paddingLeft +  toolTipTextPadding.paddingLeft}, ${toolTipPadding.paddingTop + toolTipTextPadding.paddingTop})`);
+                .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
 
-            const textDims = Visuals.drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipDims.width, fontSize: GraphDims.lowerGraphTooltipFontSize, 
-                                               textWrap: TextWrap.NoWrap, padding: toolTipPadding});
+            const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+                                       textWrap: TextWrap.NoWrap, paddingLeft: toolTipPaddingHor, paddingRight: toolTipPaddingHor});
 
             // update the height of the tooltip to be larger than the height of all the text
-            toolTipHeight = Math.max(toolTipHeight, toolTipPadding.paddingTop + toolTipTextPadding.paddingTop + textDims.textBottomYPos + toolTipTextPadding.paddingTop + toolTipPadding.paddingBottom);
+            toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
             toolTip.background.attr("height", toolTipHeight);
-            toolTip.highlight.attr("y2", toolTipHeight - toolTipPadding.paddingBottom);
+            toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert);
 
             // update the width of the tooltip to be larger than the width of all the text
-            toolTipWidth = Math.max(toolTipWidth, toolTipPadding.paddingLeft + textDims.width + toolTipPadding.paddingRight);
+            toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + textDims.width + toolTipPaddingHor);
             toolTip.background.attr("width", toolTipWidth);
 
             // -------------------------------------
@@ -407,7 +414,7 @@ export function lowerGraph(model){
         /* Make the opacity of tooltip 0 */
         function arcUnHover(d, i){
             d3.select(`#arcHover${i}`).attr("opacity", 0);
-            Visuals.drawText({textGroup: lowerGraphInfoBox.textGroup});
+            drawText({textGroup: lowerGraphInfoBox.textGroup});
             lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
         }
 
@@ -487,7 +494,7 @@ export function lowerGraph(model){
         // setFilterButton(translationKey, onClickAction): Changes the state of the filter button
         //  based on 'translationKey' and 'onClickAction'
         function setFilterButton(translationKey, onClickAction) {
-            lowerGraphFilterGroupsButton.text(TranslationTools.translateText(translationKey));
+            lowerGraphFilterGroupsButton.text(Translation.translate(translationKey));
             lowerGraphFilterGroupsButton.on("click", onClickAction);
         }
 
@@ -631,7 +638,7 @@ export function lowerGraph(model){
                     return 1;
                 })
                 .attr("colspan", 1)
-                .text(d => TranslationTools.translateText(d))
+                .text(d => Translation.translate(d))
         
         lowerGraphTableBody.selectAll("tr").remove();
 
@@ -771,13 +778,13 @@ export function lowerGraph(model){
 
         element.attr("startOffset", 0);
         element.text(text);
-        let textLength = Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+        let textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
         let textTruncated = false;
 
         while (textLength > availableLength && text){
             text = text.slice(0, text.length - 1);
             element.text(`${text}...`);
-            textLength = Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+            textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
             textTruncated = true;
         }
 
@@ -788,7 +795,7 @@ export function lowerGraph(model){
         // center text only if the text is not truncated
         let textX = 0;
         if ((d.x1 - d.x0) < 2 * Math.PI && !textTruncated) {
-            textX = (d.x1 - d.x0) / 2.0 * midRadius - Visuals.getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0;
+            textX = (d.x1 - d.x0) / 2.0 * midRadius - getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize) / 2.0;
         }
 
         if (textX < 0) {
@@ -800,7 +807,8 @@ export function lowerGraph(model){
 
     /* Update food group description box */
     function updateInfoBox(d){
-        let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
+        const foodGroupLv1Col = Translation.translate("FoodIngredientDataColNames.foodGroupLv1");
+        let colour = GraphColours[d.data.row[foodGroupLv1Col]];
         colour = colour === undefined ? null : colour;
 
         let foodGroupName = d.data.name;
@@ -817,18 +825,18 @@ export function lowerGraph(model){
 
         // ---------- Updates the infobox --------------
 
-        const infoBoxPadding = Visuals.getPadding(GraphDims.lowerGraphInfoBoxPadding);
+        const infoBoxPadding = GraphDims.lowerGraphInfoBoxPadding;
 
         // change text
-        const textDims = Visuals.drawText({textGroup: lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
-                                           fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, padding: infoBoxPadding});
+        const textDims = drawText({textGroup: lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
+                                   fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
 
         // change colour
         lowerGraphInfoBox.highlight.attr("stroke", colour);
 
         // update the height of the info box to be larger than the height of the text
         let infoBoxHeight = lowerGraphInfoBox.highlight.node().getBBox()["height"];
-        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding.paddingTop + textDims.textBottomYPos + infoBoxPadding.paddingBottom);
+        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding + textDims.textBottomYPos + infoBoxPadding);
         lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
 
         // ---------------------------------------------

@@ -14,8 +14,8 @@
 import { Model } from './backend.js'
 import { upperGraph } from './barGraph.js';
 import { lowerGraph } from './sunBurstGraph.js';
-import { Visuals } from './visuals.js';
-import { TranslationTools, TranslationObj } from './assets.js';
+import { getSelector } from './visuals.js';
+import { Translation, TranslationObj } from './assets.js';
 
 
 function setup(model) {
@@ -38,7 +38,7 @@ function setup(model) {
 
     // update(): Updates how the bar graph and sunburst graph looks
     function update() {
-        model.nutrient = Visuals.getSelector(nutrientSelectorId);
+        model.nutrient = getSelector(nutrientSelectorId);
         updateBarGraph();
         updateSunburst();
 
@@ -51,10 +51,13 @@ function setup(model) {
 //////////
 // MAIN //
 //////////
+
+Translation.register(TranslationObj);
+
 // load in the view for the application
 window.addEventListener("load", () => {
     const model = new Model();
-    TranslationTools.registerTranslation(TranslationObj);
+    i18next.changeLanguage();
 
     Promise.all([model.load()]).then(() => {
         setup(model);

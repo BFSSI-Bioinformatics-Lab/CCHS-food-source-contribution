@@ -179,6 +179,7 @@ export const FoodIngredientDataColNames = {
     amountSE: "Amount_SE",
     percentage: "Percentage",
     percentageSE: "Percentage_SE"
+
 };
 
 // heading names for the age sex group
@@ -221,9 +222,9 @@ AgeSexGroupOrder[AgeSexGroupHeadings.AdultMales] = 3;
 AgeSexGroupOrder[AgeSexGroupHeadings.AdultFemales] = 4;
 
 
-// TranslationTools: Helper class for doing translations
-export class TranslationTools {
-    static registerTranslation(resources){
+// Translation: Helper class for doing translations
+export class Translation {
+    static register(resources){
         i18next.use(i18nextBrowserLanguageDetector).init({
             fallbackLng: "en",
             detection: {
@@ -234,16 +235,35 @@ export class TranslationTools {
         i18next.changeLanguage();
     }
     
-    static translateText(key, args){
+    static translate(key, args){
         return i18next.t(key, args)
     }
 }
 
 
+const REMPLACER_MOI = "REMPLACER MOI"
+const REMPLACER_MOI_AVEC_ARGUMENTS = `${REMPLACER_MOI} - les arguments du texte: `
+
 // translations for certain text used in the project
 export const TranslationObj = {
     en: {
         translation: {
+            GraphColours: {
+                "Baby Foods": "#BAABDA",
+                "Beverages (Excluding Milks)": "#F8CB2E",
+                "Dairy & Plant-Based Beverages": "#39B7E3",
+                "Fats & Oils": "#D8B384",
+                "Fish & Seafood": "#FF6969",
+                "Fruits & Vegetables": "#3CCF4E",
+                "Grain Products": "#EF5B0C",
+                "Meat & Poultry": "#BB2525",
+                "Meat Alternatives": "#482121",
+                "Nutritional Beverages & Bars": "#84F1CD",
+                "Soups - Sauces - Spices & Other Ingredients": "#005DD0",
+                "Sweets - Sugars & Savoury Snacks": "#824BD0",
+                "All Items": "#808080"
+            },
+
             "upperGraph": {
                 "number": {
                     "graphTitle": "Daily {{ nutrient }} intake per person ({{ amountUnit }}/d) provided by 12 food groups.",
@@ -272,6 +292,7 @@ export const TranslationObj = {
                 "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of food groups and sub-groups to daily {{nutrient}} intake in Canadian {{ ageSexGroup }}, 2015",
                 "seeLevel2Groups": "Filter on level 2 groups",
                 "seeAllGroups": "See all food groups",
+                "allFoodGroupsLabel": "All Food Groups",
                 "infoBoxLevel_1": [
                     "{{- name }}",
                     "{{ percentage }}% of total {{ nutrient }} intake."
@@ -303,6 +324,63 @@ export const TranslationObj = {
         }
     },
     fr: { 
-        translation: {} 
+        translation: {
+            "upperGraph": {
+                "number": {
+                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} ({{ amountUnit }}/j)`,
+                    "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} ({{ amountUnit }}/j)`,
+                    "switchTypeButton": REMPLACER_MOI
+                },
+                "percentage": {
+                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }}`,
+                    "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{nutrient}}`,
+                    "switchTypeButton": "Switch to Numbers"
+                },
+                "graphFootnote": REMPLACER_MOI,
+                "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
+                "infoBox_number": [
+                    "{{- name }}",
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}}`
+                ],
+                "infoBox_percentage": [
+                    "{{- name }}",
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
+                ]
+            },
+            "lowerGraph": {
+                "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ ageSexGroup }}`,
+                "graphFootnote": REMPLACER_MOI,
+                "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour)  {{nutrient}}  {{ ageSexGroup }}`,
+                "seeLevel2Groups": REMPLACER_MOI,
+                "seeAllGroups": REMPLACER_MOI,
+                "infoBoxLevel_1": [
+                    "{{- name }}",
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{ nutrient }} `
+                ],
+                "infoBoxLevel_2": [
+                    "{{- name }}",
+                    REMPLACER_MOI,
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
+                ],
+                "infoBoxLevel_3": [
+                    "{{- name }}",
+                    REMPLACER_MOI,
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
+                ],
+                "infoBoxLevel_4": [
+                    "{{- name }}",
+                    REMPLACER_MOI,
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
+                ],
+                /* If the context number is not between 1-4 */
+                "hoverBoxLevel_other": [ 
+                    "{{- name }}",
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
+                ],
+            }
+        }
     }
 }
