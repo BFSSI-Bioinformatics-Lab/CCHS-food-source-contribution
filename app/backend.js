@@ -15,12 +15,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, FoodDescriptionExceptionKeys } from "./assets.js";
+import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames } from "./assets.js";
 
 
 // ================== CONSTANTS ==========================================
 
-const SortedAgeSexGroupHeadings = Object.keys(AgeSexGroupOrder).sort((a,b) => {return AgeSexGroupOrder[a] - AgeSexGroupOrder[b]});
+const SortedAgeSexGroupKeys = Object.keys(AgeSexGroupOrder).sort((a,b) => {return AgeSexGroupOrder[a] - AgeSexGroupOrder[b]});
 
 
 // =======================================================================
@@ -68,16 +68,18 @@ export class TableTools {
 
 // Model: The overall model for the user interface
 export class Model {
-    static ageSexGroupHeadings = SortedAgeSexGroupHeadings;
 
     // load(): Setup all the needed data for the user interface
     async load() {
+        this.ageSexGroupHeadings = SortedAgeSexGroupKeys.map((ageSexKey) => Translation.translate(`AgeSexGroupHeadings.${ageSexKey}`));
+        this.foodDescExeceptions = Translation.translate("FoodDescriptionExceptionKeys", { returnObjects: true });
+
         return await Promise.all([this.loadFoodGroupDescriptionData(), this.loadGraphFoodIngredientsData(), this.loadTableFoodIngredientsData()]);
     }
 
     // loadFoodGroupDescriptionData(): Load the data for all the food group descriptions
     async loadFoodGroupDescriptionData() {
-        let data = await d3.csv("data/Food Group descriptions.csv");
+        let data = await d3.csv(`data/${i18next.language}/Food Group descriptions.csv`);
         data = TableTools.numToFloat(data);
     
         this.foodGroupDescriptionData = Object.freeze(d3.nest()
@@ -96,7 +98,7 @@ export class Model {
 
     // loadGraphFoodIngredientsData(): Load the data for all the food ingredients used in the graphs
     async loadGraphFoodIngredientsData(){
-        let data = await d3.csv("data/GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240126.csv");
+        let data = await d3.csv(`data/${i18next.language}/GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240126.csv`);
         data = TableTools.numToFloat(data);
 
         this.graphNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
@@ -119,7 +121,7 @@ export class Model {
 
     // loadTableFoodIngredientsData(): Load the data for all the food ingredients used in the tables
     async loadTableFoodIngredientsData() {
-        let data = await d3.csv("data/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126.csv");
+        let data = await d3.csv(`data/${i18next.language}/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126.csv`);
         data = TableTools.numToFloat(data);
 
         this.tableNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
@@ -162,7 +164,7 @@ export class Model {
     // getFoodDescription(nutrient, foodGroup): Retrieves the corresponding food description for 'foodGroup' and 'nutrient'
     getFoodDescription(nutrient, foodGroup) {
         foodGroup = foodGroup.trim();
-        if (FoodDescriptionExceptionKeys[foodGroup] === undefined) {
+        if (this.foodDescExeceptions[foodGroup] === undefined) {
             return this.foodGroupDescriptionData[foodGroup][FoodGroupDescDataColNames.description];
         }
 
@@ -171,7 +173,7 @@ export class Model {
             nutrient = "OtherNutrients";
         }
 
-        const foodDescriptionKey = FoodDescriptionExceptionKeys[foodGroup][nutrient];
+        const foodDescriptionKey = this.foodDescExeceptions[foodGroup][nutrient];
         return this.foodGroupDescriptionData[foodDescriptionKey][FoodGroupDescDataColNames.description];
     }
 
@@ -209,7 +211,7 @@ export class Model {
                 children: []
             }));
             return objLevel1;
-        }, { name: "All Items", row: {Percentage: 100}, children: [] });
+        }, { name: Translation.translate("LegendKeys.All Items"), row: {Percentage: 100}, children: [] });
 
         groupedPercentages = {name: "data", children: [groupedPercentages]}
         return groupedPercentages;
@@ -218,14 +220,13 @@ export class Model {
     // createBarGraphTable(): Creates the data for the table of the bar graph
     createBarGraphTable() {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
-        const ageSexGroupHeadings = Model.ageSexGroupHeadings;
-        const headingsPerSexAgeGroup = ["Amount (g)", "Amount SE", "% of total intake", "% SE"];
+        const headingsPerSexAgeGroup = Translation.translate("upperGraph.tableSubHeadings", { returnObjects: true });
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         const nutrientAgeGroups = Object.keys(nutrientData);
 
         // headings for the top most level of the table
-        const tableHeadings = ["", ...ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))];
+        const tableHeadings = ["", ...this.ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))];
 
         // sub-headings of the table
         const subHeadings = [""].concat(Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat());
@@ -238,7 +239,7 @@ export class Model {
                 const [foodLevelName, foodLevelGroupData] = foodLevelGroupEntry;
                 const foodLevelRowData = (tableRows[foodLevelName] ?? []);
                 foodLevelRowData.splice(
-                    ageSexGroupHeadings.indexOf(ageSexGroup), 
+                    this.ageSexGroupHeadings.indexOf(ageSexGroup), 
                     0, 
                     foodLevelGroupData.find(d => !d["Food group_level2"] && !d["Food group_level3"])
                 )
@@ -276,7 +277,7 @@ export class Model {
     // createSunburstTable(ageSexGroup): Creates the data for the table of the sunburst graph
     createSunburstTable(ageSexGroup) {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
-        const tableHeadings = ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"];
+        const tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         // append the rows for the table

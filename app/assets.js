@@ -162,6 +162,7 @@ export const DefaultAttributes = {
 }
 
 // column names in the food description group csv file
+// Note: For simplicity, should be the same for all languages since this is not displayed on the website
 export const FoodGroupDescDataColNames = {
     foodGroupLv1: "Food Group Name_Level 1",
     foodGroupLv2: "Food Group Name_Level 2",
@@ -170,6 +171,7 @@ export const FoodGroupDescDataColNames = {
 };
 
 // column names in the food ingredient csv file
+// Note: For simplicity, should be the same for all languages since this is not displayed on the website
 export const FoodIngredientDataColNames = {
     ageSexGroup: "Age-sex group (*: excludes pregnant or breastfeeding)",
     foodGroupLv1: "Food group_level1",
@@ -182,30 +184,6 @@ export const FoodIngredientDataColNames = {
 
 };
 
-// heading names for the age sex group
-export const AgeSexGroupHeadings = {
-    Population1Up: "Population age 1+", 
-    Children1To8: "Children 1 to 8 y", 
-    YouthAndAdolescents: "Youth & adolescents* 9 to 18 y",
-    AdultMales: "Adult males 19 y +",
-    AdultFemales: "Adult females* 19 y +"
-};
-
-// certain keys in the graph's food ingredient CSV file that do not map to
-//  any keys in the food description CSV file
-export const FoodDescriptionExceptionKeys = {
-    "Spices - Seasonings & Other Ingredients": {
-        "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
-        "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
-    },
-
-    "Vegetables Including Potatoes": {
-        "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
-        "Sodium": "Vegetables Including Potatoes (sodium only)"
-    }
-}
-
-
 // Different display states of the sun burst graph
 export const SunBurstStates = {
     AllDisplayed: "All Displayed",
@@ -215,11 +193,11 @@ export const SunBurstStates = {
 
 // Ordering for the headings of the age-sex groups
 export const AgeSexGroupOrder = {};
-AgeSexGroupOrder[AgeSexGroupHeadings.Population1Up] = 0;
-AgeSexGroupOrder[AgeSexGroupHeadings.Children1To8] = 1;
-AgeSexGroupOrder[AgeSexGroupHeadings.YouthAndAdolescents] = 2;
-AgeSexGroupOrder[AgeSexGroupHeadings.AdultMales] = 3;
-AgeSexGroupOrder[AgeSexGroupHeadings.AdultFemales] = 4;
+AgeSexGroupOrder["Population1Up"] = 0;
+AgeSexGroupOrder["Children1To8"] = 1;
+AgeSexGroupOrder["YouthAndAdolescents"] = 2;
+AgeSexGroupOrder["AdultMales"] = 3;
+AgeSexGroupOrder["AdultFemales"] = 4;
 
 
 // Translation: Helper class for doing translations
@@ -248,20 +226,47 @@ const REMPLACER_MOI_AVEC_ARGUMENTS = `${REMPLACER_MOI} - les arguments du texte:
 export const TranslationObj = {
     en: {
         translation: {
-            GraphColours: {
-                "Baby Foods": "#BAABDA",
-                "Beverages (Excluding Milks)": "#F8CB2E",
-                "Dairy & Plant-Based Beverages": "#39B7E3",
-                "Fats & Oils": "#D8B384",
-                "Fish & Seafood": "#FF6969",
-                "Fruits & Vegetables": "#3CCF4E",
-                "Grain Products": "#EF5B0C",
-                "Meat & Poultry": "#BB2525",
-                "Meat Alternatives": "#482121",
-                "Nutritional Beverages & Bars": "#84F1CD",
-                "Soups - Sauces - Spices & Other Ingredients": "#005DD0",
-                "Sweets - Sugars & Savoury Snacks": "#824BD0",
-                "All Items": "#808080"
+            // Names used for the legend
+            // Note: Copy the exact food group lv1 name from the food ingredient CSV file
+            LegendKeys: {
+                "Baby Foods": "Baby Foods",
+                "Beverages (Excluding Milks)": "Beverages (Excluding Milks)",
+                "Dairy & Plant-Based Beverages": "Dairy & Plant-Based Beverages",
+                "Fats & Oils": "Fats & Oils",
+                "Fish & Seafood": "Fish & Seafood",
+                "Fruits & Vegetables": "Fruits & Vegetables",
+                "Grain Products": "Grain Products",
+                "Meat & Poultry": "Meat & Poultry",
+                "Meat Alternatives": "Meat Alternatives",
+                "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
+                "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
+                "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
+                "All Items": "All Food Groups"
+            },
+
+            // Names for the age-sex groups
+            // Note: Copy the exact age-sex group name from the food description CSV file
+            AgeSexGroupHeadings: {
+                Population1Up: "Population age 1+", 
+                Children1To8: "Children 1 to 8 y", 
+                YouthAndAdolescents: "Youth & adolescents* 9 to 18 y",
+                AdultMales: "Adult males 19 y +",
+                AdultFemales: "Adult females* 19 y +"
+            },
+
+            // certain keys in the graph's food ingredient CSV file that do not map to
+            //  any keys in the food description CSV file
+            // Note: Copy the exact food group name from the food description CSV file
+            FoodDescriptionExceptionKeys: {
+                "Spices - Seasonings & Other Ingredients": {
+                    "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
+                    "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
+                },
+
+                "Vegetables Including Potatoes": {
+                    "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
+                    "Sodium": "Vegetables Including Potatoes (sodium only)"
+                }
             },
 
             "upperGraph": {
@@ -284,7 +289,8 @@ export const TranslationObj = {
                 "infoBox_percentage": [
                     "{{- name }}",
                     "{{ percentage }}% of total {{- nutrient }} intake."
-                ]
+                ],
+                "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"]
             },
             "lowerGraph": {
                 "graphTitle": "Food groups and sub-groups contribution to {{ nutrient }} intake in Canadian {{ ageSexGroup }}",
@@ -320,21 +326,65 @@ export const TranslationObj = {
                     "{{- name }}",
                     "{{ percentage }}% of total {{ nutrient }} intake."
                 ],
+                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"]
             }
         }
     },
     fr: { 
         translation: {
+            // Names used for the legend
+            // Note: Copy the exact food group lv1 name from the source CSV files
+            LegendKeys: {
+                "Baby Foods": "Baby Foods",
+                "Beverages (Excluding Milks)": "Beverages (Excluding Milks)",
+                "Dairy & Plant-Based Beverages": "Dairy & Plant-Based Beverages",
+                "Fats & Oils": "Fats & Oils",
+                "Fish & Seafood": "Fish & Seafood",
+                "Fruits & Vegetables": "Fruits & Vegetables",
+                "Grain Products": "Grain Products",
+                "Meat & Poultry": "Meat & Poultry",
+                "Meat Alternatives": "Meat Alternatives",
+                "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
+                "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
+                "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
+                "All Items": "Toutes les Groupes Alimentaires"
+            },
+
+            // Names for the age-sex groups
+            // Note: Copy the exact age-sex group name from the food description CSV file
+            AgeSexGroupHeadings: {
+                Population1Up: `Population age 1+`, 
+                Children1To8: "Children 1 to 8 y", 
+                YouthAndAdolescents: "Youth & adolescents* 9 to 18 y",
+                AdultMales: "Adult males 19 y +",
+                AdultFemales: "Adult females* 19 y +"
+            },
+
+            // certain keys in the graph's food ingredient CSV file that do not map to
+            //  any keys in the food description CSV file
+            // Note: Copy the exact food group names (for both keys and values) from the food description CSV file
+            FoodDescriptionExceptionKeys: {
+                "Spices - Seasonings & Other Ingredients": {
+                    "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
+                    "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
+                },
+
+                "Vegetables Including Potatoes": {
+                    "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
+                    "Sodium": "Vegetables Including Potatoes (sodium only)"
+                }
+            },
+
             "upperGraph": {
                 "number": {
                     "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} ({{ amountUnit }}/j)`,
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} ({{ amountUnit }}/j)`,
-                    "switchTypeButton": REMPLACER_MOI
+                    "switchTypeButton": "Changer Au Pourcentage"
                 },
                 "percentage": {
                     "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }}`,
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{nutrient}}`,
-                    "switchTypeButton": "Switch to Numbers"
+                    "switchTypeButton": "Changer Aux Nombres"
                 },
                 "graphFootnote": REMPLACER_MOI,
                 "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
@@ -345,14 +395,15 @@ export const TranslationObj = {
                 "infoBox_percentage": [
                     "{{- name }}",
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
-                ]
+                ],
+                "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
             },
             "lowerGraph": {
                 "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ ageSexGroup }}`,
                 "graphFootnote": REMPLACER_MOI,
                 "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour)  {{nutrient}}  {{ ageSexGroup }}`,
-                "seeLevel2Groups": REMPLACER_MOI,
-                "seeAllGroups": REMPLACER_MOI,
+                "seeLevel2Groups": `Voyer les Groupes à Niveau 2`,
+                "seeAllGroups": `Toutes les Groupes Alimentaires`,
                 "infoBoxLevel_1": [
                     "{{- name }}",
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{ nutrient }} `
@@ -380,6 +431,7 @@ export const TranslationObj = {
                     "{{- name }}",
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
+                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
             }
         }
     }

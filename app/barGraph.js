@@ -183,7 +183,7 @@ export function upperGraph(model){
         nutrient = model.nutrient;
         const nutrientData = model.graphNutrientTablesByDemoGroupLv1[nutrient];
 
-        const xAxisValues = Model.ageSexGroupHeadings;
+        const xAxisValues = model.ageSexGroupHeadings;
         upperGraphXAxisScale.domain(xAxisValues);
         upperGraphXAxisLine.call(d3.axisBottom(upperGraphXAxisScale));
 
@@ -535,7 +535,7 @@ export function upperGraph(model){
 
         // draw all the keys for the legend
         for (const legendKey of legendData) {
-            let legendKeyText = legendKey[0];
+            let legendKeyText = Translation.translate(`LegendKeys.${legendKey[0]}`);
             let legendKeyColour = legendKey[1];
 
             // ***************** draws a key in the legend *********************
