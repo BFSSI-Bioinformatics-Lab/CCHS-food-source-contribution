@@ -20,7 +20,7 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation } from "./assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames } from "./assets.js";
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 import { Model } from "./backend.js";
 
@@ -127,7 +127,7 @@ export function lowerGraph(model){
 
     // draw all the keys for the legend
     for (const legendKey of legendData) {
-        let legendKeyText = legendKey[0];
+        let legendKeyText = Translation.translate(`LegendKeys.${legendKey[0]}`);
         let legendKeyColour = legendKey[1];
 
         // ***************** draws a key in the legend *********************
@@ -193,7 +193,7 @@ export function lowerGraph(model){
 
         ageSexSelector.on("change", () => drawGraph(nutrient))
             .selectAll("option")
-            .data(Model.ageSexGroupHeadings)
+            .data(model.ageSexGroupHeadings)
             .enter()
             .append("option")
                 .property("value", d => d)
@@ -807,8 +807,7 @@ export function lowerGraph(model){
 
     /* Update food group description box */
     function updateInfoBox(d){
-        const foodGroupLv1Col = Translation.translate("FoodIngredientDataColNames.foodGroupLv1");
-        let colour = GraphColours[d.data.row[foodGroupLv1Col]];
+        let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
         colour = colour === undefined ? null : colour;
 
         let foodGroupName = d.data.name;
@@ -819,7 +818,7 @@ export function lowerGraph(model){
         mouseOverFoodGroupName = foodGroupName;
 
         let desc = "";
-        if (foodGroupName != "All Items") {
+        if (foodGroupName != Translation.translate("LegendKeys.All Items")) {
             desc = model.getFoodDescription(nutrient, foodGroupName);
         }
 
