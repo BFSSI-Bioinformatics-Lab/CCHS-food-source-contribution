@@ -22,6 +22,10 @@ import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredien
 
 const SortedAgeSexGroupKeys = Object.keys(AgeSexGroupOrder).sort((a,b) => {return AgeSexGroupOrder[a] - AgeSexGroupOrder[b]});
 
+const FoodGroupDepthToCol = {2 : FoodIngredientDataColNames.foodGroupLv1,
+                             3 : FoodIngredientDataColNames.foodGroupLv2,
+                             4 : FoodIngredientDataColNames.foodGroupLv3 }
+
 
 // =======================================================================
 // ================== TOOLS/UTILITIES ====================================
@@ -275,16 +279,37 @@ export class Model {
     }
 
     // createSunburstTable(ageSexGroup): Creates the data for the table of the sunburst graph
-    createSunburstTable(ageSexGroup) {
+    createSunburstTable(ageSexGroup, foodGroupDepth, foodGroupName) {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
-        const tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
-        const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
+        foodGroupName = foodGroupName.trim().toLowerCase();
+
+        let foodGroupColumn = null;
+        if (foodGroupDepth >= 2) {
+            foodGroupColumn = FoodGroupDepthToCol[foodGroupDepth];
+        }
+
+        let result = [];
+
+        // filter the data based off the selected food group
+        if (foodGroupColumn !== null) {
+            for (const foodGroupLv1Name in nutrientData) {
+                const filteredFoodGroupRows = nutrientData[foodGroupLv1Name].filter((row) => {
+                    const rowFoodGroupName = `${row[foodGroupColumn]}`.trim().toLowerCase();
+                    return (!Number.isNaN(rowFoodGroupName) && rowFoodGroupName == foodGroupName);
+                });
+
+                result = result.concat(filteredFoodGroupRows);
+            }
 
         // append the rows for the table
-        let result = [];
-        for (const foodGroup in nutrientData) {
-            result = result.concat(nutrientData[foodGroup]);
+        } else{
+            for (const foodGroup in nutrientData) {
+                result = result.concat(nutrientData[foodGroup]);
+            }
         }
+
+        const tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
+        const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         // get the specific values for each row
         result = result.map((row) => {

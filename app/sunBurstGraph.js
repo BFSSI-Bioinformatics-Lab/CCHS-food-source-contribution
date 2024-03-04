@@ -41,6 +41,10 @@ export function lowerGraph(model){
     // all the hover tooltips for the graph
     const hoverToolTips = {};
 
+    // which arc is selected in the sunburst
+    let selectedNodeIndex = 1;
+    let selectedNode = null;
+
     // Specify the chart’s dimensions.
     const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
     const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
@@ -207,14 +211,13 @@ export function lowerGraph(model){
         .attr("font-weight", FontWeight.Bold);
     
         drawSunburst(nutrient, ageSexGroup);
-        drawTable(nutrient, ageSexGroup);
     }
 
     // Source reference: https://observablehq.com/@d3/zoomable-sunburst
     function drawSunburst(nutrient, ageSexGroup){
         // reset the selected arc that was clicked
-        let selectedNodeIndex = 1;
-        let selectedNode = null;
+        selectedNodeIndex = 1;
+        selectedNode = null;
 
         lowerGraphSunburst.selectAll("g").remove();
         const groupedPercentages = model.buildSunBurstTree(nutrient, ageSexGroup);
@@ -588,6 +591,9 @@ export function lowerGraph(model){
 
             selectedNode = p;
             selectedNodeIndex = i;
+            
+            // update the table based off the selected arc
+            drawTable(ageSexGroup);
 
             if (isTransitionArc) {
                 transitionArcs();
@@ -603,8 +609,8 @@ export function lowerGraph(model){
 
 
     // draws the table for the sun burst graph
-    function drawTable(nutrient, ageSexGroup){
-        const sunBurstTable = model.createSunburstTable(ageSexGroup);
+    function drawTable(ageSexGroup){
+        const sunBurstTable = model.createSunburstTable(ageSexGroup, selectedNode.depth, selectedNode.data.name);
 
         // --------------- draws the table -------------------------
 
