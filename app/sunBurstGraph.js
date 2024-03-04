@@ -535,6 +535,9 @@ export function lowerGraph(model){
             
             transitionArcs(1000);
             setFilterButton("lowerGraph.seeAllGroups", () => filterAllFoodGroups());
+
+            // update the filter for the table of the sunburst
+            drawTable(ageSexGroup);
         }
 
         // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
@@ -561,6 +564,9 @@ export function lowerGraph(model){
 
             // get back to the previously clicked arc
             arcOnClick(null, selectedNodeIndex);
+
+            // update the filter for the table of the sunburst
+            drawTable(ageSexGroup);
         }
 
         // arcOnClick(event, i): Handle zoom on click when clicking on an arc.
@@ -610,7 +616,8 @@ export function lowerGraph(model){
 
     // draws the table for the sun burst graph
     function drawTable(ageSexGroup){
-        const sunBurstTable = model.createSunburstTable(ageSexGroup, selectedNode.depth, selectedNode.data.name);
+        const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}} 
+        const sunBurstTable = model.createSunburstTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name);
 
         // --------------- draws the table -------------------------
 

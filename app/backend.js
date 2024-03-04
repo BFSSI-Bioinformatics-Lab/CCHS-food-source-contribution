@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames } from "./assets.js";
+import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates } from "./assets.js";
 
 
 // ================== CONSTANTS ==========================================
@@ -279,13 +279,17 @@ export class Model {
     }
 
     // createSunburstTable(ageSexGroup): Creates the data for the table of the sunburst graph
-    createSunburstTable(ageSexGroup, foodGroupDepth, foodGroupName) {
+    createSunburstTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName) {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
         foodGroupName = foodGroupName.trim().toLowerCase();
 
         let foodGroupColumn = null;
-        if (foodGroupDepth >= 2) {
+        if (sunBurstState == SunBurstStates.AllDisplayed && foodGroupDepth >= 2) {
             foodGroupColumn = FoodGroupDepthToCol[foodGroupDepth];
+
+        } else if (sunBurstState == SunBurstStates.FilterOnlyLevel2) {
+            foodGroupColumn = FoodIngredientDataColNames.foodGroupLv2;
+            foodGroupName = null;
         }
 
         let result = [];
@@ -294,14 +298,16 @@ export class Model {
         if (foodGroupColumn !== null) {
             for (const foodGroupLv1Name in nutrientData) {
                 const filteredFoodGroupRows = nutrientData[foodGroupLv1Name].filter((row) => {
-                    const rowFoodGroupName = `${row[foodGroupColumn]}`.trim().toLowerCase();
-                    return (!Number.isNaN(rowFoodGroupName) && rowFoodGroupName == foodGroupName);
+                    const rowFoodGroupName = row[foodGroupColumn];
+                    return (!Number.isNaN(rowFoodGroupName) && 
+                            ((foodGroupName !== null && rowFoodGroupName.trim().toLowerCase() == foodGroupName) || 
+                             (foodGroupName === null && Number.isNaN(row[FoodIngredientDataColNames.foodGroupLv3]))));
                 });
 
                 result = result.concat(filteredFoodGroupRows);
             }
 
-        // append the rows for the table
+        // include all rows to the table
         } else{
             for (const foodGroup in nutrientData) {
                 result = result.concat(nutrientData[foodGroup]);
