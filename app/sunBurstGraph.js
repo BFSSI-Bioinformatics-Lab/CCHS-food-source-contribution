@@ -701,7 +701,7 @@ export function lowerGraph(model){
         }
 
         const lowerGraphTitleFront = Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup });
-        lowerGraphTableTitle.text(`${lowerGraphTitleFront} ${he.decode(lowerGraphTitleFoodGroup)}`);
+        lowerGraphTableTitle.text(`${lowerGraphTitleFront}, ${he.decode(lowerGraphTitleFoodGroup)}`);
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
