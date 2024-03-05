@@ -143,9 +143,16 @@ export class Model {
         return interpretationValue == "<10" ? "X" : interpretationValue;
     }
 
+    // getNutrientUnit(nutrient): Retrieves the unit for the nutrient
+    getNutrientUnit(){
+        const nutrientData = this.graphNutrientTablesByDemoGroupLv1[this.nutrient];
+        return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
+    }
+
     // calculate the total amount by nutrient per age-sex group
-    static findNutrientTotalAmtPerAgeSexGroup(nutrientData, graphType) {
+    findNutrientTotalAmtPerAgeSexGroup(graphType) {
         let maxAccumulatedAmount = 0;
+        const nutrientData = this.graphNutrientTablesByDemoGroupLv1[this.nutrient];
 
         /* If graph type is number, get data from "Amount" col, otherwise use "Percentage" */
         const keyName = graphType === "number" ? "Amount" : "Percentage"
