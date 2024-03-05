@@ -83,7 +83,7 @@ export class Model {
 
     // loadFoodGroupDescriptionData(): Load the data for all the food group descriptions
     async loadFoodGroupDescriptionData() {
-        let data = await d3.csv(`data/${i18next.language}/Food Group descriptions.csv`);
+        let data = await d3.csv(`data/Food Group descriptions-${i18next.language}.csv`);
         data = TableTools.numToFloat(data);
     
         this.foodGroupDescriptionData = Object.freeze(d3.nest()
@@ -102,7 +102,7 @@ export class Model {
 
     // loadGraphFoodIngredientsData(): Load the data for all the food ingredients used in the graphs
     async loadGraphFoodIngredientsData(){
-        let data = await d3.csv(`data/${i18next.language}/GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240126.csv`);
+        let data = await d3.csv(`data/GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240126-${i18next.language}.csv`);
         data = TableTools.numToFloat(data);
 
         this.graphNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
@@ -125,7 +125,7 @@ export class Model {
 
     // loadTableFoodIngredientsData(): Load the data for all the food ingredients used in the tables
     async loadTableFoodIngredientsData() {
-        let data = await d3.csv(`data/${i18next.language}/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126.csv`);
+        let data = await d3.csv(`data/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126-${i18next.language}.csv`);
         data = TableTools.numToFloat(data);
 
         this.tableNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
