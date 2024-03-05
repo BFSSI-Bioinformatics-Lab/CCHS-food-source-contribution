@@ -691,7 +691,17 @@ export function lowerGraph(model){
 
         // ---------------------------------------------------------
 
-        lowerGraphTableTitle.text(Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup }))
+        let lowerGraphTitleFoodGroup = ""
+        if (graphState == SunBurstStates.FilterOnlyLevel2) {
+            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleLevel2Data");
+        } else if (sunBurstNode.depth == 1) {
+            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleAllData");
+        } else if (sunBurstNode.depth > 1) {
+            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleFilteredData", { chosenCategory: sunBurstNode.data.name });
+        }
+
+        const lowerGraphTitleFront = Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup });
+        lowerGraphTableTitle.text(`${lowerGraphTitleFront} ${he.decode(lowerGraphTitleFoodGroup)}`);
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
