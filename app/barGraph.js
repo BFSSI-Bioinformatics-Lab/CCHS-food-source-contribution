@@ -22,8 +22,6 @@
 
 import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation } from "./assets.js";
 import { drawWrappedText, drawText } from "./visuals.js";
-import { Model } from "./backend.js";
-
 
 
 export function upperGraph(model){
@@ -44,6 +42,9 @@ export function upperGraph(model){
 
     // the text for the ticks on the x-axis
     let xAxisTicks = null;
+
+    // unit for the nutrient
+    let nutrientUnit = "";
 
     // whether to display numbers/percentae for the graph
     /* Sets up alternator between graph types (percentage vs number) */
@@ -181,7 +182,9 @@ export function upperGraph(model){
     async function updateGraph(){
         // get the updated data for the graph
         nutrient = model.nutrient;
-        const nutrientData = model.graphNutrientTablesByDemoGroupLv1[nutrient];
+
+        // update unit for the nutrient
+        nutrientUnit = model.getNutrientUnit();
 
         const xAxisValues = model.ageSexGroupHeadings;
         upperGraphXAxisScale.domain(xAxisValues);
@@ -189,13 +192,13 @@ export function upperGraph(model){
 
         xAxisTicks = upperGraphXAxisLine.selectAll(".tick").attr("font-size", GraphDims.upperGraphXAxisTickFontSize);
 
-        const nutrientTotalByAgeSexGroup = Model.findNutrientTotalAmtPerAgeSexGroup(nutrientData, graphType);
+        const nutrientTotalByAgeSexGroup = model.findNutrientTotalAmtPerAgeSexGroup(graphType);
         groupedAmount = nutrientTotalByAgeSexGroup.groupedAmount;
         const maxAccumulatedAmount = nutrientTotalByAgeSexGroup.maxAccumulatedAmount;
 
         upperGraphYAxisScale.domain([0, graphType === "number" ? Math.round(maxAccumulatedAmount * 1.2 / 10) * 10 : 100])
         upperGraphYAxisLine.call(d3.axisLeft(upperGraphYAxisScale));
-        upperGraphYAxisLabel.text(Translation.translate(`upperGraph.${graphType}.yAxisTitle`, { nutrient, amountUnit: getNutrientUnit(nutrient) }));
+        upperGraphYAxisLabel.text(Translation.translate(`upperGraph.${graphType}.yAxisTitle`, { nutrient, amountUnit: nutrientUnit }));
 
         const yAxisTicks = upperGraphYAxisLine.selectAll(".tick").attr("font-size", GraphDims.upperGraphYAxisTickFontSize);
 
@@ -218,7 +221,7 @@ export function upperGraph(model){
             )
 
         // draw the graph title
-        upperGraphHeading.text(Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: getNutrientUnit(nutrient)}))
+        upperGraphHeading.text(Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit}))
             .attr("font-weight", FontWeight.Bold);
 
         //draw the table
@@ -354,11 +357,6 @@ export function upperGraph(model){
         bar.style("cursor", MousePointer.Default);
     }
 
-    function getNutrientUnit(nutrient){
-        const nutrientData = model.graphNutrientTablesByDemoGroupLv1[nutrient];
-        return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
-    }
-
     // drawTable(nutrient): Draws the table for the graph
     function drawTable(nutrient){
         const barGraphTable = model.createBarGraphTable();
@@ -440,7 +438,7 @@ export function upperGraph(model){
                 });
         }
 
-        upperGraphTableTitle.text(Translation.translate("upperGraph.tableTitle", { amountUnit: getNutrientUnit(nutrient), nutrient }))
+        upperGraphTableTitle.text(Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient }))
 
         // ---------------------------------------------------------
     }

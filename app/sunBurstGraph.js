@@ -22,7 +22,6 @@
 
 import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames } from "./assets.js";
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
-import { Model } from "./backend.js";
 
 
 export function lowerGraph(model){
@@ -40,6 +39,9 @@ export function lowerGraph(model){
 
     // all the hover tooltips for the graph
     const hoverToolTips = {};
+
+    // unit for the nutrient
+    let nutrientUnit = "";
 
     // which arc is selected in the sunburst
     let selectedNodeIndex = 1;
@@ -218,6 +220,9 @@ export function lowerGraph(model){
         // reset the selected arc that was clicked
         selectedNodeIndex = 1;
         selectedNode = null;
+
+        // get the units for the nutrient
+        nutrientUnit = model.getNutrientUnit()
 
         lowerGraphSunburst.selectAll("g").remove();
         const groupedPercentages = model.buildSunBurstTree(nutrient, ageSexGroup);
@@ -685,6 +690,8 @@ export function lowerGraph(model){
         }
 
         // ---------------------------------------------------------
+
+        lowerGraphTableTitle.text(Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup }))
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
