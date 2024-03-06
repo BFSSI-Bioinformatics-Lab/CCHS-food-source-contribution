@@ -701,6 +701,12 @@ export function lowerGraph(model){
         }
 
         const lowerGraphTitleFront = Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup });
+
+        // For some food groups with special characters like "Fruits & Vegetables", we want the title to be displayed as "Fruits & Vegetables" instead of "Fruits &amp; Vegatables"
+        //  After passing in the food group into the i18next library, the library encoded the food group to be "Fruits &amp; Vegatables"
+        // So all the special characters got encoded to their corresponding HTML Entities (eg. &lt; , &gt; , &quot;)
+        //
+        // So we need to decode back the encoded string with HTML entities to turn back "Fruits &amp; Vegetables" to "Fruits & Vegetables"
         lowerGraphTableTitle.text(`${lowerGraphTitleFront}, ${he.decode(lowerGraphTitleFoodGroup)}`);
     }
 
