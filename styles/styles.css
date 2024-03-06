@@ -1,3 +1,13 @@
+/*********************************************************************
+ *                                                                   *
+ * Purpose: Defines the styles for some commonly used html elements  *
+ *                                                                   *
+ * What it Contains:                                                 *
+ *      - positioning of the buttons and filter dropdowns for the    *
+ *          graphs                                                   *
+ *********************************************************************/
+
+
 .graphExtra {
     margin: 10px 0 0 0;
     float: right;
@@ -5,4 +15,9 @@
 
 #lowerGraphFilterGroupsButton {
     position:relative;
+}
+
+.lowerGraphTableScroll {
+    overflow:auto;
+    height: 400px;
 }
