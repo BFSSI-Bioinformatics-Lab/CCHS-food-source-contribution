@@ -49,7 +49,7 @@ export function lowerGraph(model){
 
     // Specify the chart’s dimensions.
     const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
-    const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
+    const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom + GraphDims.lowerGraphFooter;
     const lowerGraphRightXPos = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth;
 
     // used for calculating the radius
@@ -71,6 +71,15 @@ export function lowerGraph(model){
     .attr("viewBox", [0, 0, width, height])
     .attr("style", "max-width: 100%; height: auto;")
     .style("font", "10px sans-serif");
+
+    // source text for the graph
+    const sourceTextBox = lowerGraphSvg.append("text")
+        .attr("font-size", GraphDims.lowerGraphFooterFontSize)
+        .attr("visibility", "hidden");
+
+    drawWrappedText({textGroup: sourceTextBox, text: Translation.translate("lowerGraph.sourceText"), width: width - 2 * GraphDims.lowerGraphFooterPaddingHor, 
+                     textY: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom, 
+                     textX: GraphDims.lowerGraphFooterPaddingHor, fontSize: GraphDims.lowerGraphFooterFontSize});
 
     // --------------- draws the info box ---------------------
     
@@ -188,7 +197,6 @@ export function lowerGraph(model){
     //  race condition of D3 adding rows into the scroll table and JQuery setting up the scroll table
     lowerGraphTable.selectAll("thead").remove();
     lowerGraphTable.selectAll("tbody").remove();
-    d3.select("#lowerGraphTable_wrapper .dataTables_scroll .dataTables_scrollHead").remove();
 
     const lowerGraphTableHeading = lowerGraphTable.append("thead");
     const lowerGraphTableBody = lowerGraphTable.append("tbody");
@@ -878,9 +886,17 @@ export function lowerGraph(model){
     }
 
     // saveAsImage(): Saves the bar graph as an image
-    function saveAsImage() {
+    async function saveAsImage() {
+        // use await so that the below operations can happen in the order they are listed
+        //  to simulate a mutex.
+        // 
+        // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
+        //  (or else you may have a picture of a graph without the source text)
+        // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
+        await sourceTextBox.attr("visibility", "visible");
         const svg = document.getElementById("lowerGraph").firstChild;
-        saveSvgAsPng(svg, "SunburstGraph.png", {backgroundColor: "white"});
+        await saveSvgAsPng(svg, "SunburstGraph.png", {backgroundColor: "white"});
+        await sourceTextBox.attr("visibility", "hidden");
     }
 
     // downloadTable(): Exports the table of the bar graph as a CSV file
