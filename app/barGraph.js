@@ -52,7 +52,7 @@ export function upperGraph(model){
     let graphType = typeIterator.next().value;
 
     const upperGraphSvgWidth = GraphDims.upperGraphWidth + GraphDims.upperGraphLeft + GraphDims.upperGraphRight;
-    const upperGraphSvgHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom;
+    const upperGraphSvgHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom + GraphDims.upperGraphFooter;
     const upperGraphRightPos = GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin;
 
     // register the button to save the bar graph as a png
@@ -109,6 +109,15 @@ export function upperGraph(model){
         .range([GraphDims.upperGraphHeight, 0]);
 
     const upperGraphTable = d3.select("#upperGraphTable");
+
+    // source text for the graph
+    const sourceTextBox = upperGraphSvg.append("text")
+        .attr("font-size", GraphDims.upperGraphFooterFontSize)
+        .attr("visibility", "hidden");
+
+    drawWrappedText({textGroup: sourceTextBox, text: Translation.translate("upperGraph.sourceText"), width: upperGraphSvgWidth - 2 * GraphDims.upperGraphFooterPaddingHor, 
+                     textY: GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom, 
+                     textX: GraphDims.upperGraphFooterPaddingHor, fontSize: GraphDims.upperGraphFooterFontSize});
 
     // remove any dummy tables that says "no data available in table" produced by JQuery
     upperGraphTable.selectAll("thead").remove();
@@ -660,9 +669,18 @@ export function upperGraph(model){
     }
 
     // saveAsImage(): Saves the bar graph as an image
-    function saveAsImage() {
+    async function saveAsImage() {
+
+        // use await so that the below operations can happen in the order they are listed
+        //  to simulate a mutex.
+        // 
+        // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
+        //  (or else you may have a picture of a graph without the source text)
+        // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
+        await sourceTextBox.attr("visibility", "visible");
         const svg = document.getElementById("upperGraph").firstChild;
-        saveSvgAsPng(svg, "BarGraph.png", {backgroundColor: "white"});
+        await saveSvgAsPng(svg, "BarGraph.png", {backgroundColor: "white"});
+        await sourceTextBox.attr("visibility", "hidden");
     }
 
     // downloadTable(): Exports the table of the bar graph as a CSV file

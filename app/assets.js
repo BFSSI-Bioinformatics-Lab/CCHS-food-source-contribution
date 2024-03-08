@@ -65,6 +65,7 @@ export const GraphDims = Object.freeze({
     upperGraphRight: 400,
     upperGraphTop: 60,
     upperGraphBottom: 60,
+    upperGraphFooter: 30,
     upperGraphTooltipMinWidth: 140,
     upperGraphAxesFontSize: 20,
     upperGraphXAxisTickFontSize: 13,
@@ -86,12 +87,15 @@ export const GraphDims = Object.freeze({
     upperGraphChartHeadingFontSize: 20,
     upperGraphTableSubHeadingFontSize: 12,
     upperGraphTableHeadingFontSize: 16,
+    upperGraphFooterFontSize: 8,
+    upperGraphFooterPaddingHor: 10,
     lowerGraphWidth: 700,
     lowerGraphHeight: 700,
     lowerGraphLeft: 60,
     lowerGraphRight: 400,
     lowerGraphTop: 60,
     lowerGraphBottom: 60,
+    lowerGraphFooter: 30,
     lowerGraphArcRadius: 65,
     lowerGraph2LevelFilterArcRadius: 80,
     lowerGraphCenterArcRadius: 45,
@@ -115,6 +119,8 @@ export const GraphDims = Object.freeze({
     lowerGraphInfoBoxLineSpacing: 10,
     lowerGraphTableSubHeadingFontSize: 12,
     lowerGraphTableHeadingFontSize: 16,
+    lowerGraphFooterFontSize: 8,
+    lowerGraphFooterPaddingHor: 10,
     legendFontSize: 12,
     legendSquareSize: 12,
     legendRowHeight: 20,
@@ -290,7 +296,8 @@ export const TranslationObj = {
                     "{{- name }}",
                     "{{ percentage }}% of total {{- nutrient }} intake."
                 ],
-                "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"]
+                "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
             },
             "lowerGraph": {
                 "graphTitle": "Food groups and sub-groups contribution to {{ nutrient }} intake in Canadian {{ ageSexGroup }}",
@@ -329,7 +336,8 @@ export const TranslationObj = {
                     "{{- name }}",
                     "{{ percentage }}% of total {{ nutrient }} intake."
                 ],
-                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"]
+                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
             }
         }
     },
@@ -399,7 +407,8 @@ export const TranslationObj = {
                     "{{- name }}",
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
                 ],
-                "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
+                "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "sourceText": REMPLACER_MOI
             },
             "lowerGraph": {
                 "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ ageSexGroup }}`,
@@ -437,7 +446,8 @@ export const TranslationObj = {
                     "{{- name }}",
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
-                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
+                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "sourceText": REMPLACER_MOI
             }
         }
     }
