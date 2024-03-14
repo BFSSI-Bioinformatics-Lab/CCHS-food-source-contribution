@@ -20,7 +20,7 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames } from "./assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames, DefaultDims } from "./assets.js";
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -361,10 +361,10 @@ export function lowerGraph(model){
             const arcColour = d3.select(`#arcPath${i}`).attr("fill");
 
             /* Content of tooltip */
-            const lines = Translation.translate("lowerGraph.infoBoxLevel", { 
+            const title = Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name})
+            const lines = Translation.translate("lowerGraph.toolTipLevel", { 
                 returnObjects: true, 
                 context: d.depth,
-                name: d.data.name,
                 percentage: Math.round( d.data.row.Percentage * 10) / 10,
                 parentGroup: d.depth > 1 ? d.parent.data.name : "",
                 parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
@@ -413,21 +413,30 @@ export function lowerGraph(model){
                 .attr("stroke-width", toolTipBorderWidth)
                 .attr("stroke-linecap", "round");
 
+            // draw the title
+            toolTip.titleGroup = toolTip.group.append("text")
+                .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
+                .attr("font-weight", FontWeight.Bold)
+                .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
+
+            const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+                                        textWrap: TextWrap.NoWrap, paddingLeft: toolTipPaddingHor, paddingRight: toolTipPaddingHor});
+
             // draw the text
             toolTip.textGroup = toolTip.group.append("text")
                 .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
+                .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert + titleDims.textBottomYPos + DefaultDims.lineSpacing})`);
 
             const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
                                        textWrap: TextWrap.NoWrap, paddingLeft: toolTipPaddingHor, paddingRight: toolTipPaddingHor});
 
             // update the height of the tooltip to be larger than the height of all the text
-            toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
+            toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + titleDims.textBottomYPos + DefaultDims.lineSpacing + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
             toolTip.background.attr("height", toolTipHeight);
             toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert);
 
             // update the width of the tooltip to be larger than the width of all the text
-            toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + textDims.width + toolTipPaddingHor);
+            toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + Math.max(titleDims.width, textDims.width) + toolTipPaddingHor);
             toolTip.background.attr("width", toolTipWidth);
 
             // -------------------------------------

@@ -631,11 +631,11 @@ export function upperGraph(model){
     function hoverTooltip(d, i){
         const toolTipId = `barHover${i}`;
         const colour = GraphColours[d[0]];
-        const lines = Translation.translate("upperGraph.infoBox", { 
+        const title = Translation.translate("upperGraph.toolTipTitle", {name: d[0]});
+        const lines = Translation.translate("upperGraph.toolTip", { 
             returnObjects: true, 
             context: graphType,
             amount: parseFloat(d[1]).toFixed(1),
-            name: d[0],
             percentage: parseFloat(d[1]).toFixed(1),
             nutrient: d[0]
         });
@@ -680,21 +680,30 @@ export function upperGraph(model){
             .attr("stroke-width", toolTipBorderWidth)
             .attr("stroke-linecap", "round");
 
+        // draw the title
+        toolTip.titleGroup = toolTip.group.append("text")
+            .attr("font-size", GraphDims.upperGraphTooltipFontSize)
+            .attr("font-weight", FontWeight.Bold)
+            .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
+
+        const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, width: toolTipTextGroupWidth, fontSize: GraphDims.upperGraphTooltipFontSize, 
+                                    lineSpacing: GraphDims.upperGraphTooltipLineSpacing, textWrap: TextWrap.NoWrap, padding: toolTipPaddingVert});
+
         // draw the text
         toolTip.textGroup = toolTip.group.append("text")
             .attr("font-size", GraphDims.upperGraphTooltipFontSize)
-            .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
+            .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert + titleDims.textBottomYPos + GraphDims.upperGraphTooltipLineSpacing})`);
 
         const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.upperGraphTooltipFontSize, 
                                    lineSpacing: GraphDims.upperGraphTooltipLineSpacing, textWrap: TextWrap.NoWrap, padding: toolTipPaddingVert});
 
         // update the height of the tooltip to be larger than the height of all the text
-        toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
+        toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + titleDims.textBottomYPos + GraphDims.upperGraphTooltipLineSpacing + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
         toolTip.background.attr("height", toolTipHeight);
         toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert);
 
         // update the width of the tooltip to be larger than the width of all the text
-        toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + toolTipBorderWidth + toolTipTextPaddingHor + textDims.width + toolTipTextPaddingHor + toolTipPaddingHor);
+        toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + toolTipBorderWidth + toolTipTextPaddingHor + Math.max(titleDims.width, textDims.width) + toolTipTextPaddingHor + toolTipPaddingHor);
         toolTip.background.attr("width", toolTipWidth);
 
         // -------------------------------------
