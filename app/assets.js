@@ -70,7 +70,7 @@ export const GraphDims = Object.freeze({
     upperGraphAxesFontSize: 20,
     upperGraphXAxisTickFontSize: 13,
     upperGraphYAxisTickFontSize: 14,
-    upperGraphTooltipFontSize: 12,
+    upperGraphTooltipFontSize: 14,
     upperGraphTooltipTopPadding: 8,
     upperGraphTooltipLeftPadding: 10,
     upperGraphTooltipLineSpacing: 3,
@@ -104,7 +104,7 @@ export const GraphDims = Object.freeze({
     lowerGraphCenterArcMargin: 1,
     lowerGraphCenterFontSize: 18,
     lowerGraphTooltipMinWidth: 140,
-    lowerGraphTooltipFontSize: 12,
+    lowerGraphTooltipFontSize: 14,
     lowerGraphTooltipTextPaddingHor: 5,
     lowerGraphTooltipTextPaddingVert: 3,
     lowerGraphTooltipHighlightWidth: 1,
@@ -291,13 +291,12 @@ export const TranslationObj = {
                     "switchTypeButton": "Switch to Numbers"
                 },
                 "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of 12 food groups to daily {{nutrient}} intake",   
-                "infoBox_number": [
-                    "{{- name }}",
+                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of 12 food groups to daily {{nutrient}} intake",  
+                "toolTipTitle": "{{- name }}",
+                "toolTip_number": [
                     "Amount: {{amount}}"
                 ],
-                "infoBox_percentage": [
-                    "{{- name }}",
+                "toolTip_percentage": [
                     "{{ percentage }}% of total {{- nutrient }} intake."
                 ],
                 "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"],
@@ -313,31 +312,27 @@ export const TranslationObj = {
                 "seeLevel2Groups": "Filter on level 2 groups",
                 "seeAllGroups": "See all food groups",
                 "allFoodGroupsLabel": "All Food Groups",
-                "infoBoxLevel_1": [
-                    "{{- name }}",
+                "toolTipTitle": "{{- name }}",
+                "toolTipLevel_1": [
                     "{{ percentage }}% of total {{ nutrient }} intake."
                 ],
-                "infoBoxLevel_2": [
-                    "{{- name }}",
+                "toolTipLevel_2": [
                     "Contribution to:",
                     "Total {{ nutrient }} intake: {{ percentage }}%",
                     "{{- parentGroup }} group: {{ parentPercentage }}%"
                 ],
-                "infoBoxLevel_3": [
-                    "{{- name }}",
+                "toolTipLevel_3": [
                     "Contribution to:",
                     "Total {{ nutrient }} intake: {{ percentage }}%",
                     "{{- parentGroup }}: {{ parentPercentage }}%"
                 ],
-                "infoBoxLevel_4": [
-                    "{{- name }}",
+                "toolTipLevel_4": [
                     "Contribution to:",
                     "Total {{ nutrient }} intake: {{ percentage }}%",
                     "{{- parentGroup }}: {{ parentPercentage }}%"
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    "{{- name }}",
                     "{{ percentage }}% of total {{ nutrient }} intake."
                 ],
                 "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
@@ -403,12 +398,11 @@ export const TranslationObj = {
                 },
                 "graphFootnote": REMPLACER_MOI,
                 "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
-                "infoBox_number": [
-                    "{{- name }}",
+                "toolTipTitle": "{{- name }}",
+                "toolTip_number": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}}`
                 ],
-                "infoBox_percentage": [
-                    "{{- name }}",
+                "toolTip_percentage": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
                 ],
                 "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
@@ -423,31 +417,27 @@ export const TranslationObj = {
                 "tableTitleFilteredData": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ chosenCategory }}`,
                 "seeLevel2Groups": `Voyer les Groupes à Niveau 2`,
                 "seeAllGroups": `Toutes les Groupes Alimentaires`,
-                "infoBoxLevel_1": [
-                    "{{- name }}",
+                "toolTipTitle": "{{- name }}",
+                "toolTipLevel_1": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{ nutrient }} `
                 ],
-                "infoBoxLevel_2": [
-                    "{{- name }}",
+                "toolTipLevel_2": [
                     REMPLACER_MOI,
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
                 ],
-                "infoBoxLevel_3": [
-                    "{{- name }}",
+                "toolTipLevel_3": [
                     REMPLACER_MOI,
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
                 ],
-                "infoBoxLevel_4": [
-                    "{{- name }}",
+                "toolTipLevel_4": [
                     REMPLACER_MOI,
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    "{{- name }}",
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
                 "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
