@@ -136,7 +136,9 @@ export function drawText({textGroup = null, text = "", textX = DefaultDims.pos, 
             textY = getNextTextY(origTextY, linesWritten, fontSize, lineSpacing);
         }
 
-    // draws may lines of text on a single line with each text seperated by a newline
+        textY -= fontSize;
+
+    // draws many lines of text on a single line with each text seperated by a newline
     } else if (textWrap == TextWrap.NoWrap) {
         textY += fontSize;
 
@@ -155,5 +157,5 @@ export function drawText({textGroup = null, text = "", textX = DefaultDims.pos, 
         }
     }
 
-    return {width, textBottomYPos: textY};
+    return {width, textBottomYPos: textY - lineSpacing - fontSize};
 }
