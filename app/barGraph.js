@@ -152,17 +152,37 @@ export function upperGraph(model){
         .attr("visibility", "visible")
         .attr("stroke-linecap", "round");
 
+    // container to hold the title
+    infoBox.titleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.upperGraphInfoBoxTitleFontSize)
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`)
+        .attr("font-weight", FontWeight.Bold);
+
+    // draw the text for the subtitle
+    const titleDims = drawText({textGroup: infoBox.titleGroup, fontSize: GraphDims.upperGraphInfoBoxFontSize, 
+        lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
+    // container to hold the subtitle
+    infoBox.subTitleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.upperGraphInfoBoxFontSize)
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding + titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm})`)
+        .attr("font-weight", FontWeight.Bold);
+
+    // draw the text for the subtitle
+    const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, fontSize: GraphDims.upperGraphInfoBoxFontSize, 
+                                   lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
     // container to hold the text
     infoBox.textGroup = infoBox.group.append("text")
         .attr("font-size", GraphDims.upperGraphInfoBoxFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`);
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm})`);
     
     // draw the text
     const textDims = drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.upperGraphInfoBoxFontSize, 
-                               lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, padding: infoBoxPadding});
+                               lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
 
     // update the height of the info box to be larger than the height of the text
-    infoBoxHeight = Math.max(infoBoxTextGroupHeight, textDims.textBottomYPos + infoBoxPadding);
+    infoBoxHeight = Math.max(infoBoxTextGroupHeight,  2 * infoBoxPadding + textDims.textBottomYPos + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm);
     infoBox.highlight.attr("y2", infoBoxHeight);
 
     const upperGraphInfoBox = infoBox;
@@ -463,7 +483,9 @@ export function upperGraph(model){
         mouseOverFoodGroupName = null;
 
         upperGraphInfoBox.highlight.attr("stroke", Colours.None);
+        drawWrappedText({textGroup: upperGraphInfoBox.titleGroup});
         drawWrappedText({textGroup: upperGraphInfoBox.textGroup});
+        drawWrappedText({textGroup: upperGraphInfoBox.subTitleGroup});
     }
 
     // legendItemOnMouseLeave(name, colour, legendItem): Event function when the user's mouse leaves a key
@@ -503,16 +525,29 @@ export function upperGraph(model){
 
         const infoBoxPadding = GraphDims.upperGraphInfoBoxPadding;
 
+        // change the title
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: "Food Group Description", width: GraphDims.upperGraphInfoBoxWidth,
+                                    fontSize: GraphDims.upperGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
+        // change the subtitle
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: foodGroupName, width: GraphDims.upperGraphInfoBoxWidth,
+                                       fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
         // change text
-        const textDims = drawText({textGroup: upperGraphInfoBox.textGroup, text: desc, width: GraphDims.upperGraphInfoBoxWidth, 
+        const textDims = drawText({textGroup: upperGraphInfoBox.textGroup, text: desc, width: GraphDims.upperGraphInfoBoxWidth,
                                    fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
+        // update the y position of the subtitle
+        upperGraphInfoBox.subTitleGroup.attr("transform", `translate(${GraphDims.upperGraphInfoBoxBorderWidth + GraphDims.upperGraphInfoBoxPadding}, ${GraphDims.upperGraphInfoBoxPadding + titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm})`);
+
+        // update the y position for the text box of the description
+        upperGraphInfoBox.textGroup.attr("transform", `translate(${GraphDims.upperGraphInfoBoxBorderWidth + GraphDims.upperGraphInfoBoxPadding}, ${GraphDims.upperGraphInfoBoxPadding + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm})`);
 
         // change colour
         upperGraphInfoBox.highlight.attr("stroke", GraphColours[foodGroupName]);
 
         // update the height of the info box to be larger than the height of the text
-        let infoBoxHeight = upperGraphInfoBox.highlight.node().getBBox()["height"];
-        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding + textDims.textBottomYPos + infoBoxPadding);
+        let infoBoxHeight = Math.max(GraphDims.upperGraphInfoBoxHeight, infoBoxTextGroupHeight,  2 * infoBoxPadding + textDims.textBottomYPos + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm);
         upperGraphInfoBox.highlight.attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
@@ -656,7 +691,7 @@ export function upperGraph(model){
         // update the height of the tooltip to be larger than the height of all the text
         toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
         toolTip.background.attr("height", toolTipHeight);
-        toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert - toolTipPaddingVert);
+        toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert);
 
         // update the width of the tooltip to be larger than the width of all the text
         toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + toolTipBorderWidth + toolTipTextPaddingHor + textDims.width + toolTipTextPaddingHor + toolTipPaddingHor);

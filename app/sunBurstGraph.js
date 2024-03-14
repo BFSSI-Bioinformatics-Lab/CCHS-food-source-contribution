@@ -104,17 +104,37 @@ export function lowerGraph(model){
         .attr("visibility", "visible")
         .attr("stroke-linecap", "round");
 
+    // container to hold the title
+    infoBox.titleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.lowerGraphInfoBoxTitleFontSize)
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`)
+        .attr("font-weight", FontWeight.Bold);
+
+    // draw the text for the title
+    const titleDims = drawText({textGroup: infoBox.titleGroup, fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, 
+                                lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
+    // container to hold the subtitle
+    infoBox.subTitleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`)
+        .attr("font-weight", FontWeight.Bold);
+
+    // draw the text for the subtitle
+    const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
+                                   lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
     // container to hold the text
     infoBox.textGroup = infoBox.group.append("text")
         .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`);
+        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`);
     
     // draw the text
     const textDims = drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
                                lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
 
     // update the height of the info box to be larger than the height of the text
-    infoBoxHeight = Math.max(infoBoxTextGroupHeight, textDims.textBottomYPos + infoBoxPadding);
+    infoBoxHeight = Math.max(infoBoxTextGroupHeight,  2 * infoBoxPadding + textDims.textBottomYPos + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm);
     infoBox.highlight.attr("y2", infoBoxHeight);
 
     const lowerGraphInfoBox = infoBox;
@@ -431,6 +451,8 @@ export function lowerGraph(model){
         function arcUnHover(d, i){
             d3.select(`#arcHover${i}`).attr("opacity", 0);
             drawText({textGroup: lowerGraphInfoBox.textGroup});
+            drawText({textGroup: lowerGraphInfoBox.titleGroup});
+            drawText({textGroup: lowerGraphInfoBox.subTitleGroup});
             lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
         }
 
@@ -862,7 +884,8 @@ export function lowerGraph(model){
         mouseOverFoodGroupName = foodGroupName;
 
         let desc = "";
-        if (foodGroupName != Translation.translate("LegendKeys.All Items")) {
+        const isAllFoodGroups = foodGroupName == Translation.translate("LegendKeys.All Items");
+        if (!isAllFoodGroups) {
             desc = model.getFoodDescription(nutrient, foodGroupName);
         }
 
@@ -870,16 +893,29 @@ export function lowerGraph(model){
 
         const infoBoxPadding = GraphDims.lowerGraphInfoBoxPadding;
 
+        // change the title
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: "Food Group Description", width: GraphDims.lowerGraphInfoBoxWidth,
+                                    fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
+        // change the subtitle
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.lowerGraphInfoBoxWidth,
+                                       fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
         // change text
         const textDims = drawText({textGroup: lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
                                    fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+
+        // update the y position of the subtitle
+        lowerGraphInfoBox.subTitleGroup.attr("transform", `translate(${GraphDims.lowerGraphInfoBoxBorderWidth + GraphDims.lowerGraphInfoBoxPadding}, ${GraphDims.lowerGraphInfoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`);
+
+        // update the y position for the text box of the description
+        lowerGraphInfoBox.textGroup.attr("transform", `translate(${GraphDims.lowerGraphInfoBoxBorderWidth + GraphDims.lowerGraphInfoBoxPadding}, ${GraphDims.lowerGraphInfoBoxPadding + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`);
 
         // change colour
         lowerGraphInfoBox.highlight.attr("stroke", colour);
 
         // update the height of the info box to be larger than the height of the text
-        let infoBoxHeight = lowerGraphInfoBox.highlight.node().getBBox()["height"];
-        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding + textDims.textBottomYPos + infoBoxPadding);
+        let infoBoxHeight = Math.max(GraphDims.lowerGraphInfoBoxHeight,  2 * infoBoxPadding + textDims.textBottomYPos + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm);
         lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
