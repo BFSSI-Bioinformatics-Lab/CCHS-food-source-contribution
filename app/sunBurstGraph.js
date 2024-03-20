@@ -86,10 +86,6 @@ export function lowerGraph(model){
     // attributes for the info box
     const infoBox = {};
     let infoBoxHeight = GraphDims.lowerGraphInfoBoxHeight;
-    const infoBoxBorderWidth = GraphDims.lowerGraphInfoBoxBorderWidth;
-    const infoBoxPadding = GraphDims.lowerGraphInfoBoxPadding;
-
-    const infoBoxTextGroupHeight = Math.max(infoBoxHeight, infoBoxHeight - infoBoxPadding - infoBoxPadding);
 
     // group for the info box
     infoBox.group = lowerGraphSvg.append("g")
@@ -97,45 +93,26 @@ export function lowerGraph(model){
 
     // border line for the info box
     infoBox.highlight = infoBox.group.append("line")
-        .attr("x1", infoBoxBorderWidth / 2)
-        .attr("x2", infoBoxBorderWidth / 2)
+        .attr("x1", GraphDims.lowerGraphInfoBoxBorderWidth / 2)
+        .attr("x2", GraphDims.lowerGraphInfoBoxBorderWidth / 2)
         .attr("y2", infoBoxHeight)
-        .attr("stroke-width", infoBoxBorderWidth)
+        .attr("stroke-width", GraphDims.lowerGraphInfoBoxBorderWidth)
         .attr("visibility", "visible")
         .attr("stroke-linecap", "round");
 
     // container to hold the title
     infoBox.titleGroup = infoBox.group.append("text")
         .attr("font-size", GraphDims.lowerGraphInfoBoxTitleFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`)
         .attr("font-weight", FontWeight.Bold);
-
-    // draw the text for the title
-    const titleDims = drawText({textGroup: infoBox.titleGroup, fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, 
-                                lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
 
     // container to hold the subtitle
     infoBox.subTitleGroup = infoBox.group.append("text")
         .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`)
         .attr("font-weight", FontWeight.Bold);
-
-    // draw the text for the subtitle
-    const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
-                                   lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
 
     // container to hold the text
     infoBox.textGroup = infoBox.group.append("text")
         .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`);
-    
-    // draw the text
-    const textDims = drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
-                               lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
-
-    // update the height of the info box to be larger than the height of the text
-    infoBoxHeight = Math.max(infoBoxTextGroupHeight,  2 * infoBoxPadding + textDims.textBottomYPos + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm);
-    infoBox.highlight.attr("y2", infoBoxHeight);
 
     const lowerGraphInfoBox = infoBox;
 
@@ -357,14 +334,13 @@ export function lowerGraph(model){
     
         /* Creation of tooltip */
         function hoverCard(d, root, i, nutrient){
-            let width = GraphDims.lowerGraphTooltipMinWidth;
             const arcColour = d3.select(`#arcPath${i}`).attr("fill");
+            console.log(d.depth);
 
             /* Content of tooltip */
             const title = Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name})
             const lines = Translation.translate("lowerGraph.toolTipLevel", { 
                 returnObjects: true, 
-                context: d.depth,
                 percentage: Math.round( d.data.row.Percentage * 10) / 10,
                 parentGroup: d.depth > 1 ? d.parent.data.name : "",
                 parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
@@ -377,17 +353,13 @@ export function lowerGraph(model){
 
             // attributes for the tool tip
             const toolTip = {};
-            let toolTipWidth = width;
-            let toolTipHeight = 50;
-            const toolTipBorderWidth = 3;
-            const toolTipBackgroundColor = Colours.White;
-            const toolTipPaddingHor = GraphDims.lowerGraphTooltipPaddingHor;
-            const toolTipPaddingVert = GraphDims.lowerGraphTooltipPaddingVert;
-            const toolTipTextPaddingHor = GraphDims.lowerGraphTooltipTextPaddingHor;
-            const toolTipTextPaddingVert = GraphDims.lowerGraphTooltipTextPaddingVert;
+            let toolTipWidth = GraphDims.lowerGraphTooltipMinWidth;
+            let toolTipHeight = GraphDims.lowerGraphTooltipHeight;
+            let currentTextGroupPosY = GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert;
+            const textGroupPosX = GraphDims.lowerGraphTooltipBorderWidth + GraphDims.lowerGraphTooltipPaddingHor +  GraphDims.lowerGraphTooltipTextPaddingHor;
 
-            const toolTipTextGroupWidth = Math.max(width, width - toolTipPaddingHor - toolTipPaddingHor);
-            const toolTipHighlightXPos = toolTipPaddingHor + toolTipBorderWidth / 2;
+            const toolTipTextGroupWidth = Math.max(toolTipWidth, toolTipWidth - 2 * GraphDims.lowerGraphTooltipPaddingHor);
+            const toolTipHighlightXPos = GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth / 2;
 
             // draw the container for the tooltip
             toolTip.group = root.append("g")
@@ -396,9 +368,7 @@ export function lowerGraph(model){
 
             // draw the background for the tooltip
             toolTip.background = toolTip.group.append("rect")
-                .attr("height", toolTipHeight)
-                .attr("width", toolTipWidth)
-                .attr("fill", toolTipBackgroundColor)
+                .attr("fill", Colours.White)
                 .attr("stroke", arcColour)
                 .attr("stroke-width", 1)
                 .attr("rx", 5);
@@ -407,36 +377,39 @@ export function lowerGraph(model){
             toolTip.highlight = toolTip.group.append("line")
                 .attr("x1", toolTipHighlightXPos)
                 .attr("x2", toolTipHighlightXPos)
-                .attr("y1", toolTipPaddingVert)
-                .attr("y2", toolTipHeight - toolTipPaddingVert)
+                .attr("y1", GraphDims.lowerGraphTooltipPaddingVert)
                 .attr("stroke", arcColour) 
-                .attr("stroke-width", toolTipBorderWidth)
+                .attr("stroke-width", GraphDims.lowerGraphTooltipBorderWidth)
                 .attr("stroke-linecap", "round");
 
             // draw the title
             toolTip.titleGroup = toolTip.group.append("text")
                 .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
                 .attr("font-weight", FontWeight.Bold)
-                .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
+                .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
             const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
-                                        textWrap: TextWrap.NoWrap, paddingLeft: toolTipPaddingHor, paddingRight: toolTipPaddingHor});
+                                        textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
+
+            currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphTooltipTitleMarginBtm;
 
             // draw the text
             toolTip.textGroup = toolTip.group.append("text")
                 .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert + titleDims.textBottomYPos + DefaultDims.lineSpacing})`);
+                .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
             const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
-                                       textWrap: TextWrap.NoWrap, paddingLeft: toolTipPaddingHor, paddingRight: toolTipPaddingHor});
+                                       textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
+
+            currentTextGroupPosY += textDims.textBottomYPos;
 
             // update the height of the tooltip to be larger than the height of all the text
-            toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + titleDims.textBottomYPos + DefaultDims.lineSpacing + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
+            toolTipHeight = Math.max(toolTipHeight, currentTextGroupPosY + GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert);
             toolTip.background.attr("height", toolTipHeight);
-            toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert);
+            toolTip.highlight.attr("y2", toolTipHeight - GraphDims.lowerGraphTooltipPaddingVert);
 
             // update the width of the tooltip to be larger than the width of all the text
-            toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + Math.max(titleDims.width, textDims.width) + toolTipPaddingHor);
+            toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + Math.max(titleDims.width, textDims.width));
             toolTip.background.attr("width", toolTipWidth);
 
             // -------------------------------------
@@ -740,13 +713,7 @@ export function lowerGraph(model){
         }
 
         const lowerGraphTitleFront = Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup });
-
-        // For some food groups with special characters like "Fruits & Vegetables", we want the title to be displayed as "Fruits & Vegetables" instead of "Fruits &amp; Vegatables"
-        //  After passing in the food group into the i18next library, the library encoded the food group to be "Fruits &amp; Vegatables"
-        // So all the special characters got encoded to their corresponding HTML Entities (eg. &lt; , &gt; , &quot;)
-        //
-        // So we need to decode back the encoded string with HTML entities to turn back "Fruits &amp; Vegetables" to "Fruits & Vegetables"
-        lowerGraphTableTitle.text(`${lowerGraphTitleFront}, ${he.decode(lowerGraphTitleFoodGroup)}`);
+        lowerGraphTableTitle.text(`${lowerGraphTitleFront}, ${lowerGraphTitleFoodGroup}`);
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
@@ -900,31 +867,38 @@ export function lowerGraph(model){
 
         // ---------- Updates the infobox --------------
 
-        const infoBoxPadding = GraphDims.lowerGraphInfoBoxPadding;
+        const textGroupPosX = GraphDims.lowerGraphInfoBoxBorderWidth + GraphDims.lowerGraphInfoBoxPadding;
+        let currentTextGroupPosY = GraphDims.lowerGraphInfoBoxPadding;
 
         // change the title
-        const titleDims = drawText({textGroup: infoBox.titleGroup, text: "Food Group Description", width: GraphDims.lowerGraphInfoBoxWidth,
-                                    fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : "Food Group Description", width: GraphDims.lowerGraphInfoBoxWidth,
+                                    fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change the subtitle
         const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.lowerGraphInfoBoxWidth,
-                                       fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+                                       fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change text
         const textDims = drawText({textGroup: lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
-                                   fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+                                   fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
-        // update the y position of the subtitle
-        lowerGraphInfoBox.subTitleGroup.attr("transform", `translate(${GraphDims.lowerGraphInfoBoxBorderWidth + GraphDims.lowerGraphInfoBoxPadding}, ${GraphDims.lowerGraphInfoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`);
+        // update the position of the title
+        lowerGraphInfoBox.titleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm;
 
-        // update the y position for the text box of the description
-        lowerGraphInfoBox.textGroup.attr("transform", `translate(${GraphDims.lowerGraphInfoBoxBorderWidth + GraphDims.lowerGraphInfoBoxPadding}, ${GraphDims.lowerGraphInfoBoxPadding + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm})`);
+        // update the position of the subtitle
+        lowerGraphInfoBox.subTitleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += subTitleDims.textBottomYPos;
+
+        // update the position for the text box of the description
+        lowerGraphInfoBox.textGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += textDims.textBottomYPos;
 
         // change colour
         lowerGraphInfoBox.highlight.attr("stroke", colour);
 
         // update the height of the info box to be larger than the height of the text
-        let infoBoxHeight = Math.max(GraphDims.lowerGraphInfoBoxHeight,  2 * infoBoxPadding + textDims.textBottomYPos + titleDims.textBottomYPos + subTitleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm);
+        let infoBoxHeight = Math.max(GraphDims.lowerGraphInfoBoxHeight,  currentTextGroupPosY + GraphDims.lowerGraphInfoBoxPadding);
         lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
