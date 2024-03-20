@@ -73,10 +73,12 @@ export const GraphDims = Object.freeze({
     upperGraphTooltipFontSize: 14,
     upperGraphTooltipTopPadding: 8,
     upperGraphTooltipLeftPadding: 10,
-    upperGraphTooltipLineSpacing: 3,
+    upperGraphTooltipTitleMarginBtm: 10,
     upperGraphTooltipTextPaddingHor: 5,
     upperGraphTooltipTextPaddingVert: 3,
     upperGraphTooltipHighlightWidth: 1,
+    upperGraphTooltipHeight: 50,
+    upperGraphTooltipBorderWidth: 3,
     upperGraphInfoBoxWidth: 240,
     upperGraphInfoBoxHeight: 224,
     upperGraphInfoBoxFontSize: 15,
@@ -110,6 +112,9 @@ export const GraphDims = Object.freeze({
     lowerGraphTooltipHighlightWidth: 1,
     lowerGraphTooltipPaddingHor: 10,
     lowerGraphTooltipPaddingVert: 8,
+    lowerGraphTooltipHeight: 50,
+    lowerGraphTooltipBorderWidth: 3,
+    lowerGraphTooltipTitleMarginBtm: 10,
     lowerGraphInfoBoxWidth: 240,
     lowerGraphInfoBoxHeight: 224,
     lowerGraphArcLabelFontSize: 12,
@@ -223,8 +228,17 @@ export class Translation {
         i18next.changeLanguage();
     }
     
+    // Note:
+    // For some food groups with special characters like "Fruits & Vegetables", we want the title to be displayed as "Fruits & Vegetables" instead of "Fruits &amp; Vegatables"
+    //  After passing in the food group into the i18next library, the library encoded the food group to be "Fruits &amp; Vegatables"
+    // So all the special characters got encoded to their corresponding HTML Entities (eg. &lt; , &gt; , &quot;)
+    //
+    // So we need to decode back the encoded string with HTML entities to turn back "Fruits &amp; Vegetables" to "Fruits & Vegetables"
     static translate(key, args){
-        return i18next.t(key, args)
+        const result = i18next.t(key, args);
+
+        if (typeof result !== 'string') return result;
+        return he.decode(result);
     }
 }
 
@@ -294,7 +308,7 @@ export const TranslationObj = {
                 "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of 12 food groups to daily {{nutrient}} intake",  
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
-                    "Amount: {{amount}}"
+                    "Amount: {{amount}} g"
                 ],
                 "toolTip_percentage": [
                     "{{ percentage }}% of total {{- nutrient }} intake."
@@ -313,23 +327,8 @@ export const TranslationObj = {
                 "seeAllGroups": "See all food groups",
                 "allFoodGroupsLabel": "All Food Groups",
                 "toolTipTitle": "{{- name }}",
-                "toolTipLevel_1": [
-                    "{{ percentage }}% of total {{ nutrient }} intake."
-                ],
-                "toolTipLevel_2": [
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }} group: {{ parentPercentage }}%"
-                ],
-                "toolTipLevel_3": [
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }}: {{ parentPercentage }}%"
-                ],
-                "toolTipLevel_4": [
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }}: {{ parentPercentage }}%"
+                "toolTipLevel": [
+                    "{{ percentage }}%"
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
@@ -400,7 +399,7 @@ export const TranslationObj = {
                 "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}}`
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}} g`
                 ],
                 "toolTip_percentage": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
@@ -418,23 +417,8 @@ export const TranslationObj = {
                 "seeLevel2Groups": `Voyer les Groupes à Niveau 2`,
                 "seeAllGroups": `Toutes les Groupes Alimentaires`,
                 "toolTipTitle": "{{- name }}",
-                "toolTipLevel_1": [
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{ nutrient }} `
-                ],
-                "toolTipLevel_2": [
-                    REMPLACER_MOI,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
-                ],
-                "toolTipLevel_3": [
-                    REMPLACER_MOI,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
-                ],
-                "toolTipLevel_4": [
-                    REMPLACER_MOI,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
+                "toolTipLevel": [
+                    `{{ percentage }}%`
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
