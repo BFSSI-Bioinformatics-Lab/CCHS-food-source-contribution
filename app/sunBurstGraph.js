@@ -335,7 +335,6 @@ export function lowerGraph(model){
         /* Creation of tooltip */
         function hoverCard(d, root, i, nutrient){
             const arcColour = d3.select(`#arcPath${i}`).attr("fill");
-            console.log(d.depth);
 
             /* Content of tooltip */
             const title = Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name})
