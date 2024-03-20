@@ -357,7 +357,6 @@ export function lowerGraph(model){
             let currentTextGroupPosY = GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert;
             const textGroupPosX = GraphDims.lowerGraphTooltipBorderWidth + GraphDims.lowerGraphTooltipPaddingHor +  GraphDims.lowerGraphTooltipTextPaddingHor;
 
-            const toolTipTextGroupWidth = Math.max(toolTipWidth, toolTipWidth - 2 * GraphDims.lowerGraphTooltipPaddingHor);
             const toolTipHighlightXPos = GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth / 2;
 
             // draw the container for the tooltip
@@ -387,7 +386,7 @@ export function lowerGraph(model){
                 .attr("font-weight", FontWeight.Bold)
                 .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
-            const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+            const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, fontSize: GraphDims.lowerGraphTooltipFontSize, 
                                         textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
 
             currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphTooltipTitleMarginBtm;
@@ -397,7 +396,7 @@ export function lowerGraph(model){
                 .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
                 .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
-            const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+            const textDims = drawText({textGroup: toolTip.textGroup, text: lines, fontSize: GraphDims.lowerGraphTooltipFontSize, 
                                        textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
 
             currentTextGroupPosY += textDims.textBottomYPos;
@@ -408,7 +407,7 @@ export function lowerGraph(model){
             toolTip.highlight.attr("y2", toolTipHeight - GraphDims.lowerGraphTooltipPaddingVert);
 
             // update the width of the tooltip to be larger than the width of all the text
-            toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + Math.max(titleDims.width, textDims.width));
+            toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth + 2 * GraphDims.lowerGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
             toolTip.background.attr("width", toolTipWidth);
 
             // -------------------------------------

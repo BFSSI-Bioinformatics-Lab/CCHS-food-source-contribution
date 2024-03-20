@@ -634,7 +634,6 @@ export function upperGraph(model){
         const textGroupPosX = GraphDims.upperGraphTooltipBorderWidth + GraphDims.upperGraphTooltipPaddingHor +  GraphDims.upperGraphTooltipTextPaddingHor;
         let currentTextGroupPosY = GraphDims.upperGraphTooltipPaddingVert + GraphDims.upperGraphTooltipTextPaddingVert;
 
-        const toolTipTextGroupWidth = Math.max(toolTipWidth, toolTipWidth - 2 * GraphDims.upperGraphTooltipPaddingHor);
         const toolTipHighlightXPos = GraphDims.upperGraphTooltipPaddingHor + GraphDims.upperGraphTooltipBorderWidth / 2;
 
         // draw the container for the tooltip
@@ -667,7 +666,7 @@ export function upperGraph(model){
             .attr("font-weight", FontWeight.Bold)
             .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
-        const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, width: toolTipTextGroupWidth, fontSize: GraphDims.upperGraphTooltipFontSize, 
+        const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, fontSize: GraphDims.upperGraphTooltipFontSize, 
                                     textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipPaddingVert});
 
         currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphTooltipTitleMarginBtm;
@@ -677,7 +676,7 @@ export function upperGraph(model){
             .attr("font-size", GraphDims.upperGraphTooltipFontSize)
             .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
-        const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.upperGraphTooltipFontSize, 
+        const textDims = drawText({textGroup: toolTip.textGroup, text: lines, fontSize: GraphDims.upperGraphTooltipFontSize, 
                                    textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipPaddingVert});
 
         currentTextGroupPosY += textDims.textBottomYPos;
