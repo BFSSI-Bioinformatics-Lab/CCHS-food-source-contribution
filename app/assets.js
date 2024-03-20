@@ -72,7 +72,7 @@ export const GraphDims = Object.freeze({
     upperGraphYAxisTickFontSize: 14,
     upperGraphTooltipFontSize: 14,
     upperGraphTooltipTopPadding: 8,
-    upperGraphTooltipLeftPadding: 10,
+    upperGraphTooltipPaddingHor: 10,
     upperGraphTooltipTitleMarginBtm: 10,
     upperGraphTooltipTextPaddingHor: 5,
     upperGraphTooltipTextPaddingVert: 3,

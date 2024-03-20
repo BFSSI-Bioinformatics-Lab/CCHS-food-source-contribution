@@ -631,11 +631,11 @@ export function upperGraph(model){
         const toolTip = {};
         let toolTipWidth = GraphDims.upperGraphTooltipMinWidth;
         let toolTipHeight = GraphDims.upperGraphTooltipHeight;
-        const textGroupPosX = GraphDims.upperGraphTooltipBorderWidth + GraphDims.upperGraphTooltipLeftPadding +  GraphDims.upperGraphTooltipTextPaddingHor;
+        const textGroupPosX = GraphDims.upperGraphTooltipBorderWidth + GraphDims.upperGraphTooltipPaddingHor +  GraphDims.upperGraphTooltipTextPaddingHor;
         let currentTextGroupPosY = GraphDims.upperGraphTooltipTopPadding + GraphDims.upperGraphTooltipTextPaddingVert;
 
-        const toolTipTextGroupWidth = Math.max(toolTipWidth, toolTipWidth - 2 * GraphDims.upperGraphTooltipLeftPadding);
-        const toolTipHighlightXPos = GraphDims.upperGraphTooltipLeftPadding + GraphDims.upperGraphTooltipBorderWidth / 2;
+        const toolTipTextGroupWidth = Math.max(toolTipWidth, toolTipWidth - 2 * GraphDims.upperGraphTooltipPaddingHor);
+        const toolTipHighlightXPos = GraphDims.upperGraphTooltipPaddingHor + GraphDims.upperGraphTooltipBorderWidth / 2;
 
         // draw the container for the tooltip
         toolTip.group = upperGraphTooltips.append("g")
@@ -688,7 +688,7 @@ export function upperGraph(model){
         toolTip.highlight.attr("y2", toolTipHeight - GraphDims.upperGraphTooltipTopPadding);
 
         // update the width of the tooltip to be larger than the width of all the text
-        toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.upperGraphTooltipLeftPadding + GraphDims.upperGraphTooltipBorderWidth + 2 * GraphDims.upperGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
+        toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.upperGraphTooltipPaddingHor + GraphDims.upperGraphTooltipBorderWidth + 2 * GraphDims.upperGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
         toolTip.background.attr("width", toolTipWidth);
 
         // -------------------------------------
