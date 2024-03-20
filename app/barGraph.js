@@ -632,7 +632,7 @@ export function upperGraph(model){
         let toolTipWidth = GraphDims.upperGraphTooltipMinWidth;
         let toolTipHeight = GraphDims.upperGraphTooltipHeight;
         const textGroupPosX = GraphDims.upperGraphTooltipBorderWidth + GraphDims.upperGraphTooltipPaddingHor +  GraphDims.upperGraphTooltipTextPaddingHor;
-        let currentTextGroupPosY = GraphDims.upperGraphTooltipTopPadding + GraphDims.upperGraphTooltipTextPaddingVert;
+        let currentTextGroupPosY = GraphDims.upperGraphTooltipPaddingVert + GraphDims.upperGraphTooltipTextPaddingVert;
 
         const toolTipTextGroupWidth = Math.max(toolTipWidth, toolTipWidth - 2 * GraphDims.upperGraphTooltipPaddingHor);
         const toolTipHighlightXPos = GraphDims.upperGraphTooltipPaddingHor + GraphDims.upperGraphTooltipBorderWidth / 2;
@@ -655,8 +655,8 @@ export function upperGraph(model){
         toolTip.highlight = toolTip.group.append("line")
             .attr("x1", toolTipHighlightXPos)
             .attr("x2", toolTipHighlightXPos)
-            .attr("y1", GraphDims.upperGraphTooltipTopPadding)
-            .attr("y2", toolTipHeight - GraphDims.upperGraphTooltipTopPadding)
+            .attr("y1", GraphDims.upperGraphTooltipPaddingVert)
+            .attr("y2", toolTipHeight - GraphDims.upperGraphTooltipPaddingVert)
             .attr("stroke", colour) 
             .attr("stroke-width", GraphDims.upperGraphTooltipBorderWidth)
             .attr("stroke-linecap", "round");
@@ -668,7 +668,7 @@ export function upperGraph(model){
             .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
         const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, width: toolTipTextGroupWidth, fontSize: GraphDims.upperGraphTooltipFontSize, 
-                                    textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipTopPadding});
+                                    textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipPaddingVert});
 
         currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphTooltipTitleMarginBtm;
 
@@ -678,14 +678,14 @@ export function upperGraph(model){
             .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
         const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.upperGraphTooltipFontSize, 
-                                   textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipTopPadding});
+                                   textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipPaddingVert});
 
         currentTextGroupPosY += textDims.textBottomYPos;
 
         // update the height of the tooltip to be larger than the height of all the text
-        toolTipHeight = Math.max(toolTipHeight, currentTextGroupPosY + GraphDims.upperGraphTooltipTopPadding + GraphDims.upperGraphTooltipTextPaddingVert);
+        toolTipHeight = Math.max(toolTipHeight, currentTextGroupPosY + GraphDims.upperGraphTooltipPaddingVert + GraphDims.upperGraphTooltipTextPaddingVert);
         toolTip.background.attr("height", toolTipHeight);
-        toolTip.highlight.attr("y2", toolTipHeight - GraphDims.upperGraphTooltipTopPadding);
+        toolTip.highlight.attr("y2", toolTipHeight - GraphDims.upperGraphTooltipPaddingVert);
 
         // update the width of the tooltip to be larger than the width of all the text
         toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.upperGraphTooltipPaddingHor + GraphDims.upperGraphTooltipBorderWidth + 2 * GraphDims.upperGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
