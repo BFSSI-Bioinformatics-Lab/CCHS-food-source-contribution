@@ -20,7 +20,7 @@
 
 
 
-import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation } from "./assets.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation, SortIconClasses, SortStates } from "./assets.js";
 import { drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -45,6 +45,10 @@ export function upperGraph(model){
 
     // unit for the nutrient
     let nutrientUnit = "";
+
+    // table column that is being sorted
+    let sortedColIndex = null;
+    let sortedColState = SortStates.Unsorted;
 
     // whether to display numbers/percentae for the graph
     /* Sets up alternator between graph types (percentage vs number) */
@@ -365,8 +369,8 @@ export function upperGraph(model){
     }
 
     // drawTable(nutrient): Draws the table for the graph
-    function drawTable(nutrient){
-        const barGraphTable = model.createBarGraphTable();
+    function drawTable(nutrient, reloadData = true){
+        const barGraphTable = reloadData ? model.createBarGraphTable() : model.barGraphTable;
         const amountLeftIndex = 1;
 
         // --------------- draws the table -------------------------
@@ -413,10 +417,30 @@ export function upperGraph(model){
                 })
                 .attr("colspan", 1)
                 .text(subHeadingData => Translation.translate(subHeadingData.heading))
+                .on("click", (headingData) => { 
+                    sortedColState = headingData.ind == sortedColIndex ? SortStates.getNext(sortedColState) : SortStates.Ascending; 
+                    sortedColIndex = headingData.ind;
+                    drawTable(nutrient, false);
+                })
+                .on("mouseenter", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Pointer; })
+                .on("mouseleave", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Default; })
+
+                // add in the sorting icon
+                .append("i")
+                .attr("class", (headingData) => { return `sortIcon ${sortedColIndex == headingData.ind ? SortIconClasses[sortedColState] : SortIconClasses[SortStates.Unsorted]}` })
+                .attr("aria-hidden", true);
+
+        // sort the table data
+        let barGraphTableDataRows = barGraphTable.table;
+        if (sortedColIndex !== null && sortedColState == SortStates.Ascending) {
+            barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
+        } else if (sortedColIndex !== null && sortedColState == SortStates.Descending) {
+            barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) })
+        }
         
         upperGraphTableBody.selectAll("tr").remove();
 
-        for (const row of barGraphTable.table) {
+        for (const row of barGraphTableDataRows) {
             const newRow = upperGraphTableBody.append("tr")
             .selectAll("td")
             .data(row)

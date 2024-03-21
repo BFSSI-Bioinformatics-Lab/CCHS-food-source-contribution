@@ -674,7 +674,6 @@ export function lowerGraph(model){
                 .on("click", (headingData) => { 
                     sortedColState = headingData.ind == sortedColIndex ? SortStates.getNext(sortedColState) : SortStates.Ascending; 
                     sortedColIndex = headingData.ind;
-                    console.log("IND: ", sortedColIndex, " AND STTATE: ", sortedColState, " AND ICON: ", SortIconClasses[sortedColState]);
                     drawTable(ageSexGroup, false);
                 })
                 .on("mouseenter", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Pointer; })
@@ -685,29 +684,15 @@ export function lowerGraph(model){
                 .attr("class", (headingData) => { return `sortIcon ${sortedColIndex == headingData.ind ? SortIconClasses[sortedColState] : SortIconClasses[SortStates.Unsorted]}` })
                 .attr("aria-hidden", true);
 
-        
-        lowerGraphTableBody.selectAll("tr").remove();
-
-        // get the sorting function needed for the table
-        let compareFunc = null;
-        if (sortedColIndex !== null && sortedColState != SortStates.Unsorted) {
-            compareFunc = (row1, row2) => { 
-                const value1 = row1[sortedColIndex];
-                const value2 = row2[sortedColIndex];
-
-                if (value1 == value2) return 0
-                else if (value1 > value2) return 1
-                else return -1;
-            }
-        }
-
         // sort the table data
         let sunBurstTableDataRows = sunBurstTable.table;
-        if (compareFunc !== null && sortedColState == SortStates.Ascending) {
-            sunBurstTableDataRows = sunBurstTableDataRows.toSorted(compareFunc);
-        } else if (compareFunc !== null) {
-            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => compareFunc(row2, row1));
+        if (sortedColIndex !== null && sortedColState == SortStates.Ascending) {
+            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
+        } else if (sortedColIndex !== null && sortedColState == SortStates.Descending) {
+            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) })
         }
+
+        lowerGraphTableBody.selectAll("tr").remove();
 
         // create the rows for the table
         for (const row of sunBurstTableDataRows) {
