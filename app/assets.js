@@ -214,6 +214,24 @@ AgeSexGroupOrder["YouthAndAdolescents"] = 2;
 AgeSexGroupOrder["AdultMales"] = 3;
 AgeSexGroupOrder["AdultFemales"] = 4;
 
+// Different states for sorting tables
+export const SortStates = {
+    Unsorted: "unsorted",
+    Ascending: "ascending",
+    Descending: "descending",
+
+    getNext: function(sortState) {
+        if (sortState == SortStates.Unsorted) return SortStates.Ascending
+        else if (sortState == SortStates.Ascending) return SortStates.Descending
+        else return SortStates.Unsorted;
+    }
+};
+
+// icons for the different sorting states
+export const SortIconClasses = {};
+SortIconClasses[SortStates.Unsorted] = "fa fa-sort"
+SortIconClasses[SortStates.Ascending] = "fa fa-sort-up"
+SortIconClasses[SortStates.Descending] = "fa fa-sort-down"
 
 // Translation: Helper class for doing translations
 export class Translation {
@@ -313,6 +331,7 @@ export const TranslationObj = {
                 "toolTip_percentage": [
                     "{{ percentage }}% of total {{- nutrient }} intake."
                 ],
+                "tableSubHeadingFirstCol": "Food Group",
                 "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"],
                 "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
             },
@@ -404,6 +423,7 @@ export const TranslationObj = {
                 "toolTip_percentage": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
                 ],
+                "tableSubHeadingFirstCol": "Groupes Alimentaires",
                 "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
                 "sourceText": REMPLACER_MOI
             },

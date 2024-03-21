@@ -20,7 +20,7 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames, DefaultDims } from "./assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames, MousePointer, SortIconClasses, SortStates } from "./assets.js";
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -46,6 +46,10 @@ export function lowerGraph(model){
     // which arc is selected in the sunburst
     let selectedNodeIndex = 1;
     let selectedNode = null;
+
+    // table column that is being sorted
+    let sortedColIndex = null;
+    let sortedColState = SortStates.Unsorted;
 
     // Specify the chart’s dimensions.
     const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
@@ -630,17 +634,17 @@ export function lowerGraph(model){
 
 
     // draws the table for the sun burst graph
-    function drawTable(ageSexGroup){
+    function drawTable(ageSexGroup, reloadData = true){
         const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}} 
-        const sunBurstTable = model.createSunburstTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name);
+        const sunBurstTable = reloadData ? model.createSunburstTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name) : model.sunburstTable;
 
         // --------------- draws the table -------------------------
 
-        /* Create subheading columns */
+        /* Create heading columns */
         const amountLeftIndex = 3;
 
         lowerGraphTableHeading.selectAll("tr").remove();
-        lowerGraphTableHeading.append("tr")
+        const tableHeaders = lowerGraphTableHeading.append("tr")
             .selectAll("td")
             .data(sunBurstTable.headings)
             .enter()
@@ -666,11 +670,32 @@ export function lowerGraph(model){
                     return 1;
                 })
                 .attr("colspan", 1)
-                .text(d => Translation.translate(d))
-        
+                .text(headingData => Translation.translate(headingData.heading))
+                .on("click", (headingData) => { 
+                    sortedColState = headingData.ind == sortedColIndex ? SortStates.getNext(sortedColState) : SortStates.Ascending; 
+                    sortedColIndex = headingData.ind;
+                    drawTable(ageSexGroup, false);
+                })
+                .on("mouseenter", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Pointer; })
+                .on("mouseleave", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Default; })
+                
+                // add in the sorting icon
+                .append("i")
+                .attr("class", (headingData) => { return `sortIcon ${sortedColIndex == headingData.ind ? SortIconClasses[sortedColState] : SortIconClasses[SortStates.Unsorted]}` })
+                .attr("aria-hidden", true);
+
+        // sort the table data
+        let sunBurstTableDataRows = sunBurstTable.table;
+        if (sortedColIndex !== null && sortedColState == SortStates.Ascending) {
+            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
+        } else if (sortedColIndex !== null && sortedColState == SortStates.Descending) {
+            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) })
+        }
+
         lowerGraphTableBody.selectAll("tr").remove();
 
-        for (const row of sunBurstTable.table) {
+        // create the rows for the table
+        for (const row of sunBurstTableDataRows) {
             const newRow = lowerGraphTableBody.append("tr")
                 .selectAll("td")
                 .data(row)

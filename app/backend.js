@@ -228,6 +228,25 @@ export class Model {
         return groupedPercentages;
     }
 
+    // defaultCompare(value1, value2): Default compare functions for sorting
+    static defaultCompare(value1, value2) { 
+        if (value1 == value2) return 0
+        else if (value1 > value2) return 1
+        else return -1;
+    }
+
+    // strNumCompare(value1, value): Compare function that gives numbers precedence over strings
+    static strNumCompare(value1, value2) {
+        const num1 = parseFloat(value1);
+        const num2 = parseFloat(value2);
+        const num1IsNAN = Number.isNaN(num1);
+        const num2IsNAN = Number.isNaN(num2);
+
+        if (num1IsNAN && !num2IsNAN) return -1
+        else if (!num1IsNAN && num2IsNAN) return 1
+        else return Model.defaultCompare(value1, value2);
+    }
+
     // createBarGraphTable(): Creates the data for the table of the bar graph
     createBarGraphTable() {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
@@ -240,7 +259,7 @@ export class Model {
         const tableHeadings = ["", ...this.ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))];
 
         // sub-headings of the table
-        const subHeadings = [""].concat(Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat());
+        const subHeadings = [Translation.translate("upperGraph.tableSubHeadingFirstCol")].concat(Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat());
 
         // Get the rows needed for the table
         const tableRows = {};
@@ -281,7 +300,10 @@ export class Model {
 
         // -----------------------------------------------------------------------------------------
 
-        this.barGraphTable = { headings: tableHeadings, subHeadings, table: result, headingsPerSexAgeGroup, csvContent};
+        // get the compare functions of each heading for sorting
+        const compareFuncs = subHeadings.map((heading, ind) => { return ind == 0 ? Model.defaultCompare : Model.strNumCompare; });    
+
+        this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: result, headingsPerSexAgeGroup, csvContent, compareFuncs};
         return this.barGraphTable;
     }
 
@@ -336,7 +358,11 @@ export class Model {
         // get the text needed for the CSV export
         const csvContent = TableTools.createCSVContent([tableHeadings].concat(result), tableHeadings.length);
 
-        this.sunburstTable = { headings: tableHeadings, table: result, csvContent };
+        // get the compare functions of each heading for sorting
+        let compareFuncs = [Model.defaultCompare, Model.defaultCompare, Model.defaultCompare];
+        compareFuncs = compareFuncs.concat(headingsPerSexAgeGroupKeys.map(() => { return Model.strNumCompare }));
+
+        this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: result, csvContent, compareFuncs };
         return this.sunburstTable;
     }
 }
