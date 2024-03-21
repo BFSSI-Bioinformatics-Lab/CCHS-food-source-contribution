@@ -622,7 +622,8 @@ export function upperGraph(model){
             context: graphType,
             amount: parseFloat(d[1]).toFixed(1),
             percentage: parseFloat(d[1]).toFixed(1),
-            nutrient: d[0]
+            nutrient: d[0],
+            unit: nutrientUnit
         });
         
         // ------- draw the tooltip ------------
