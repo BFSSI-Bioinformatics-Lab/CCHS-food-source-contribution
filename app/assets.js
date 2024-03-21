@@ -308,7 +308,7 @@ export const TranslationObj = {
                 "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of 12 food groups to daily {{nutrient}} intake",  
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
-                    "Amount: {{amount}} g"
+                    "Amount: {{amount}} {{ unit }}"
                 ],
                 "toolTip_percentage": [
                     "{{ percentage }}% of total {{- nutrient }} intake."
@@ -399,7 +399,7 @@ export const TranslationObj = {
                 "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}} g`
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}} {{ unit }}`
                 ],
                 "toolTip_percentage": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
