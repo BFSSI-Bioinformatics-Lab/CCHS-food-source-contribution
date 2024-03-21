@@ -281,7 +281,7 @@ export class Model {
 
         // -----------------------------------------------------------------------------------------
 
-        this.barGraphTable = { headings: tableHeadings, subHeadings, table: result, headingsPerSexAgeGroup, csvContent};
+        this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: result, headingsPerSexAgeGroup, csvContent};
         return this.barGraphTable;
     }
 
@@ -336,7 +336,10 @@ export class Model {
         // get the text needed for the CSV export
         const csvContent = TableTools.createCSVContent([tableHeadings].concat(result), tableHeadings.length);
 
-        this.sunburstTable = { headings: tableHeadings, table: result, csvContent };
+        // get the sorting functions for each heading
+        
+
+        this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: result, csvContent };
         return this.sunburstTable;
     }
 }

@@ -412,7 +412,7 @@ export function upperGraph(model){
                     return 1;
                 })
                 .attr("colspan", 1)
-                .text(d => Translation.translate(d))
+                .text(subHeadingData => Translation.translate(subHeadingData.heading))
         
         upperGraphTableBody.selectAll("tr").remove();
 
@@ -453,7 +453,7 @@ export function upperGraph(model){
     // showInfoBox(name, colour, legendItem): Shows the info box
     function showInfoBox({name = "", colour = Colours.None, legendItem = null} = {}) {
         updateInfoBox({name: name, colour: colour});
-        legendItem.group.   style("cursor", MousePointer.Pointer);
+        legendItem.group.style("cursor", MousePointer.Pointer);
     }
 
     // hideInfoBox(): Hides the food group description box
