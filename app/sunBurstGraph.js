@@ -743,17 +743,18 @@ export function lowerGraph(model){
 
         // ---------------------------------------------------------
 
-        let lowerGraphTitleFoodGroup = ""
+        let filterTranslateKey = ""
         if (graphState == SunBurstStates.FilterOnlyLevel2) {
-            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleLevel2Data");
+            filterTranslateKey = "Filter Only Level 2";
         } else if (sunBurstNode.depth == 1) {
-            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleAllData");
+            filterTranslateKey = "All Items";
         } else if (sunBurstNode.depth > 1) {
-            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleFilteredData", { chosenCategory: sunBurstNode.data.name });
+            filterTranslateKey = "Filtered Data";
         }
 
-        const lowerGraphTitleFront = Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup });
-        tableTitleText = `${lowerGraphTitleFront}, ${lowerGraphTitleFoodGroup}`;
+        const ageGroupTranslateKey = ageSexGroup == Translation.translate("AgeSexGroupHeadings.Population1Up") ? "Population1Up" : "OtherAgeGroups";
+
+        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${ageGroupTranslateKey}.${filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
         lowerGraphTableTitle.text(tableTitleText);
     }
 

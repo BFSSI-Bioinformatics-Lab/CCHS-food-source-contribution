@@ -324,7 +324,7 @@ export const TranslationObj = {
                     "switchTypeButton": "Switch to Numbers"
                 },
                 "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of 12 food groups to daily {{nutrient}} intake",  
+                "tableTitle": "Daily ({{ amountUnit }}/day) and percentage (%) of total {{nutrient}} intake provided by 12 food groups",
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     "Amount: {{amount}} {{ unit }}"
@@ -340,10 +340,19 @@ export const TranslationObj = {
             "lowerGraph": {
                 "graphTitle": "Food groups and sub-groups contribution to {{ nutrient }} intake in Canadian {{ ageSexGroup }}",
                 "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of food groups and sub-groups to daily {{nutrient}} intake in Canadian {{ ageSexGroup }}, 2015",
-                "tableTitleAllData": "All Data",
-                "tableTitleLevel2Data": "Level 2 Data",
-                "tableTitleFilteredData": "Filtered Data by {{ chosenCategory }}",
+                "tableTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadian {{ ageSexGroup }}"
+                    },
+
+                    "Population1Up": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
+                    }
+                },
                 "seeLevel2Groups": "Filter on level 2 groups",
                 "seeAllGroups": "See all food groups",
                 "allFoodGroupsLabel": "All Food Groups",
@@ -434,10 +443,19 @@ export const TranslationObj = {
             "lowerGraph": {
                 "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ ageSexGroup }}`,
                 "graphFootnote": REMPLACER_MOI,
-                "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour)  {{nutrient}}  {{ ageSexGroup }}`,
-                "tableTitleAllData": REMPLACER_MOI,
-                "tableTitleLevel2Data": REMPLACER_MOI,
-                "tableTitleFilteredData": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ chosenCategory }}`,
+                "tableTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}  {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`
+                    },
+
+                    "Population1Up": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                    }
+                },
                 "seeLevel2Groups": `Voyer les Groupes à Niveau 2`,
                 "seeAllGroups": `Toutes les Groupes Alimentaires`,
                 "toolTipTitle": "{{- name }}",
