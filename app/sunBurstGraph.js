@@ -199,11 +199,12 @@ export function lowerGraph(model){
     // --------------------------------------------------------
 
     const lowerGraphChartHeading = lowerGraphSvg.append("g")
-    .append("text")
-    .attr("text-anchor", "middle")
-    .attr("font-size", GraphDims.lowerGraphChartHeadingFontSize)
-    .attr("x", width / 2)
-    .attr("y", GraphDims.lowerGraphTop - GraphDims.lowerGraphChartHeadingFontSize * 0.75);
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("font-size", GraphDims.lowerGraphChartHeadingFontSize)
+        .attr("x", width / 2)
+        .attr("y", GraphDims.lowerGraphTop - GraphDims.lowerGraphChartHeadingFontSize * 0.75)
+        .attr("font-weight", FontWeight.Bold);
 
     const lowerGraphSunburst = lowerGraphSvg.append("g")
     .attr("transform", `translate(${GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2})`)
@@ -234,10 +235,8 @@ export function lowerGraph(model){
                 .text(d => d);
     
         const ageSexGroup = getSelector("#lowerGraphAgeSexSelect");
+        updateGraphTitle(ageSexGroup);
 
-        graphTitleText = Translation.translate("lowerGraph.graphTitle", { nutrient: nutrient, ageSexGroup: ageSexGroup});
-        lowerGraphChartHeading.text(graphTitleText).attr("font-weight", FontWeight.Bold);
-    
         drawSunburst(nutrient, ageSexGroup);
     }
 
@@ -574,6 +573,9 @@ export function lowerGraph(model){
 
             // update the filter for the table of the sunburst
             drawTable(ageSexGroup);
+
+            // update the title of the graph
+            updateGraphTitle(ageSexGroup);
         }
 
         // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
@@ -603,6 +605,9 @@ export function lowerGraph(model){
 
             // update the filter for the table of the sunburst
             drawTable(ageSexGroup);
+
+            // update the title for the graph
+            updateGraphTitle(ageSexGroup);
         }
 
         // arcOnClick(event, i): Handle zoom on click when clicking on an arc.
@@ -637,6 +642,9 @@ export function lowerGraph(model){
             // update the table based off the selected arc
             drawTable(ageSexGroup);
 
+            // update the title of the graph based off the selected arc
+            updateGraphTitle(ageSexGroup);
+
             if (isTransitionArc) {
                 transitionArcs();
             }
@@ -649,6 +657,31 @@ export function lowerGraph(model){
     /* Return function defined above that updates the graph */
     return drawGraph;
 
+
+    // getTitleTranslateKeys(ageSexGroup): Retrieves the translation keys used for picking the correct title for the sunburst
+    function getTitleTranslateKeys(ageSexGroup) {
+        const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}};
+
+        let filterTranslateKey = ""
+        if (graphState == SunBurstStates.FilterOnlyLevel2) {
+            filterTranslateKey = "Filter Only Level 2";
+        } else if (sunBurstNode.depth == 1) {
+            filterTranslateKey = "All Items";
+        } else if (sunBurstNode.depth > 1) {
+            filterTranslateKey = "Filtered Data";
+        }
+
+        const ageGroupTranslateKey = ageSexGroup == Translation.translate("AgeSexGroupHeadings.Population1Up") ? "Population1Up" : "OtherAgeGroups";
+        return {filterTranslateKey, ageGroupTranslateKey};
+    }
+
+    // updateGraphTitle(ageSexGroup): Updates the title for the graph
+    function updateGraphTitle(ageSexGroup) {
+        const titleKeys = getTitleTranslateKeys(ageSexGroup);
+        graphTitleText = Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
+                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: selectedNode !== null ? selectedNode.data.name : "" });
+        lowerGraphChartHeading.text(graphTitleText)
+    }
 
     // draws the table for the sun burst graph
     function drawTable(ageSexGroup, reloadData = true){
@@ -743,18 +776,8 @@ export function lowerGraph(model){
 
         // ---------------------------------------------------------
 
-        let filterTranslateKey = ""
-        if (graphState == SunBurstStates.FilterOnlyLevel2) {
-            filterTranslateKey = "Filter Only Level 2";
-        } else if (sunBurstNode.depth == 1) {
-            filterTranslateKey = "All Items";
-        } else if (sunBurstNode.depth > 1) {
-            filterTranslateKey = "Filtered Data";
-        }
-
-        const ageGroupTranslateKey = ageSexGroup == Translation.translate("AgeSexGroupHeadings.Population1Up") ? "Population1Up" : "OtherAgeGroups";
-
-        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${ageGroupTranslateKey}.${filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
+        const titleKeys = getTitleTranslateKeys(ageSexGroup);
+        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
         lowerGraphTableTitle.text(tableTitleText);
     }
 

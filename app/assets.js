@@ -314,7 +314,7 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": "Daily {{ nutrient }} intake per person ({{ amountUnit }}/d) provided by 12 food groups.",
+                    "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
                     "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
                     "switchTypeButton": "Switch to Percentage"
                 },
@@ -338,7 +338,19 @@ export const TranslationObj = {
                 "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
             },
             "lowerGraph": {
-                "graphTitle": "Food groups and sub-groups contribution to {{ nutrient }} intake in Canadian {{ ageSexGroup }}",
+                "graphTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadian {{ ageSexGroup }}"
+                    },
+
+                    "Population1Up": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
+                    }
+                },
                 "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
                 "tableTitle": {
                     "OtherAgeGroups": {
@@ -417,7 +429,7 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} ({{ amountUnit }}/j)`,
+                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ amountUnit }}/j`,
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} ({{ amountUnit }}/j)`,
                     "switchTypeButton": "Changer Au Pourcentage"
                 },
@@ -441,7 +453,19 @@ export const TranslationObj = {
                 "sourceText": REMPLACER_MOI
             },
             "lowerGraph": {
-                "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ ageSexGroup }}`,
+                "graphTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}  {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`
+                    },
+
+                    "Population1Up": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                    }
+                },
                 "graphFootnote": REMPLACER_MOI,
                 "tableTitle": {
                     "OtherAgeGroups": {
