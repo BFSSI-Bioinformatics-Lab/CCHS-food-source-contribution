@@ -43,6 +43,10 @@ export function lowerGraph(model){
     // unit for the nutrient
     let nutrientUnit = "";
 
+    // titles for the graph and table
+    let graphTitleText = ""
+    let tableTitleText = ""
+
     // which arc is selected in the sunburst
     let selectedNodeIndex = 1;
     let selectedNode = null;
@@ -53,7 +57,7 @@ export function lowerGraph(model){
 
     // Specify the chart’s dimensions.
     const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
-    const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom + GraphDims.lowerGraphFooter;
+    const height = GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom;
     const lowerGraphRightXPos = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth;
 
     // used for calculating the radius
@@ -76,15 +80,30 @@ export function lowerGraph(model){
     .attr("style", "max-width: 100%; height: auto;")
     .style("font", "10px sans-serif");
 
-    // source text for the graph
-    const sourceTextBox = lowerGraphSvg.append("text")
-        .attr("font-size", GraphDims.lowerGraphFooterFontSize)
+    // ------------------ draw the footnotes ------------------
+
+    const footNoteWidth = width - 2 * GraphDims.lowerGraphFooterPaddingHor;
+
+    const footNotesContainer = lowerGraphSvg.append("g")
+        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${GraphDims.lowerGraphHeight + GraphDims.lowerGraphTop})`)
         .attr("visibility", "hidden");
+    
+    // foot note for excluding pregnancy and lactating
+    const exclusionFootNoteTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, 0)`)
+        .attr("font-size", GraphDims.lowerGraphFooterFontSize);
 
-    drawWrappedText({textGroup: sourceTextBox, text: Translation.translate("lowerGraph.sourceText"), width: width - 2 * GraphDims.lowerGraphFooterPaddingHor, 
-                     textY: GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight + GraphDims.lowerGraphBottom, 
-                     textX: GraphDims.lowerGraphFooterPaddingHor, fontSize: GraphDims.lowerGraphFooterFontSize});
+    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("lowerGraph.exclusionFootNote"), width: footNoteWidth, 
+                                                fontSize: GraphDims.lowerGraphFooterFontSize});
 
+    // foot note for the source text
+    const sourceTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.lowerGraphFootNoteSpacing})`)
+        .attr("font-size", GraphDims.lowerGraphFooterFontSize);
+
+    drawText({textGroup: sourceTextBox, text: Translation.translate("lowerGraph.sourceText"), width: footNoteWidth, fontSize: GraphDims.lowerGraphFooterFontSize});
+
+    // --------------------------------------------------------
     // --------------- draws the info box ---------------------
     
     // attributes for the info box
@@ -215,11 +234,9 @@ export function lowerGraph(model){
                 .text(d => d);
     
         const ageSexGroup = getSelector("#lowerGraphAgeSexSelect");
-        lowerGraphChartHeading.text(Translation.translate("lowerGraph.graphTitle", {
-            nutrient: nutrient,
-            ageSexGroup: ageSexGroup
-        }))
-        .attr("font-weight", FontWeight.Bold);
+
+        graphTitleText = Translation.translate("lowerGraph.graphTitle", { nutrient: nutrient, ageSexGroup: ageSexGroup});
+        lowerGraphChartHeading.text(graphTitleText).attr("font-weight", FontWeight.Bold);
     
         drawSunburst(nutrient, ageSexGroup);
     }
@@ -736,7 +753,8 @@ export function lowerGraph(model){
         }
 
         const lowerGraphTitleFront = Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup });
-        lowerGraphTableTitle.text(`${lowerGraphTitleFront}, ${lowerGraphTitleFoodGroup}`);
+        tableTitleText = `${lowerGraphTitleFront}, ${lowerGraphTitleFoodGroup}`;
+        lowerGraphTableTitle.text(tableTitleText);
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
@@ -935,10 +953,10 @@ export function lowerGraph(model){
         // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
         //  (or else you may have a picture of a graph without the source text)
         // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
-        await sourceTextBox.attr("visibility", "visible");
+        await footNotesContainer.attr("visibility", "visible");
         const svg = document.getElementById("lowerGraph").firstChild;
-        await saveSvgAsPng(svg, "SunburstGraph.png", {backgroundColor: "white"});
-        await sourceTextBox.attr("visibility", "hidden");
+        await saveSvgAsPng(svg, `${graphTitleText}.png`, {backgroundColor: "white"});
+        await footNotesContainer.attr("visibility", "hidden");
     }
 
     // downloadTable(): Exports the table of the bar graph as a CSV file
@@ -948,7 +966,7 @@ export function lowerGraph(model){
         // creates a temporary link for exporting the table
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
-        link.setAttribute('download', 'SunBurstTable.csv');
+        link.setAttribute('download', `${tableTitleText}.csv`);
 
         document.body.appendChild(link);
         link.click();

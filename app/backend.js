@@ -283,6 +283,14 @@ export class Model {
             result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()));
         });
 
+        // get the footnotes to the CSV
+        const csvFootNotes = [];
+        for (let i = 0; i < 3; ++i) {
+            csvFootNotes.push(subHeadings.map(() => { return ""}));
+        }
+        csvFootNotes[1][0] = Translation.translate("upperGraph.exclusionFootNote");
+        csvFootNotes[2][0] = Translation.translate("upperGraph.sourceText");
+
         // ------ this part used to be the JQuery part in the html doc of the original code -------
         //      git commit hash: 58aaf7a62118cdcd7e7364cbe3f6959a825a862b
 
@@ -296,7 +304,7 @@ export class Model {
         csvHeadings = csvHeadings.flat();
         csvHeadings.splice(0, 0, "");
 
-        const csvContent = TableTools.createCSVContent([csvHeadings, subHeadings].concat(result), 1 + tableHeadings.length * headingsPerSexAgeGroup.length);
+        const csvContent = TableTools.createCSVContent([csvHeadings, subHeadings].concat(result).concat(csvFootNotes));
 
         // -----------------------------------------------------------------------------------------
 
@@ -355,8 +363,16 @@ export class Model {
             return foodGroupData.concat(amountData);
         });
 
+        // get the footnotes to the CSV
+        const csvFootNotes = [];
+        for (let i = 0; i < 3; ++i) {
+            csvFootNotes.push(tableHeadings.map(() => { return ""}));
+        }
+        csvFootNotes[1][0] = Translation.translate("lowerGraph.exclusionFootNote");
+        csvFootNotes[2][0] = Translation.translate("lowerGraph.sourceText");
+
         // get the text needed for the CSV export
-        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result), tableHeadings.length);
+        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
 
         // get the compare functions of each heading for sorting
         let compareFuncs = [Model.defaultCompare, Model.defaultCompare, Model.defaultCompare];
