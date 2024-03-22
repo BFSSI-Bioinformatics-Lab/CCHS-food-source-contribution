@@ -46,6 +46,10 @@ export function upperGraph(model){
     // unit for the nutrient
     let nutrientUnit = "";
 
+    // titles for the graph and table
+    let graphTitleText = ""
+    let tableTitleText = ""
+
     // table column that is being sorted
     let sortedColIndex = null;
     let sortedColState = SortStates.Unsorted;
@@ -114,14 +118,30 @@ export function upperGraph(model){
 
     const upperGraphTable = d3.select("#upperGraphTable");
 
-    // source text for the graph
-    const sourceTextBox = upperGraphSvg.append("text")
-        .attr("font-size", GraphDims.upperGraphFooterFontSize)
-        .attr("visibility", "hidden");
+    // ------------ draw the footnotes for the graph -----------------
 
-    drawWrappedText({textGroup: sourceTextBox, text: Translation.translate("upperGraph.sourceText"), width: upperGraphSvgWidth - 2 * GraphDims.upperGraphFooterPaddingHor, 
-                     textY: GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom, 
-                     textX: GraphDims.upperGraphFooterPaddingHor, fontSize: GraphDims.upperGraphFooterFontSize});
+    const footNoteWidth = upperGraphSvgWidth - 2 * GraphDims.upperGraphFooterPaddingHor;
+
+    const footNotesContainer = upperGraphSvg.append("g")
+        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom})`)
+        .attr("visibility", "hidden");
+    
+    // foot note for excluding pregnancy and lactating
+    const exclusionFootNoteTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, 0)`)
+        .attr("font-size", GraphDims.upperGraphFooterFontSize);
+
+    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("upperGraph.exclusionFootNote"), width: footNoteWidth, 
+                                                fontSize: GraphDims.upperGraphFooterFontSize});
+
+    // foot note for the source text
+    const sourceTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.upperGraphFootNoteSpacing})`)
+        .attr("font-size", GraphDims.upperGraphFooterFontSize);
+
+    drawText({textGroup: sourceTextBox, text: Translation.translate("upperGraph.sourceText"), width: footNoteWidth, fontSize: GraphDims.upperGraphFooterFontSize});
+
+    // -----------------------------------------------------------------
 
     // remove any dummy tables that says "no data available in table" produced by JQuery
     upperGraphTable.selectAll("thead").remove();
@@ -232,8 +252,8 @@ export function upperGraph(model){
             )
 
         // draw the graph title
-        upperGraphHeading.text(Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit}))
-            .attr("font-weight", FontWeight.Bold);
+        graphTitleText = Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit});
+        upperGraphHeading.text(graphTitleText).attr("font-weight", FontWeight.Bold);
 
         //draw the table
         drawTable(nutrient);
@@ -469,7 +489,8 @@ export function upperGraph(model){
                 });
         }
 
-        upperGraphTableTitle.text(Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient }))
+        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
+        upperGraphTableTitle.text(tableTitleText);
 
         // ---------------------------------------------------------
     }
@@ -723,17 +744,16 @@ export function upperGraph(model){
 
     // saveAsImage(): Saves the bar graph as an image
     async function saveAsImage() {
-
         // use await so that the below operations can happen in the order they are listed
         //  to simulate a mutex.
         // 
         // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
         //  (or else you may have a picture of a graph without the source text)
         // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
-        await sourceTextBox.attr("visibility", "visible");
+        await footNotesContainer.attr("visibility", "visible");
         const svg = document.getElementById("upperGraph").firstChild;
-        await saveSvgAsPng(svg, "BarGraph.png", {backgroundColor: "white"});
-        await sourceTextBox.attr("visibility", "hidden");
+        await saveSvgAsPng(svg, `${graphTitleText}.png`, {backgroundColor: "white"});
+        await footNotesContainer.attr("visibility", "hidden");
     }
 
     // downloadTable(): Exports the table of the bar graph as a CSV file
@@ -743,7 +763,7 @@ export function upperGraph(model){
         // creates a temporary link for exporting the table
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
-        link.setAttribute('download', 'BarGraphTable.csv');
+        link.setAttribute('download', `${tableTitleText}.csv`);
 
         document.body.appendChild(link);
         link.click();

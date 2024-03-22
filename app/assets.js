@@ -65,7 +65,7 @@ export const GraphDims = Object.freeze({
     upperGraphRight: 400,
     upperGraphTop: 60,
     upperGraphBottom: 60,
-    upperGraphFooter: 30,
+    upperGraphFooter: 50,
     upperGraphTooltipMinWidth: 140,
     upperGraphAxesFontSize: 20,
     upperGraphXAxisTickFontSize: 13,
@@ -93,13 +93,13 @@ export const GraphDims = Object.freeze({
     upperGraphTableHeadingFontSize: 16,
     upperGraphFooterFontSize: 8,
     upperGraphFooterPaddingHor: 10,
+    upperGraphFootNoteSpacing: 10,
     lowerGraphWidth: 700,
-    lowerGraphHeight: 700,
+    lowerGraphHeight: 600,
     lowerGraphLeft: 60,
     lowerGraphRight: 400,
     lowerGraphTop: 60,
     lowerGraphBottom: 60,
-    lowerGraphFooter: 30,
     lowerGraphArcRadius: 65,
     lowerGraph2LevelFilterArcRadius: 80,
     lowerGraphCenterArcRadius: 45,
@@ -130,6 +130,7 @@ export const GraphDims = Object.freeze({
     lowerGraphTableHeadingFontSize: 16,
     lowerGraphFooterFontSize: 8,
     lowerGraphFooterPaddingHor: 10,
+    lowerGraphFootNoteSpacing: 10,
     legendFontSize: 12,
     legendSquareSize: 12,
     legendRowHeight: 20,
@@ -230,8 +231,8 @@ export const SortStates = {
 // icons for the different sorting states
 export const SortIconClasses = {};
 SortIconClasses[SortStates.Unsorted] = "fa fa-sort"
-SortIconClasses[SortStates.Ascending] = "fa fa-sort-up"
-SortIconClasses[SortStates.Descending] = "fa fa-sort-down"
+SortIconClasses[SortStates.Ascending] = "fa fa-sort-down"
+SortIconClasses[SortStates.Descending] = "fa fa-sort-up"
 
 // Translation: Helper class for doing translations
 export class Translation {
@@ -333,6 +334,7 @@ export const TranslationObj = {
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
                 "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "exclusionFootNote": "*Excludes pregnant and lactating women",
                 "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
             },
             "lowerGraph": {
@@ -354,6 +356,7 @@ export const TranslationObj = {
                     "{{ percentage }}% of total {{ nutrient }} intake."
                 ],
                 "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "exclusionFootNote": "*Excludes pregnant and lactating women",
                 "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
             }
         }
@@ -425,6 +428,7 @@ export const TranslationObj = {
                 ],
                 "tableSubHeadingFirstCol": "Groupes Alimentaires",
                 "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "exclusionFootNote": REMPLACER_MOI,
                 "sourceText": REMPLACER_MOI
             },
             "lowerGraph": {
@@ -445,6 +449,7 @@ export const TranslationObj = {
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
                 "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "exclusionFootNote": REMPLACER_MOI,
                 "sourceText": REMPLACER_MOI
             }
         }
