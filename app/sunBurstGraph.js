@@ -20,7 +20,7 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames, MousePointer, SortIconClasses, SortStates } from "./assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames, MousePointer, SortIconClasses, SortStates, LowerGraphFoodGroupLv3ColInd } from "./assets.js";
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -541,9 +541,27 @@ export function lowerGraph(model){
             setFilterButton("lowerGraph.seeLevel2Groups", () => filterOnLevel2Groups());
         }
 
+        // updateSortedColInd(prevGraphState, currentGraphState): Updates the index for the sorted column
+        //  depending whether the table includes the 'Food Group Level 3' column
+        function updateSortedColInd(prevGraphState, currentGraphState) {
+            const becameFilteredOnlyLevel2 = prevGraphState == SunBurstStates.AllDisplayed && currentGraphState == SunBurstStates.FilterOnlyLevel2;
+
+            if (becameFilteredOnlyLevel2 && sortedColIndex == LowerGraphFoodGroupLv3ColInd) {
+                sortedColIndex = null;
+                sortedColState = SortStates.Unsorted;
+            } else if (becameFilteredOnlyLevel2 && sortedColIndex > LowerGraphFoodGroupLv3ColInd) {
+                --sortedColIndex;
+            } else if (prevGraphState == SunBurstStates.FilterOnlyLevel2 && currentGraphState == SunBurstStates.AllDisplayed && sortedColIndex >= LowerGraphFoodGroupLv3ColInd) {
+                ++sortedColIndex;
+            }
+        }
+
         // filterOnLevel2Groups(): Display only level 2 groups of the Sun Burst Graph
         function filterOnLevel2Groups(){
+            const prevGraphState = graphState;
             graphState = SunBurstStates.FilterOnlyLevel2;
+            updateSortedColInd(prevGraphState, graphState);
+
             const highestDepth = 3;
             let acc = 0;
 
@@ -580,7 +598,10 @@ export function lowerGraph(model){
 
         // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
         function filterAllFoodGroups() {
+            const prevGraphState = graphState;
             graphState = SunBurstStates.AllDisplayed;
+            updateSortedColInd(prevGraphState, graphState);
+
             root.each(d => d.target = {
                 depth: d.depth,
                 data: d.data,
@@ -686,12 +707,12 @@ export function lowerGraph(model){
     // draws the table for the sun burst graph
     function drawTable(ageSexGroup, reloadData = true){
         const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}} 
-        const sunBurstTable = reloadData ? model.createSunburstTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name) : model.sunburstTable;
+        const sunBurstTable = reloadData ? model.createSunburstTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, graphState) : model.sunburstTable;
 
         // --------------- draws the table -------------------------
 
         /* Create heading columns */
-        const amountLeftIndex = 3;
+        const amountLeftIndex = graphState == SunBurstStates.AllDisplayed ? 3 : 2;
 
         lowerGraphTableHeading.selectAll("tr").remove();
         const tableHeaders = lowerGraphTableHeading.append("tr")

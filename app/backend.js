@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates } from "./assets.js";
+import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates, LowerGraphFoodGroupLv3ColInd } from "./assets.js";
 
 
 // ================== CONSTANTS ==========================================
@@ -315,8 +315,9 @@ export class Model {
         return this.barGraphTable;
     }
 
-    // createSunburstTable(ageSexGroup): Creates the data for the table of the sunburst graph
-    createSunburstTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName) {
+    // createSunburstTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName, graphState): Creates the data for the table of the sunburst graph
+    createSunburstTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName, graphState) {
+        const graphIsAllDisplayed = graphState == SunBurstStates.AllDisplayed;
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
         foodGroupName = foodGroupName.trim().toLowerCase();
 
@@ -351,12 +352,20 @@ export class Model {
             }
         }
 
-        const tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
+        let tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
+        if (!graphIsAllDisplayed) {
+            tableHeadings.splice(LowerGraphFoodGroupLv3ColInd, 1);
+        }
+
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         // get the specific values for each row
         result = result.map((row) => {
-            let foodGroupData = [row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
+            let foodGroupData = [row["Food group_level1"], row["Food group_level2"]];
+            if (graphIsAllDisplayed) {
+                foodGroupData.push(row["Food group_level3"]);
+            }
+
             foodGroupData = foodGroupData.map(foodGroupLv => Number.isNaN(foodGroupLv) ? "" : foodGroupLv);
 
             const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
@@ -375,7 +384,11 @@ export class Model {
         const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
 
         // get the compare functions of each heading for sorting
-        let compareFuncs = [Model.defaultCompare, Model.defaultCompare, Model.defaultCompare];
+        let compareFuncs = [Model.defaultCompare, Model.defaultCompare];
+        if (graphIsAllDisplayed) {
+            compareFuncs.push(Model.defaultCompare);
+        }
+
         compareFuncs = compareFuncs.concat(headingsPerSexAgeGroupKeys.map(() => { return Model.strNumCompare }));
 
         this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: result, csvContent, compareFuncs };
