@@ -234,6 +234,10 @@ SortIconClasses[SortStates.Unsorted] = "fa fa-sort"
 SortIconClasses[SortStates.Ascending] = "fa fa-sort-down"
 SortIconClasses[SortStates.Descending] = "fa fa-sort-up"
 
+// column index for the "Food Group Level 3" column of the sunburst graph's table
+export const LowerGraphFoodGroupLv3ColInd = 2;
+
+
 // Translation: Helper class for doing translations
 export class Translation {
     static register(resources){
