@@ -381,8 +381,10 @@ export const TranslationObj = {
                     "{{ percentage }}% of total {{ nutrient }} intake."
                 ],
                 "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
                 "exclusionFootNote": "*Excludes pregnant and lactating women",
-                "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
+                "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)",
+                "allDataCSVFileName": "Contribution of food groups and sub-groups to {{nutrient}} intake"
             }
         }
     },
@@ -495,8 +497,10 @@ export const TranslationObj = {
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
                 "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "tableAllDataHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
                 "exclusionFootNote": REMPLACER_MOI,
-                "sourceText": REMPLACER_MOI
+                "sourceText": REMPLACER_MOI,
+                "allDataCSVFileName": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
             }
         }
     }

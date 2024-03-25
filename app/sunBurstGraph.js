@@ -35,7 +35,8 @@ export function lowerGraph(model){
     d3.select("#lowerGraphSaveGraph").on("click", () => saveAsImage());
 
     // register the download table button
-    const downloadButton = d3.select("#lowerGraphSaveTable").on("click", () => downloadTable());
+    const downloadButton = d3.select("#lowerGraphSaveTable").on("click", () => downloadDisplayedTable());
+    const downloadAllDataButton = d3.select("#lowerGraphSaveAllData").on("click", () => downloadFullTable());
 
     // all the hover tooltips for the graph
     const hoverToolTips = {};
@@ -236,6 +237,10 @@ export function lowerGraph(model){
     
         const ageSexGroup = getSelector("#lowerGraphAgeSexSelect");
         updateGraphTitle(ageSexGroup);
+
+        // update the CSV table for all the data to the nutrient (includes all age-sex groups)
+        model.createSunburstAllTable();
+
 
         drawSunburst(nutrient, ageSexGroup);
     }
@@ -707,7 +712,7 @@ export function lowerGraph(model){
     // draws the table for the sun burst graph
     function drawTable(ageSexGroup, reloadData = true){
         const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}} 
-        const sunBurstTable = reloadData ? model.createSunburstTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, graphState) : model.sunburstTable;
+        const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name) : model.sunburstTable;
 
         // --------------- draws the table -------------------------
 
@@ -1004,14 +1009,29 @@ export function lowerGraph(model){
         await footNotesContainer.attr("visibility", "hidden");
     }
 
-    // downloadTable(): Exports the table of the bar graph as a CSV file
-    function downloadTable() {
+    // downloadDisplayedTable(): Exports the displayed table of the sunburst graph as a CSV file
+    function downloadDisplayedTable() {
         const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunburstTable.csvContent);
 
         // creates a temporary link for exporting the table
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
         link.setAttribute('download', `${tableTitleText}.csv`);
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // downloadFullTable(): Exports the table for all the data of the sunburst graph as a CSV file
+    function downloadFullTable() {
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunBurstTableAllData);
+
+        // creates a temporary link for exporting the table
+        const fileName = Translation.translate(`lowerGraph.allDataCSVFileName`, { nutrient })
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `${fileName}.csv`);
 
         document.body.appendChild(link);
         link.click();

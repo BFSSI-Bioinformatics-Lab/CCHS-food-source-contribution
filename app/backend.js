@@ -128,13 +128,17 @@ export class Model {
         let data = await d3.csv(`data/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126-${i18next.language}.csv`);
         data = TableTools.numToFloat(data);
 
+        this.tableNutrientTables = Object.freeze(d3.nest()
+            .key(d => d.Nutrient)
+            .object(data));
+
         this.tableNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
             .key(d => d.Nutrient)
             .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
             .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
             .object(data));
 
-        return this.tableNutrientTablesByDemoGroupLv1;
+        return [this.tableNutrientTables, this.tableNutrientTablesByDemoGroupLv1];
     }
 
     // getInterpretationValue(interpretationValue): Retrieves the interpretation value to be displayed
@@ -315,14 +319,45 @@ export class Model {
         return this.barGraphTable;
     }
 
-    // createSunburstTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName, graphState): Creates the data for the table of the sunburst graph
-    createSunburstTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName, graphState) {
-        const graphIsAllDisplayed = graphState == SunBurstStates.AllDisplayed;
+    // createSunburstAllTable(): Creates the data for the table of the sunburst graph to display all the age-sex groups
+    createSunburstAllTable() {
+        const nutrientData = this.tableNutrientTables[this.nutrient];
+        const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
+        let tableHeadings = Translation.translate("lowerGraph.tableAllDataHeadings", { returnObjects: true });
+
+        // create the data rows for the table
+        let result = [];
+        for (const row of nutrientData) {
+            let newRow = [row["Age-sex group (*: excludes pregnant or breastfeeding)"], row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
+            newRow = newRow.map((cellValue) => { return Number.isNaN(cellValue) ? "" : cellValue});
+
+            const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
+            result.push(newRow.concat(amountData));
+        }
+
+        // get the footnotes to the CSV
+        const csvFootNotes = [];
+        for (let i = 0; i < 3; ++i) {
+            csvFootNotes.push(tableHeadings.map(() => { return ""}));
+        }
+        csvFootNotes[1][0] = Translation.translate("lowerGraph.exclusionFootNote");
+        csvFootNotes[2][0] = Translation.translate("lowerGraph.sourceText");
+
+        // get the text needed for the CSV export
+        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
+
+        this.sunBurstTableAllData = csvContent;
+        return this.sunBurstTableAllData;
+    }
+
+    // createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName): Creates the data for the table of the sunburst graph
+    createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName) {
+        const graphIsAllDisplayed = sunBurstState == SunBurstStates.AllDisplayed;
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
         foodGroupName = foodGroupName.trim().toLowerCase();
 
         let foodGroupColumn = null;
-        if (sunBurstState == SunBurstStates.AllDisplayed && foodGroupDepth >= 2) {
+        if (graphIsAllDisplayed && foodGroupDepth >= 2) {
             foodGroupColumn = FoodGroupDepthToCol[foodGroupDepth];
 
         } else if (sunBurstState == SunBurstStates.FilterOnlyLevel2) {
