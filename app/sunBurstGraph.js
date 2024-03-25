@@ -197,6 +197,30 @@ export function lowerGraph(model){
         legendItems.push(legendItem);
     }
 
+    // add the mouse events to the keys of the legend
+    for (const legendItem of legendItems) {
+        const name = legendItem.name;
+        const colour = legendItem.colour;
+        const legendItemGroup = legendItem.group;
+
+        const dummyRow = {};
+        dummyRow[FoodIngredientDataColNames.foodGroupLv1] = name;
+        const dummyArcData = {data: {name, row: dummyRow}};
+
+        legendItemGroup.on("mouseenter", () => { 
+            legendItemGroup.style("cursor", MousePointer.Pointer);
+            updateInfoBox(dummyArcData); 
+        });
+        legendItemGroup.on("mouseleave", () => { 
+            legendItemGroup.style("cursor", MousePointer.Default);
+            hideInfoBox(); 
+        });
+        legendItemGroup.on("mouseover", () => { 
+            legendItemGroup.style("cursor", MousePointer.Pointer);
+            updateInfoBox(dummyArcData); 
+        });
+    }
+
     // --------------------------------------------------------
 
     const lowerGraphChartHeading = lowerGraphSvg.append("g")
@@ -387,7 +411,8 @@ export function lowerGraph(model){
             // draw the container for the tooltip
             toolTip.group = root.append("g")
                 .attr("id",  toolTipId)
-                .attr("opacity", 0);
+                .attr("opacity", 0)
+                .style("pointer-events", "none");
 
             // draw the background for the tooltip
             toolTip.background = toolTip.group.append("rect")
@@ -455,10 +480,7 @@ export function lowerGraph(model){
         /* Make the opacity of tooltip 0 */
         function arcUnHover(d, i){
             d3.select(`#arcHover${i}`).attr("opacity", 0);
-            drawText({textGroup: lowerGraphInfoBox.textGroup});
-            drawText({textGroup: lowerGraphInfoBox.titleGroup});
-            drawText({textGroup: lowerGraphInfoBox.subTitleGroup});
-            lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
+            hideInfoBox();
         }
 
         // updateArcThickness(): Updates the thickness for the arcs based on what state the sunburst is in
@@ -936,6 +958,14 @@ export function lowerGraph(model){
         }
 
         element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
+    }
+
+    // hideInfoBox(): Hides the info box
+    function hideInfoBox() {
+        drawText({textGroup: lowerGraphInfoBox.textGroup});
+        drawText({textGroup: lowerGraphInfoBox.titleGroup});
+        drawText({textGroup: lowerGraphInfoBox.subTitleGroup});
+        lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
     }
 
     /* Update food group description box */
