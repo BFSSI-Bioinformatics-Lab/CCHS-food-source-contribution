@@ -327,6 +327,7 @@ export function lowerGraph(model){
             .join("text")
             .attr("dy", d => getLabelDY(d))
             .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
+            .attr("letter-spacing", GraphDims.lowerGraphArcLabelLetterSpacing)
             .attr("fill-opacity", d => +labelVisible(d.current))
                 .append("textPath") // make the text following the shape of the arc
                 .attr("id", (d, i) => `arcLabel${i}`)
@@ -933,13 +934,13 @@ export function lowerGraph(model){
 
         element.attr("startOffset", 0);
         element.text(text);
-        let textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+        let textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize, undefined, GraphDims.lowerGraphArcLabelLetterSpacing);
         let textTruncated = false;
 
         while (textLength > availableLength && text){
             text = text.slice(0, text.length - 1);
             element.text(`${text}...`);
-            textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+            textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize, undefined, GraphDims.lowerGraphArcLabelLetterSpacing);
             textTruncated = true;
         }
 

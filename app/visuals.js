@@ -30,12 +30,19 @@ export function getSelector(element) {
 //      able to get the text length. If the text element is hidden or not rendered yet, then
 //      getComputedTextLength will always return 0
 //
-// Reference: http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
-export function getTextWidth(text, fontSize, fontFamily) {
+// References: Getting Text Width: http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
+//             Getting Letter Spacing: https://stackoverflow.com/questions/8952909/letter-spacing-in-canvas-element
+export function getTextWidth(text, fontSize, fontFamily, letterSpacing = 0) {
     // if given, use cached scanvas for better performance
     // else, create new canvas
     var context = WidthCanvas.getContext("2d");
     context.font = fontSize + 'px ' + fontFamily;
+
+    // add whitespaces between the letters for letterSpacing
+    for (let i = 0; i < letterSpacing; ++i) {
+        text = text.split("").join(String.fromCharCode(8201))
+    }
+
     return context.measureText(text).width;
 };
 
