@@ -25,3 +25,10 @@
 .sortIcon {
     margin-left: 10px;
 }
+
+.lowerTableHeader {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+}

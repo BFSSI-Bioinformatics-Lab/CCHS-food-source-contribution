@@ -744,10 +744,11 @@ export function lowerGraph(model){
 
         lowerGraphTableHeading.selectAll("tr").remove();
         const tableHeaders = lowerGraphTableHeading.append("tr")
-            .selectAll("td")
+            .selectAll("th")
             .data(sunBurstTable.headings)
             .enter()
-            .append("td")
+            .append("th")
+                .attr("class", "text-center lowerTableHeader")
                 .style("min-width", (d, i) => i < amountLeftIndex ? "50px" : "40px")
                 .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
@@ -760,13 +761,13 @@ export function lowerGraph(model){
 
                     return FontWeight.Normal;
                 })
-                .style("opacity", (d, i) => {
+                .style("color", (d, i) => {
                     const colNum = (i - amountLeftIndex) % 4;
                     if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
-                        return 0.8;
+                        return "rgba(51,51,51,0.8)";
                     }
 
-                    return 1;
+                    return "rgba(51,51,51,1)";
                 })
                 .attr("colspan", 1)
                 .text(headingData => Translation.translate(headingData.heading))
@@ -813,13 +814,13 @@ export function lowerGraph(model){
 
                         return FontWeight.Normal; 
                     })
-                    .style("opacity", (d, i) => {
+                    .style("color", (d, i) => {
                         const colNum = (i - amountLeftIndex) % 4;
                         if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
-                            return 0.8;
+                            return "rgba(51,51,51,0.8)";
                         }
 
-                        return 1;
+                        return "rgba(51,51,51,1)";
                     });
         }
 
