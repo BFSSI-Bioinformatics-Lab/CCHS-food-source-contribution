@@ -441,7 +441,7 @@ export const TranslationObj = {
                     "switchTypeButton": "Changer Au Pourcentage"
                 },
                 "percentage": {
-                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }}`,
+                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }} {{ amountUnit }}/j`,
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{nutrient}}`,
                     "switchTypeButton": "Changer Aux Nombres"
                 },
