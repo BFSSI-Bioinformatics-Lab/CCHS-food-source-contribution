@@ -380,11 +380,11 @@ export const TranslationObj = {
                 "allFoodGroupsLabel": "All Food Groups",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
-                    "{{ percentage }}%"
+                    "{{ percentage }}% of {{ nutrient }} intake"
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    "{{ percentage }}% of total {{ nutrient }} intake."
+                    "{{ percentage }}% of {{ nutrient }} intake."
                 ],
                 "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
                 "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
@@ -499,7 +499,7 @@ export const TranslationObj = {
                 "seeAllGroups": `Toutes les Groupes Alimentaires`,
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
-                    `{{ percentage }}%`
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{nutrient}}`
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 

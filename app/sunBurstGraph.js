@@ -366,7 +366,7 @@ export function lowerGraph(model){
     
         const mouseOverBoxes = lowerGraphSunburst.append("g");
     
-        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i));
+        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i, nutrient));
     
         /* Create invisible arc paths on top of graph in order to detect hovering */
         const hoverPath = lowerGraphSunburst.append("g")
