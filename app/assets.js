@@ -91,7 +91,7 @@ export const GraphDims = Object.freeze({
     upperGraphChartHeadingFontSize: 20,
     upperGraphTableSubHeadingFontSize: 12,
     upperGraphTableHeadingFontSize: 16,
-    upperGraphFooterFontSize: 8,
+    upperGraphFooterFontSize: 12,
     upperGraphFooterPaddingHor: 10,
     upperGraphFootNoteSpacing: 10,
     lowerGraphWidth: 700,
@@ -129,7 +129,7 @@ export const GraphDims = Object.freeze({
     lowerGraphInfoBoxTitleMarginBtm: 15,
     lowerGraphTableSubHeadingFontSize: 12,
     lowerGraphTableHeadingFontSize: 16,
-    lowerGraphFooterFontSize: 8,
+    lowerGraphFooterFontSize: 12,
     lowerGraphFooterPaddingHor: 10,
     lowerGraphFootNoteSpacing: 10,
     legendFontSize: 12,
@@ -316,6 +316,15 @@ export const TranslationObj = {
                     "Sodium": "Vegetables Including Potatoes (sodium only)"
                 }
             },
+            
+            // Footnotes used in graphs and tables
+            "FootNotes": {
+                "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6% to 33.3%; interpret with caution.", 
+                "FInterpretationNote": "F: Data with a CV greater than 33.3% with a 95% confidence interval not entirely between 0 and 3%; suppressed due to extreme sampling variability.", 
+                "XInterpretationNote": "X: Food with less than 10 eaters; suppressed to meet confidentiality requirements.", 
+                "excludePregnantAndLactating": "*Excludes pregnant and lactating women",
+                "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
+            },
 
             "upperGraph": {
                 "number": {
@@ -328,7 +337,6 @@ export const TranslationObj = {
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
-                "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
                 "tableTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
@@ -338,9 +346,7 @@ export const TranslationObj = {
                     "{{ percentage }}%"
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
-                "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"],
-                "exclusionFootNote": "*Excludes pregnant and lactating women",
-                "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)"
+                "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"]
             },
             "lowerGraph": {
                 "graphTitle": {
@@ -356,7 +362,6 @@ export const TranslationObj = {
                         "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
                     }
                 },
-                "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
                 "tableTitle": {
                     "OtherAgeGroups": {
                         "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
@@ -383,8 +388,6 @@ export const TranslationObj = {
                 ],
                 "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
                 "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
-                "exclusionFootNote": "*Excludes pregnant and lactating women",
-                "sourceText": "Source: 2015 Canadian Community Health Survey - Nutrition (CCHS - Nutrition)",
                 "allDataCSVFileName": "Contribution of food groups and sub-groups to {{nutrient}} intake"
             }
         }
@@ -434,6 +437,15 @@ export const TranslationObj = {
                 }
             },
 
+            // Footnotes used in graphs and tables
+            "FootNotes": {
+                "EInterpretationNote": REMPLACER_MOI, 
+                "FInterpretationNote": REMPLACER_MOI, 
+                "XInterpretationNote": REMPLACER_MOI, 
+                "excludePregnantAndLactating": REMPLACER_MOI,
+                "sourceText": REMPLACER_MOI,
+            },
+
             "upperGraph": {
                 "number": {
                     "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ amountUnit }}/j`,
@@ -445,7 +457,6 @@ export const TranslationObj = {
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{nutrient}}`,
                     "switchTypeButton": "Changer Aux Nombres"
                 },
-                "graphFootnote": REMPLACER_MOI,
                 "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
@@ -455,9 +466,7 @@ export const TranslationObj = {
                     `{{ percentage }}%`
                 ],
                 "tableSubHeadingFirstCol": "Groupes Alimentaires",
-                "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
-                "exclusionFootNote": REMPLACER_MOI,
-                "sourceText": REMPLACER_MOI
+                "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
             },
             "lowerGraph": {
                 "graphTitle": {
@@ -473,7 +482,6 @@ export const TranslationObj = {
                         "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
                     }
                 },
-                "graphFootnote": REMPLACER_MOI,
                 "tableTitle": {
                     "OtherAgeGroups": {
                         "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`,
@@ -499,8 +507,6 @@ export const TranslationObj = {
                 ],
                 "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
                 "tableAllDataHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
-                "exclusionFootNote": REMPLACER_MOI,
-                "sourceText": REMPLACER_MOI,
                 "allDataCSVFileName": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
             }
         }

@@ -131,7 +131,7 @@ export function upperGraph(model){
         .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, 0)`)
         .attr("font-size", GraphDims.upperGraphFooterFontSize);
 
-    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("upperGraph.exclusionFootNote"), width: footNoteWidth, 
+    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("FootNotes.excludePregnantAndLactating"), width: footNoteWidth, 
                                                 fontSize: GraphDims.upperGraphFooterFontSize});
 
     // foot note for the source text
@@ -139,7 +139,7 @@ export function upperGraph(model){
         .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.upperGraphFootNoteSpacing})`)
         .attr("font-size", GraphDims.upperGraphFooterFontSize);
 
-    drawText({textGroup: sourceTextBox, text: Translation.translate("upperGraph.sourceText"), width: footNoteWidth, fontSize: GraphDims.upperGraphFooterFontSize});
+    drawText({textGroup: sourceTextBox, text: Translation.translate("FootNotes.sourceText"), width: footNoteWidth, fontSize: GraphDims.upperGraphFooterFontSize});
 
     // -----------------------------------------------------------------
 

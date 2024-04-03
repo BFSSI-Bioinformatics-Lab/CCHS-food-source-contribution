@@ -289,11 +289,15 @@ export class Model {
 
         // get the footnotes to the CSV
         const csvFootNotes = [];
-        for (let i = 0; i < 3; ++i) {
+        for (let i = 0; i < 6; ++i) {
             csvFootNotes.push(subHeadings.map(() => { return ""}));
         }
-        csvFootNotes[1][0] = Translation.translate("upperGraph.exclusionFootNote");
-        csvFootNotes[2][0] = Translation.translate("upperGraph.sourceText");
+
+        csvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
+        csvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
+        csvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
+        csvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
+        csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
 
         // ------ this part used to be the JQuery part in the html doc of the original code -------
         //      git commit hash: 58aaf7a62118cdcd7e7364cbe3f6959a825a862b
@@ -337,11 +341,15 @@ export class Model {
 
         // get the footnotes to the CSV
         const csvFootNotes = [];
-        for (let i = 0; i < 3; ++i) {
+        for (let i = 0; i < 6; ++i) {
             csvFootNotes.push(tableHeadings.map(() => { return ""}));
         }
-        csvFootNotes[1][0] = Translation.translate("lowerGraph.exclusionFootNote");
-        csvFootNotes[2][0] = Translation.translate("lowerGraph.sourceText");
+
+        csvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
+        csvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
+        csvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
+        csvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
+        csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
 
         // get the text needed for the CSV export
         const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
@@ -409,11 +417,15 @@ export class Model {
 
         // get the footnotes to the CSV
         const csvFootNotes = [];
-        for (let i = 0; i < 3; ++i) {
+        for (let i = 0; i < 6; ++i) {
             csvFootNotes.push(tableHeadings.map(() => { return ""}));
         }
-        csvFootNotes[1][0] = Translation.translate("lowerGraph.exclusionFootNote");
-        csvFootNotes[2][0] = Translation.translate("lowerGraph.sourceText");
+
+        csvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
+        csvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
+        csvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
+        csvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
+        csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
 
         // get the text needed for the CSV export
         const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));

@@ -101,7 +101,7 @@ export function lowerGraph(model){
         .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, 0)`)
         .attr("font-size", GraphDims.lowerGraphFooterFontSize);
 
-    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("lowerGraph.exclusionFootNote"), width: footNoteWidth, 
+    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("FootNotes.excludePregnantAndLactating"), width: footNoteWidth, 
                                                 fontSize: GraphDims.lowerGraphFooterFontSize});
 
     // foot note for the source text
@@ -109,7 +109,7 @@ export function lowerGraph(model){
         .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.lowerGraphFootNoteSpacing})`)
         .attr("font-size", GraphDims.lowerGraphFooterFontSize);
 
-    drawText({textGroup: sourceTextBox, text: Translation.translate("lowerGraph.sourceText"), width: footNoteWidth, fontSize: GraphDims.lowerGraphFooterFontSize});
+    drawText({textGroup: sourceTextBox, text: Translation.translate("FootNotes.sourceText"), width: footNoteWidth, fontSize: GraphDims.lowerGraphFooterFontSize});
 
     // --------------------------------------------------------
     // --------------- draws the info box ---------------------
