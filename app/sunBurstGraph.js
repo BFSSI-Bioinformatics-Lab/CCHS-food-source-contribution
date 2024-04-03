@@ -93,8 +93,7 @@ export function lowerGraph(model){
     const footNoteWidth = width - 2 * GraphDims.lowerGraphFooterPaddingHor;
 
     const footNotesContainer = lowerGraphSvg.append("g")
-        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${GraphDims.lowerGraphHeight + GraphDims.lowerGraphTop})`)
-        .attr("visibility", "hidden");
+        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${GraphDims.lowerGraphHeight + GraphDims.lowerGraphTop})`);
     
     // foot note for excluding pregnancy and lactating
     const exclusionFootNoteTextBox = footNotesContainer.append("text")
@@ -107,7 +106,8 @@ export function lowerGraph(model){
     // foot note for the source text
     const sourceTextBox = footNotesContainer.append("text")
         .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.lowerGraphFootNoteSpacing})`)
-        .attr("font-size", GraphDims.lowerGraphFooterFontSize);
+        .attr("font-size", GraphDims.lowerGraphFooterFontSize)
+        .attr("visibility", "hidden");
 
     drawText({textGroup: sourceTextBox, text: Translation.translate("FootNotes.sourceText"), width: footNoteWidth, fontSize: GraphDims.lowerGraphFooterFontSize});
 
@@ -1042,10 +1042,10 @@ export function lowerGraph(model){
         // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
         //  (or else you may have a picture of a graph without the source text)
         // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
-        await footNotesContainer.attr("visibility", "visible");
+        await sourceTextBox.attr("visibility", "visible");
         const svg = document.getElementById("lowerGraph").firstChild;
         await saveSvgAsPng(svg, `${graphTitleText}.png`, {backgroundColor: "white"});
-        await footNotesContainer.attr("visibility", "hidden");
+        await sourceTextBox.attr("visibility", "hidden");
     }
 
     // downloadDisplayedTable(): Exports the displayed table of the sunburst graph as a CSV file
