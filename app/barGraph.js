@@ -123,8 +123,7 @@ export function upperGraph(model){
     const footNoteWidth = upperGraphSvgWidth - 2 * GraphDims.upperGraphFooterPaddingHor;
 
     const footNotesContainer = upperGraphSvg.append("g")
-        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom})`)
-        .attr("visibility", "hidden");
+        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom})`);
     
     // foot note for excluding pregnancy and lactating
     const exclusionFootNoteTextBox = footNotesContainer.append("text")
@@ -137,7 +136,8 @@ export function upperGraph(model){
     // foot note for the source text
     const sourceTextBox = footNotesContainer.append("text")
         .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.upperGraphFootNoteSpacing})`)
-        .attr("font-size", GraphDims.upperGraphFooterFontSize);
+        .attr("font-size", GraphDims.upperGraphFooterFontSize)
+        .attr("visibility", "hidden");
 
     drawText({textGroup: sourceTextBox, text: Translation.translate("FootNotes.sourceText"), width: footNoteWidth, fontSize: GraphDims.upperGraphFooterFontSize});
 
@@ -750,10 +750,10 @@ export function upperGraph(model){
         // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
         //  (or else you may have a picture of a graph without the source text)
         // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
-        await footNotesContainer.attr("visibility", "visible");
+        await sourceTextBox.attr("visibility", "visible");
         const svg = document.getElementById("upperGraph").firstChild;
         await saveSvgAsPng(svg, `${graphTitleText}.png`, {backgroundColor: "white"});
-        await footNotesContainer.attr("visibility", "hidden");
+        await sourceTextBox.attr("visibility", "hidden");
     }
 
     // downloadTable(): Exports the table of the bar graph as a CSV file
