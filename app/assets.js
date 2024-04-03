@@ -335,7 +335,7 @@ export const TranslationObj = {
                     "Amount: {{amount}} {{ unit }}"
                 ],
                 "toolTip_percentage": [
-                    "{{ percentage }}% of total {{- nutrient }} intake."
+                    "{{ percentage }}%"
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
                 "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"],
@@ -452,7 +452,7 @@ export const TranslationObj = {
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}} {{ unit }}`
                 ],
                 "toolTip_percentage": [
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
+                    `{{ percentage }}%`
                 ],
                 "tableSubHeadingFirstCol": "Groupes Alimentaires",
                 "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
