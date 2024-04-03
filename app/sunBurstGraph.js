@@ -31,12 +31,19 @@ export function lowerGraph(model){
     // state of the display for the sunburst graph
     let graphState = SunBurstStates.AllDisplayed;
 
+    // ----------- Register different buttons -----------------
+
     // register the save image button
     d3.select("#lowerGraphSaveGraph").on("click", () => saveAsImage());
 
     // register the download table button
     const downloadButton = d3.select("#lowerGraphSaveTable").on("click", () => downloadDisplayedTable());
     const downloadAllDataButton = d3.select("#lowerGraphSaveAllData").on("click", () => downloadFullTable());
+
+    // register the button to jump to the nutrient selection
+    d3.select("#lowerGraphReturnToSelection").on("click", () => scrollToNutrientSelection());
+
+    // --------------------------------------------------------
 
     // all the hover tooltips for the graph
     const hoverToolTips = {};
@@ -1068,5 +1075,13 @@ export function lowerGraph(model){
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    // scrollToNutrientSelection(): scrolls smoothly to the nutrient selection at the top of the bar graph
+    function scrollToNutrientSelection() {
+        const nutrientSelect = document.querySelector("#upperGraphNutrientSelect");
+        const nutrientSelectTopPos = nutrientSelect.getBoundingClientRect().top + document.documentElement.scrollTop;
+        const nutrientSelectTopMargin = 20;
+        window.scrollTo({top: Math.max(nutrientSelectTopPos - nutrientSelectTopMargin, 0), behavior: 'smooth'});
     }
 }
