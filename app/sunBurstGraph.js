@@ -154,6 +154,7 @@ export function lowerGraph(model){
     // attributes for the legend
     const legendItemPaddingHor = 0;
     const legendItemPaddingVert = 2;
+    const legendItemAllFoodGroupPaddingVert = 20;
     const legendItemTextPaddingHor = 5;
     const legendItemTextPaddingVert = 0;
     const legendItemFontSize = 12;
@@ -169,9 +170,10 @@ export function lowerGraph(model){
         .attr("transform", `translate(${lowerGraphRightXPos}, ${ GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2 - GraphDims.lowerGraphArcRadius * 4 - (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius)})`);
 
     // draw all the keys for the legend
-    for (const legendKey of legendData) {
-        let legendKeyText = Translation.translate(`LegendKeys.${legendKey[0]}`);
-        let legendKeyColour = legendKey[1];
+    const legendDataLen = legendData.length;
+    for (let i = 0; i < legendDataLen; ++i) {
+        let legendKeyText = Translation.translate(`LegendKeys.${legendData[i][0]}`);
+        let legendKeyColour = legendData[i][1];
 
         // ***************** draws a key in the legend *********************
         
@@ -200,7 +202,15 @@ export function lowerGraph(model){
 
         // *****************************************************************
 
-        currentLegendItemYPos += legendItemPaddingVert + legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+        currentLegendItemYPos += legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+
+        // whether to add extra spacing for the "All Food Groups" legend key
+        if (i == legendData.length - 2) {
+            currentLegendItemYPos += legendItemAllFoodGroupPaddingVert;
+        } else {
+            currentLegendItemYPos += legendItemPaddingVert;
+        }
+
         legendItems.push(legendItem);
     }
 

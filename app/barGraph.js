@@ -365,7 +365,7 @@ export function upperGraph(model){
 
     /* Set the opacity of the hovered bar's info to be 1 */
     function onBarHover(d, i, index, elements){
-        updateInfoBox({name: d[0], d: d});
+        updateInfoBox({name: d[0]});
 
         const toolTipId = `barHover${i}`
         const mousePos = d3.mouse(upperGraphSvg.node());
@@ -497,7 +497,7 @@ export function upperGraph(model){
 
     // showInfoBox(name, colour, legendItem): Shows the info box
     function showInfoBox({name = "", colour = Colours.None, legendItem = null} = {}) {
-        updateInfoBox({name: name, colour: colour});
+        updateInfoBox({name: name});
         legendItem.group.style("cursor", MousePointer.Pointer);
     }
 
@@ -521,7 +521,9 @@ export function upperGraph(model){
     // legendItemOnClick(name, colour): Event function when the user clicks on a key in the legend
     function legendItemOnClick({name = "", colour = Colours.None} = {}) {
         let newFocusedFoodGroup = null;
-        if (focusedFoodGroup === null || name != focusedFoodGroup[0]) {
+        const isAllFoodGroups = name == Translation.translate("LegendKeys.All Items")
+
+        if (!isAllFoodGroups && (focusedFoodGroup === null || name != focusedFoodGroup[0])) {
             newFocusedFoodGroup = [name, 0];
         }
 
@@ -535,14 +537,22 @@ export function upperGraph(model){
     }
 
     // Update food group description box
-    function updateInfoBox({name = "", colour = Colours.None, amount = 0} = {}){
+    function updateInfoBox({name = ""} = {}){
         const foodGroupName = name;
         if (mouseOverFoodGroupName !== null && mouseOverFoodGroupName == foodGroupName) {
             return;
         }
 
+        let colour = GraphColours[foodGroupName];
+        colour = colour === undefined ? null : colour;
+
         mouseOverFoodGroupName = foodGroupName;
-        const desc = model.getFoodDescription(nutrient, foodGroupName);
+
+        let desc = "";
+        const isAllFoodGroups = foodGroupName == Translation.translate("LegendKeys.All Items");
+        if (!isAllFoodGroups) {
+            desc = model.getFoodDescription(nutrient, foodGroupName);
+        }
 
         // ---------- Updates the infobox --------------
 
@@ -550,11 +560,11 @@ export function upperGraph(model){
         let currentTextGroupPosY = GraphDims.upperGraphInfoBoxPadding;
 
         // change the title
-        const titleDims = drawText({textGroup: infoBox.titleGroup, text: "Food Group Description", width: GraphDims.upperGraphInfoBoxWidth,
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : "Food Group Description", width: GraphDims.upperGraphInfoBoxWidth,
                                     fontSize: GraphDims.upperGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change the subtitle
-        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: foodGroupName, width: GraphDims.upperGraphInfoBoxWidth,
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.upperGraphInfoBoxWidth,
                                        fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change text
@@ -574,7 +584,7 @@ export function upperGraph(model){
         currentTextGroupPosY += textDims.textBottomYPos;
 
         // change colour
-        upperGraphInfoBox.highlight.attr("stroke", GraphColours[foodGroupName]);
+        upperGraphInfoBox.highlight.attr("stroke", colour);
 
         // update the height of the info box to be larger than the height of the text
         let infoBoxHeight = Math.max(GraphDims.upperGraphInfoBoxHeight, infoBoxTextGroupHeight,  currentTextGroupPosY + GraphDims.upperGraphInfoBoxPadding);
@@ -592,10 +602,11 @@ export function upperGraph(model){
         // attributes for the legend
         const legendItemPaddingHor = 0;
         const legendItemPaddingVert = 2;
+        const legendItemAllFoodGroupPaddingVert = 20;
         const legendItemTextPaddingHor = 5;
         const legendItemTextPaddingVert = 0;
         const legendItemFontSize = 12;
-        const legendData = Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items");
+        const legendData = Object.entries(titleToColours);
         const colourBoxWidth = GraphDims.legendSquareSize;
         const colourBoxHeight = GraphDims.legendSquareSize;
         const legendItems = [];
@@ -606,9 +617,10 @@ export function upperGraph(model){
             .attr("transform", `translate(${upperGraphRightPos}, ${GraphDims.upperGraphTop})`);
 
         // draw all the keys for the legend
-        for (const legendKey of legendData) {
-            let legendKeyText = Translation.translate(`LegendKeys.${legendKey[0]}`);
-            let legendKeyColour = legendKey[1];
+        const legendDataLen = legendData.length;
+        for (let i = 0; i < legendDataLen; ++i) {
+            let legendKeyText = Translation.translate(`LegendKeys.${legendData[i][0]}`);
+            let legendKeyColour = legendData[i][1];
 
             // ***************** draws a key in the legend *********************
             
@@ -637,7 +649,15 @@ export function upperGraph(model){
 
             // *****************************************************************
 
-            currentLegendItemYPos += legendItemPaddingVert + legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+            currentLegendItemYPos += legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+
+            // whether to add extra spacing for the "All Food Groups" legend key
+            if (i == legendData.length - 2) {
+                currentLegendItemYPos += legendItemAllFoodGroupPaddingVert;
+            } else {
+                currentLegendItemYPos += legendItemPaddingVert;
+            }
+
             legendItems.push(legendItem);
         }
 
