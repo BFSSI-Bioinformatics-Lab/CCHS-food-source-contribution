@@ -324,12 +324,12 @@ export const TranslationObj = {
                     "switchTypeButton": "Switch to Percentage"
                 },
                 "percentage": {
-                    "graphTitle": "Percentage of total {{ nutrient }} intake provided by 12 food groups.",
+                    "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
                 "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Daily ({{ amountUnit }}/day) and percentage (%) of total {{nutrient}} intake provided by 12 food groups",
+                "tableTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     "Amount: {{amount}} {{ unit }}"
@@ -441,7 +441,7 @@ export const TranslationObj = {
                     "switchTypeButton": "Changer Au Pourcentage"
                 },
                 "percentage": {
-                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }}`,
+                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }} {{ amountUnit }}/j`,
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{nutrient}}`,
                     "switchTypeButton": "Changer Aux Nombres"
                 },
