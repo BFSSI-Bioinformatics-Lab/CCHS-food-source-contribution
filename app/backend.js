@@ -251,6 +251,23 @@ export class Model {
         else return Model.defaultCompare(value1, value2);
     }
 
+    // getFoodIngredientNumberedCell(foodIngredientRow, column): Retrieves the value for a cell that corresponds to a 
+    //  numbered column (eg. Amount_SE or Percentage_SE) for the tables in the bargraph and the sunburst graph
+    static getFoodIngredientNumberedCell(foodIngredientRow, column) {
+
+        // get the interpretation notes for values that are not numbers
+        if (Number.isNaN(foodIngredientRow[column])) {
+            return Model.getInterpretationValue(foodIngredientRow[FoodIngredientDataColNames.interpretationNotes]);
+        
+        // adds the 'E' to SE amounts or SE percentages
+        } else if (foodIngredientRow[FoodIngredientDataColNames.interpretationNotes] == "E" && 
+                    (column == FoodIngredientDataColNames.amountSE || column == FoodIngredientDataColNames.percentageSE)) {
+            return `${foodIngredientRow[column]} ${foodIngredientRow[FoodIngredientDataColNames.interpretationNotes]}`;
+        }
+
+        return foodIngredientRow[column];
+    }
+
     // createBarGraphTable(): Creates the data for the table of the bar graph
     createBarGraphTable() {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
@@ -284,7 +301,7 @@ export class Model {
         // Retrieve the specific value for each row
         const result = [];
         Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
-            result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()));
+            result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
         });
 
         // get the footnotes to the CSV
@@ -339,7 +356,7 @@ export class Model {
             let newRow = [row["Age-sex group (*: excludes pregnant or breastfeeding)"], row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
             newRow = newRow.map((cellValue) => { return Number.isNaN(cellValue) ? "" : cellValue});
 
-            const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
+            const amountData = headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(row, key));
             result.push(newRow.concat(amountData));
         }
 
@@ -415,7 +432,7 @@ export class Model {
 
             foodGroupData = foodGroupData.map(foodGroupLv => Number.isNaN(foodGroupLv) ? "" : foodGroupLv);
 
-            const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
+            const amountData = headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(row, key));
             return foodGroupData.concat(amountData);
         });
 
