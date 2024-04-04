@@ -375,8 +375,8 @@ export const TranslationObj = {
                         "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
                     }
                 },
-                "seeLevel2Groups": "Filter on level 2 groups",
-                "seeAllGroups": "See all food groups",
+                "seeLevel2Groups": "Show level 2 groups only",
+                "seeAllGroups": "Show all food groups",
                 "allFoodGroupsLabel": "All Food Groups",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
@@ -495,8 +495,8 @@ export const TranslationObj = {
                         "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
                     }
                 },
-                "seeLevel2Groups": `Voyer les Groupes à Niveau 2`,
-                "seeAllGroups": `Toutes les Groupes Alimentaires`,
+                "seeLevel2Groups": REMPLACER_MOI,
+                "seeAllGroups": REMPLACER_MOI,
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{nutrient}}`
