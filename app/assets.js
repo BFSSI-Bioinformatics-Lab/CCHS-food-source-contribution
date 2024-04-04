@@ -197,8 +197,8 @@ export const FoodIngredientDataColNames = {
     amount: "Amount",
     amountSE: "Amount_SE",
     percentage: "Percentage",
-    percentageSE: "Percentage_SE"
-
+    percentageSE: "Percentage_SE",
+    interpretationNotes: "Interpretation_Notes"
 };
 
 // Different display states of the sun burst graph
