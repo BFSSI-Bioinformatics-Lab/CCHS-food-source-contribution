@@ -261,7 +261,7 @@ export class Model {
         
         // adds the 'E' to SE amounts or SE percentages
         } else if (foodIngredientRow[FoodIngredientDataColNames.interpretationNotes] == "E" && 
-                    (column == FoodIngredientDataColNames.amountSE || column == FoodGroupDescDataColNames.percentageSE)) {
+                    (column == FoodIngredientDataColNames.amountSE || column == FoodIngredientDataColNames.percentageSE)) {
             return `${foodIngredientRow[column]} ${foodIngredientRow[FoodIngredientDataColNames.interpretationNotes]}`;
         }
 
