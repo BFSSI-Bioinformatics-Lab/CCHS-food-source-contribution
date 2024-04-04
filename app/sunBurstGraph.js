@@ -766,6 +766,7 @@ export function lowerGraph(model){
             .enter()
             .append("th")
                 .attr("class", "text-center lowerTableHeader")
+                .style("width", (d, i) => i < amountLeftIndex ? "150px" : "60px")
                 .style("min-width", (d, i) => i < amountLeftIndex ? "50px" : "40px")
                 .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
@@ -788,6 +789,9 @@ export function lowerGraph(model){
                 })
                 .attr("colspan", 1)
                 .text(headingData => Translation.translate(headingData.heading))
+                
+                // add the sorting event listeners
+                .filter((headingData, headingInd) => { return sunBurstTable.compareFuncs[headingInd] !== null })
                 .on("click", (headingData) => { 
                     sortedColState = headingData.ind == sortedColIndex ? SortStates.getNext(sortedColState) : SortStates.Ascending; 
                     sortedColIndex = headingData.ind;
@@ -795,7 +799,7 @@ export function lowerGraph(model){
                 })
                 .on("mouseenter", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Pointer; })
                 .on("mouseleave", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Default; })
-                
+
                 // add in the sorting icon
                 .append("i")
                 .attr("class", (headingData) => { return `sortIcon ${sortedColIndex == headingData.ind ? SortIconClasses[sortedColState] : SortIconClasses[SortStates.Unsorted]}` })
@@ -803,10 +807,12 @@ export function lowerGraph(model){
 
         // sort the table data
         let sunBurstTableDataRows = sunBurstTable.table;
-        if (sortedColIndex !== null && sortedColState == SortStates.Ascending) {
+        const hasCompareFunc = sortedColIndex !== null && sunBurstTable.compareFuncs[sortedColIndex] !== null;
+
+        if (hasCompareFunc && sortedColState == SortStates.Ascending) {
             sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
-        } else if (sortedColIndex !== null && sortedColState == SortStates.Descending) {
-            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) })
+        } else if (hasCompareFunc && sortedColState == SortStates.Descending) {
+            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
         }
 
         lowerGraphTableBody.selectAll("tr").remove();

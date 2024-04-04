@@ -317,7 +317,11 @@ export class Model {
         // -----------------------------------------------------------------------------------------
 
         // get the compare functions of each heading for sorting
-        const compareFuncs = subHeadings.map((heading, ind) => { return ind == 0 ? Model.defaultCompare : Model.strNumCompare; });    
+        const compareFuncs = subHeadings.map((heading, ind) => {
+            if (ind == 0) return Model.defaultCompare
+            else if (ind % 2 == 1) return Model.strNumCompare
+            else return null;
+        });    
 
         this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: result, headingsPerSexAgeGroup, csvContent, compareFuncs};
         return this.barGraphTable;
@@ -436,7 +440,7 @@ export class Model {
             compareFuncs.push(Model.defaultCompare);
         }
 
-        compareFuncs = compareFuncs.concat(headingsPerSexAgeGroupKeys.map(() => { return Model.strNumCompare }));
+        compareFuncs = compareFuncs.concat([Model.strNumCompare, null, Model.strNumCompare, null]);
 
         this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: result, csvContent, compareFuncs };
         return this.sunburstTable;
