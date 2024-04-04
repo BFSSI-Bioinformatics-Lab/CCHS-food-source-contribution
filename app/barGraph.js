@@ -437,6 +437,9 @@ export function upperGraph(model){
                 })
                 .attr("colspan", 1)
                 .text(subHeadingData => Translation.translate(subHeadingData.heading))
+
+                // add the sorting event listeners
+                .filter((headingData, headingInd) => { return barGraphTable.compareFuncs[headingInd] !== null })
                 .on("click", (headingData) => { 
                     sortedColState = headingData.ind == sortedColIndex ? SortStates.getNext(sortedColState) : SortStates.Ascending; 
                     sortedColIndex = headingData.ind;
@@ -452,10 +455,12 @@ export function upperGraph(model){
 
         // sort the table data
         let barGraphTableDataRows = barGraphTable.table;
-        if (sortedColIndex !== null && sortedColState == SortStates.Ascending) {
+        const hasCompareFunc = sortedColIndex !== null && barGraphTable.compareFuncs[sortedColIndex] !== null;
+
+        if (hasCompareFunc && sortedColState == SortStates.Ascending) {
             barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
-        } else if (sortedColIndex !== null && sortedColState == SortStates.Descending) {
-            barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) })
+        } else if (hasCompareFunc && sortedColState == SortStates.Descending) {
+            barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
         }
         
         upperGraphTableBody.selectAll("tr").remove();
