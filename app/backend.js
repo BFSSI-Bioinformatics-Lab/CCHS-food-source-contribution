@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates } from "./assets.js";
+import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates, LowerGraphFoodGroupLv3ColInd } from "./assets.js";
 
 
 // ================== CONSTANTS ==========================================
@@ -128,13 +128,17 @@ export class Model {
         let data = await d3.csv(`data/TABLE_FSCT-data_Food_ingredients CCHS 2015-20240126-${i18next.language}.csv`);
         data = TableTools.numToFloat(data);
 
+        this.tableNutrientTables = Object.freeze(d3.nest()
+            .key(d => d.Nutrient)
+            .object(data));
+
         this.tableNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
             .key(d => d.Nutrient)
             .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
             .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
             .object(data));
 
-        return this.tableNutrientTablesByDemoGroupLv1;
+        return [this.tableNutrientTables, this.tableNutrientTablesByDemoGroupLv1];
     }
 
     // getInterpretationValue(interpretationValue): Retrieves the interpretation value to be displayed
@@ -228,6 +232,42 @@ export class Model {
         return groupedPercentages;
     }
 
+    // defaultCompare(value1, value2): Default compare functions for sorting
+    static defaultCompare(value1, value2) { 
+        if (value1 == value2) return 0
+        else if (value1 > value2) return 1
+        else return -1;
+    }
+
+    // strNumCompare(value1, value): Compare function that gives numbers precedence over strings
+    static strNumCompare(value1, value2) {
+        const num1 = parseFloat(value1);
+        const num2 = parseFloat(value2);
+        const num1IsNAN = Number.isNaN(num1);
+        const num2IsNAN = Number.isNaN(num2);
+
+        if (num1IsNAN && !num2IsNAN) return -1
+        else if (!num1IsNAN && num2IsNAN) return 1
+        else return Model.defaultCompare(value1, value2);
+    }
+
+    // getFoodIngredientNumberedCell(foodIngredientRow, column): Retrieves the value for a cell that corresponds to a 
+    //  numbered column (eg. Amount_SE or Percentage_SE) for the tables in the bargraph and the sunburst graph
+    static getFoodIngredientNumberedCell(foodIngredientRow, column) {
+
+        // get the interpretation notes for values that are not numbers
+        if (Number.isNaN(foodIngredientRow[column])) {
+            return Model.getInterpretationValue(foodIngredientRow[FoodIngredientDataColNames.interpretationNotes]);
+        
+        // adds the 'E' to SE amounts or SE percentages
+        } else if (foodIngredientRow[FoodIngredientDataColNames.interpretationNotes] == "E" && 
+                    (column == FoodIngredientDataColNames.amountSE || column == FoodIngredientDataColNames.percentageSE)) {
+            return `${foodIngredientRow[column]} ${foodIngredientRow[FoodIngredientDataColNames.interpretationNotes]}`;
+        }
+
+        return foodIngredientRow[column];
+    }
+
     // createBarGraphTable(): Creates the data for the table of the bar graph
     createBarGraphTable() {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
@@ -240,7 +280,7 @@ export class Model {
         const tableHeadings = ["", ...this.ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))];
 
         // sub-headings of the table
-        const subHeadings = [""].concat(Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat());
+        const subHeadings = [Translation.translate("upperGraph.tableSubHeadingFirstCol")].concat(Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat());
 
         // Get the rows needed for the table
         const tableRows = {};
@@ -261,8 +301,20 @@ export class Model {
         // Retrieve the specific value for each row
         const result = [];
         Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
-            result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Number.isNaN(g[key]) ? Model.getInterpretationValue(g["Interpretation_Notes"]) : g[key])).flat()));
+            result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
         });
+
+        // get the footnotes to the CSV
+        const csvFootNotes = [];
+        for (let i = 0; i < 6; ++i) {
+            csvFootNotes.push(subHeadings.map(() => { return ""}));
+        }
+
+        csvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
+        csvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
+        csvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
+        csvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
+        csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
 
         // ------ this part used to be the JQuery part in the html doc of the original code -------
         //      git commit hash: 58aaf7a62118cdcd7e7364cbe3f6959a825a862b
@@ -277,21 +329,64 @@ export class Model {
         csvHeadings = csvHeadings.flat();
         csvHeadings.splice(0, 0, "");
 
-        const csvContent = TableTools.createCSVContent([csvHeadings, subHeadings].concat(result), 1 + tableHeadings.length * headingsPerSexAgeGroup.length);
+        const csvContent = TableTools.createCSVContent([csvHeadings, subHeadings].concat(result).concat(csvFootNotes));
 
         // -----------------------------------------------------------------------------------------
 
-        this.barGraphTable = { headings: tableHeadings, subHeadings, table: result, headingsPerSexAgeGroup, csvContent};
+        // get the compare functions of each heading for sorting
+        const compareFuncs = subHeadings.map((heading, ind) => {
+            if (ind == 0) return Model.defaultCompare
+            else if (ind % 2 == 1) return Model.strNumCompare
+            else return null;
+        });    
+
+        this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: result, headingsPerSexAgeGroup, csvContent, compareFuncs};
         return this.barGraphTable;
     }
 
-    // createSunburstTable(ageSexGroup): Creates the data for the table of the sunburst graph
-    createSunburstTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName) {
+    // createSunburstAllTable(): Creates the data for the table of the sunburst graph to display all the age-sex groups
+    createSunburstAllTable() {
+        const nutrientData = this.tableNutrientTables[this.nutrient];
+        const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
+        let tableHeadings = Translation.translate("lowerGraph.tableAllDataHeadings", { returnObjects: true });
+
+        // create the data rows for the table
+        let result = [];
+        for (const row of nutrientData) {
+            let newRow = [row["Age-sex group (*: excludes pregnant or breastfeeding)"], row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
+            newRow = newRow.map((cellValue) => { return Number.isNaN(cellValue) ? "" : cellValue});
+
+            const amountData = headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(row, key));
+            result.push(newRow.concat(amountData));
+        }
+
+        // get the footnotes to the CSV
+        const csvFootNotes = [];
+        for (let i = 0; i < 6; ++i) {
+            csvFootNotes.push(tableHeadings.map(() => { return ""}));
+        }
+
+        csvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
+        csvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
+        csvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
+        csvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
+        csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
+
+        // get the text needed for the CSV export
+        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
+
+        this.sunBurstTableAllData = csvContent;
+        return this.sunBurstTableAllData;
+    }
+
+    // createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName): Creates the data for the table of the sunburst graph
+    createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName) {
+        const graphIsAllDisplayed = sunBurstState == SunBurstStates.AllDisplayed;
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
         foodGroupName = foodGroupName.trim().toLowerCase();
 
         let foodGroupColumn = null;
-        if (sunBurstState == SunBurstStates.AllDisplayed && foodGroupDepth >= 2) {
+        if (graphIsAllDisplayed && foodGroupDepth >= 2) {
             foodGroupColumn = FoodGroupDepthToCol[foodGroupDepth];
 
         } else if (sunBurstState == SunBurstStates.FilterOnlyLevel2) {
@@ -321,22 +416,50 @@ export class Model {
             }
         }
 
-        const tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
+        let tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
+        if (!graphIsAllDisplayed) {
+            tableHeadings.splice(LowerGraphFoodGroupLv3ColInd, 1);
+        }
+
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         // get the specific values for each row
         result = result.map((row) => {
-            let foodGroupData = [row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
+            let foodGroupData = [row["Food group_level1"], row["Food group_level2"]];
+            if (graphIsAllDisplayed) {
+                foodGroupData.push(row["Food group_level3"]);
+            }
+
             foodGroupData = foodGroupData.map(foodGroupLv => Number.isNaN(foodGroupLv) ? "" : foodGroupLv);
 
-            const amountData = headingsPerSexAgeGroupKeys.map(key => Number.isNaN(row[key]) ? Model.getInterpretationValue(row["Interpretation_Notes"]) : row[key]);
+            const amountData = headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(row, key));
             return foodGroupData.concat(amountData);
         });
 
-        // get the text needed for the CSV export
-        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result), tableHeadings.length);
+        // get the footnotes to the CSV
+        const csvFootNotes = [];
+        for (let i = 0; i < 6; ++i) {
+            csvFootNotes.push(tableHeadings.map(() => { return ""}));
+        }
 
-        this.sunburstTable = { headings: tableHeadings, table: result, csvContent };
+        csvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
+        csvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
+        csvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
+        csvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
+        csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
+
+        // get the text needed for the CSV export
+        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
+
+        // get the compare functions of each heading for sorting
+        let compareFuncs = [Model.defaultCompare, Model.defaultCompare];
+        if (graphIsAllDisplayed) {
+            compareFuncs.push(Model.defaultCompare);
+        }
+
+        compareFuncs = compareFuncs.concat([Model.strNumCompare, null, Model.strNumCompare, null]);
+
+        this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: result, csvContent, compareFuncs };
         return this.sunburstTable;
     }
 }

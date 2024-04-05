@@ -20,7 +20,7 @@
 
 
 
-import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames } from "./assets.js";
+import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames, MousePointer, SortIconClasses, SortStates, LowerGraphFoodGroupLv3ColInd } from "./assets.js";
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -31,11 +31,19 @@ export function lowerGraph(model){
     // state of the display for the sunburst graph
     let graphState = SunBurstStates.AllDisplayed;
 
+    // ----------- Register different buttons -----------------
+
     // register the save image button
     d3.select("#lowerGraphSaveGraph").on("click", () => saveAsImage());
 
     // register the download table button
-    const downloadButton = d3.select("#lowerGraphSaveTable").on("click", () => downloadTable());
+    const downloadButton = d3.select("#lowerGraphSaveTable").on("click", () => downloadDisplayedTable());
+    const downloadAllDataButton = d3.select("#lowerGraphSaveAllData").on("click", () => downloadFullTable());
+
+    // register the button to jump to the nutrient selection
+    d3.select("#lowerGraphReturnToSelection").on("click", () => scrollToNutrientSelection());
+
+    // --------------------------------------------------------
 
     // all the hover tooltips for the graph
     const hoverToolTips = {};
@@ -43,9 +51,17 @@ export function lowerGraph(model){
     // unit for the nutrient
     let nutrientUnit = "";
 
+    // titles for the graph and table
+    let graphTitleText = ""
+    let tableTitleText = ""
+
     // which arc is selected in the sunburst
     let selectedNodeIndex = 1;
     let selectedNode = null;
+
+    // table column that is being sorted
+    let sortedColIndex = null;
+    let sortedColState = SortStates.Unsorted;
 
     // Specify the chart’s dimensions.
     const width = GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth + GraphDims.lowerGraphRight;
@@ -72,15 +88,35 @@ export function lowerGraph(model){
     .attr("style", "max-width: 100%; height: auto;")
     .style("font", "10px sans-serif");
 
+    // ------------------ draw the footnotes ------------------
+
+    const footNoteWidth = width - 2 * GraphDims.lowerGraphFooterPaddingHor;
+
+    const footNotesContainer = lowerGraphSvg.append("g")
+        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${GraphDims.lowerGraphHeight + GraphDims.lowerGraphTop})`);
+    
+    // foot note for excluding pregnancy and lactating
+    const exclusionFootNoteTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, 0)`)
+        .attr("font-size", GraphDims.lowerGraphFooterFontSize);
+
+    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("FootNotes.excludePregnantAndLactating"), width: footNoteWidth, 
+                                                fontSize: GraphDims.lowerGraphFooterFontSize});
+
+    // foot note for the source text
+    const sourceTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.lowerGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.lowerGraphFootNoteSpacing})`)
+        .attr("font-size", GraphDims.lowerGraphFooterFontSize)
+        .attr("visibility", "hidden");
+
+    drawText({textGroup: sourceTextBox, text: Translation.translate("FootNotes.sourceText"), width: footNoteWidth, fontSize: GraphDims.lowerGraphFooterFontSize});
+
+    // --------------------------------------------------------
     // --------------- draws the info box ---------------------
     
     // attributes for the info box
     const infoBox = {};
     let infoBoxHeight = GraphDims.lowerGraphInfoBoxHeight;
-    const infoBoxBorderWidth = GraphDims.lowerGraphInfoBoxBorderWidth;
-    const infoBoxPadding = GraphDims.lowerGraphInfoBoxPadding;
-
-    const infoBoxTextGroupHeight = Math.max(infoBoxHeight, infoBoxHeight - infoBoxPadding - infoBoxPadding);
 
     // group for the info box
     infoBox.group = lowerGraphSvg.append("g")
@@ -88,25 +124,26 @@ export function lowerGraph(model){
 
     // border line for the info box
     infoBox.highlight = infoBox.group.append("line")
-        .attr("x1", infoBoxBorderWidth / 2)
-        .attr("x2", infoBoxBorderWidth / 2)
+        .attr("x1", GraphDims.lowerGraphInfoBoxBorderWidth / 2)
+        .attr("x2", GraphDims.lowerGraphInfoBoxBorderWidth / 2)
         .attr("y2", infoBoxHeight)
-        .attr("stroke-width", infoBoxBorderWidth)
+        .attr("stroke-width", GraphDims.lowerGraphInfoBoxBorderWidth)
         .attr("visibility", "visible")
         .attr("stroke-linecap", "round");
+
+    // container to hold the title
+    infoBox.titleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.lowerGraphInfoBoxTitleFontSize)
+        .attr("font-weight", FontWeight.Bold);
+
+    // container to hold the subtitle
+    infoBox.subTitleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
+        .attr("font-weight", FontWeight.Bold);
 
     // container to hold the text
     infoBox.textGroup = infoBox.group.append("text")
         .attr("font-size", GraphDims.lowerGraphInfoBoxFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`);
-    
-    // draw the text
-    const textDims = drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.lowerGraphInfoBoxFontSize, 
-                               lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
-
-    // update the height of the info box to be larger than the height of the text
-    infoBoxHeight = Math.max(infoBoxTextGroupHeight, textDims.textBottomYPos + infoBoxPadding);
-    infoBox.highlight.attr("y2", infoBoxHeight);
 
     const lowerGraphInfoBox = infoBox;
 
@@ -117,6 +154,7 @@ export function lowerGraph(model){
     // attributes for the legend
     const legendItemPaddingHor = 0;
     const legendItemPaddingVert = 2;
+    const legendItemAllFoodGroupPaddingVert = 20;
     const legendItemTextPaddingHor = 5;
     const legendItemTextPaddingVert = 0;
     const legendItemFontSize = 12;
@@ -132,9 +170,10 @@ export function lowerGraph(model){
         .attr("transform", `translate(${lowerGraphRightXPos}, ${ GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2 - GraphDims.lowerGraphArcRadius * 4 - (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius)})`);
 
     // draw all the keys for the legend
-    for (const legendKey of legendData) {
-        let legendKeyText = Translation.translate(`LegendKeys.${legendKey[0]}`);
-        let legendKeyColour = legendKey[1];
+    const legendDataLen = legendData.length;
+    for (let i = 0; i < legendDataLen; ++i) {
+        let legendKeyText = Translation.translate(`LegendKeys.${legendData[i][0]}`);
+        let legendKeyColour = legendData[i][1];
 
         // ***************** draws a key in the legend *********************
         
@@ -163,18 +202,51 @@ export function lowerGraph(model){
 
         // *****************************************************************
 
-        currentLegendItemYPos += legendItemPaddingVert + legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+        currentLegendItemYPos += legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+
+        // whether to add extra spacing for the "All Food Groups" legend key
+        if (i == legendData.length - 2) {
+            currentLegendItemYPos += legendItemAllFoodGroupPaddingVert;
+        } else {
+            currentLegendItemYPos += legendItemPaddingVert;
+        }
+
         legendItems.push(legendItem);
+    }
+
+    // add the mouse events to the keys of the legend
+    for (const legendItem of legendItems) {
+        const name = legendItem.name;
+        const colour = legendItem.colour;
+        const legendItemGroup = legendItem.group;
+
+        const dummyRow = {};
+        dummyRow[FoodIngredientDataColNames.foodGroupLv1] = name;
+        const dummyArcData = {data: {name, row: dummyRow}};
+
+        legendItemGroup.on("mouseenter", () => { 
+            legendItemGroup.style("cursor", MousePointer.Pointer);
+            updateInfoBox(dummyArcData); 
+        });
+        legendItemGroup.on("mouseleave", () => { 
+            legendItemGroup.style("cursor", MousePointer.Default);
+            hideInfoBox(); 
+        });
+        legendItemGroup.on("mouseover", () => { 
+            legendItemGroup.style("cursor", MousePointer.Pointer);
+            updateInfoBox(dummyArcData); 
+        });
     }
 
     // --------------------------------------------------------
 
     const lowerGraphChartHeading = lowerGraphSvg.append("g")
-    .append("text")
-    .attr("text-anchor", "middle")
-    .attr("font-size", GraphDims.lowerGraphChartHeadingFontSize)
-    .attr("x", width / 2)
-    .attr("y", GraphDims.lowerGraphTop - GraphDims.lowerGraphChartHeadingFontSize * 0.75);
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("font-size", GraphDims.lowerGraphChartHeadingFontSize)
+        .attr("x", width / 2)
+        .attr("y", GraphDims.lowerGraphTop - GraphDims.lowerGraphChartHeadingFontSize * 0.75)
+        .attr("font-weight", FontWeight.Bold);
 
     const lowerGraphSunburst = lowerGraphSvg.append("g")
     .attr("transform", `translate(${GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight / 2})`)
@@ -188,7 +260,6 @@ export function lowerGraph(model){
     //  race condition of D3 adding rows into the scroll table and JQuery setting up the scroll table
     lowerGraphTable.selectAll("thead").remove();
     lowerGraphTable.selectAll("tbody").remove();
-    d3.select("#lowerGraphTable_wrapper .dataTables_scroll .dataTables_scrollHead").remove();
 
     const lowerGraphTableHeading = lowerGraphTable.append("thead");
     const lowerGraphTableBody = lowerGraphTable.append("tbody");
@@ -206,12 +277,12 @@ export function lowerGraph(model){
                 .text(d => d);
     
         const ageSexGroup = getSelector("#lowerGraphAgeSexSelect");
-        lowerGraphChartHeading.text(Translation.translate("lowerGraph.graphTitle", {
-            nutrient: nutrient,
-            ageSexGroup: ageSexGroup
-        }))
-        .attr("font-weight", FontWeight.Bold);
-    
+        updateGraphTitle(ageSexGroup);
+
+        // update the CSV table for all the data to the nutrient (includes all age-sex groups)
+        model.createSunburstAllTable();
+
+
         drawSunburst(nutrient, ageSexGroup);
     }
 
@@ -273,6 +344,7 @@ export function lowerGraph(model){
             .join("text")
             .attr("dy", d => getLabelDY(d))
             .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
+            .attr("letter-spacing", GraphDims.lowerGraphArcLabelLetterSpacing)
             .attr("fill-opacity", d => +labelVisible(d.current))
                 .append("textPath") // make the text following the shape of the arc
                 .attr("id", (d, i) => `arcLabel${i}`)
@@ -304,7 +376,7 @@ export function lowerGraph(model){
     
         const mouseOverBoxes = lowerGraphSunburst.append("g");
     
-        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i));
+        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i, nutrient));
     
         /* Create invisible arc paths on top of graph in order to detect hovering */
         const hoverPath = lowerGraphSunburst.append("g")
@@ -329,14 +401,12 @@ export function lowerGraph(model){
     
         /* Creation of tooltip */
         function hoverCard(d, root, i, nutrient){
-            let width = GraphDims.lowerGraphTooltipMinWidth;
             const arcColour = d3.select(`#arcPath${i}`).attr("fill");
 
             /* Content of tooltip */
-            const lines = Translation.translate("lowerGraph.infoBoxLevel", { 
+            const title = Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name})
+            const lines = Translation.translate("lowerGraph.toolTipLevel", { 
                 returnObjects: true, 
-                context: d.depth,
-                name: d.data.name,
                 percentage: Math.round( d.data.row.Percentage * 10) / 10,
                 parentGroup: d.depth > 1 ? d.parent.data.name : "",
                 parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
@@ -349,28 +419,22 @@ export function lowerGraph(model){
 
             // attributes for the tool tip
             const toolTip = {};
-            let toolTipWidth = width;
-            let toolTipHeight = 50;
-            const toolTipBorderWidth = 3;
-            const toolTipBackgroundColor = Colours.White;
-            const toolTipPaddingHor = GraphDims.lowerGraphTooltipPaddingHor;
-            const toolTipPaddingVert = GraphDims.lowerGraphTooltipPaddingVert;
-            const toolTipTextPaddingHor = GraphDims.lowerGraphTooltipTextPaddingHor;
-            const toolTipTextPaddingVert = GraphDims.lowerGraphTooltipTextPaddingVert;
+            let toolTipWidth = GraphDims.lowerGraphTooltipMinWidth;
+            let toolTipHeight = GraphDims.lowerGraphTooltipHeight;
+            let currentTextGroupPosY = GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert;
+            const textGroupPosX = GraphDims.lowerGraphTooltipBorderWidth + GraphDims.lowerGraphTooltipPaddingHor +  GraphDims.lowerGraphTooltipTextPaddingHor;
 
-            const toolTipTextGroupWidth = Math.max(width, width - toolTipPaddingHor - toolTipPaddingHor);
-            const toolTipHighlightXPos = toolTipPaddingHor + toolTipBorderWidth / 2;
+            const toolTipHighlightXPos = GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth / 2;
 
             // draw the container for the tooltip
             toolTip.group = root.append("g")
                 .attr("id",  toolTipId)
-                .attr("opacity", 0);
+                .attr("opacity", 0)
+                .style("pointer-events", "none");
 
             // draw the background for the tooltip
             toolTip.background = toolTip.group.append("rect")
-                .attr("height", toolTipHeight)
-                .attr("width", toolTipWidth)
-                .attr("fill", toolTipBackgroundColor)
+                .attr("fill", Colours.White)
                 .attr("stroke", arcColour)
                 .attr("stroke-width", 1)
                 .attr("rx", 5);
@@ -379,27 +443,39 @@ export function lowerGraph(model){
             toolTip.highlight = toolTip.group.append("line")
                 .attr("x1", toolTipHighlightXPos)
                 .attr("x2", toolTipHighlightXPos)
-                .attr("y1", toolTipPaddingVert)
-                .attr("y2", toolTipHeight - toolTipPaddingVert)
+                .attr("y1", GraphDims.lowerGraphTooltipPaddingVert)
                 .attr("stroke", arcColour) 
-                .attr("stroke-width", toolTipBorderWidth)
+                .attr("stroke-width", GraphDims.lowerGraphTooltipBorderWidth)
                 .attr("stroke-linecap", "round");
+
+            // draw the title
+            toolTip.titleGroup = toolTip.group.append("text")
+                .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
+                .attr("font-weight", FontWeight.Bold)
+                .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+
+            const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+                                        textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
+
+            currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphTooltipTitleMarginBtm;
 
             // draw the text
             toolTip.textGroup = toolTip.group.append("text")
                 .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
+                .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
-            const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.lowerGraphTooltipFontSize, 
-                                       textWrap: TextWrap.NoWrap, paddingLeft: toolTipPaddingHor, paddingRight: toolTipPaddingHor});
+            const textDims = drawText({textGroup: toolTip.textGroup, text: lines, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+                                       textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
+
+            currentTextGroupPosY += textDims.textBottomYPos;
 
             // update the height of the tooltip to be larger than the height of all the text
-            toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
+            toolTipHeight = Math.max(toolTipHeight, currentTextGroupPosY + GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert);
             toolTip.background.attr("height", toolTipHeight);
-            toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert);
+            toolTip.highlight.attr("y2", toolTipHeight - GraphDims.lowerGraphTooltipPaddingVert);
 
             // update the width of the tooltip to be larger than the width of all the text
-            toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + textDims.width + toolTipPaddingHor);
+            toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth + 2 * GraphDims.lowerGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
             toolTip.background.attr("width", toolTipWidth);
 
             // -------------------------------------
@@ -422,8 +498,7 @@ export function lowerGraph(model){
         /* Make the opacity of tooltip 0 */
         function arcUnHover(d, i){
             d3.select(`#arcHover${i}`).attr("opacity", 0);
-            drawText({textGroup: lowerGraphInfoBox.textGroup});
-            lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
+            hideInfoBox();
         }
 
         // updateArcThickness(): Updates the thickness for the arcs based on what state the sunburst is in
@@ -511,9 +586,27 @@ export function lowerGraph(model){
             setFilterButton("lowerGraph.seeLevel2Groups", () => filterOnLevel2Groups());
         }
 
+        // updateSortedColInd(prevGraphState, currentGraphState): Updates the index for the sorted column
+        //  depending whether the table includes the 'Food Group Level 3' column
+        function updateSortedColInd(prevGraphState, currentGraphState) {
+            const becameFilteredOnlyLevel2 = prevGraphState == SunBurstStates.AllDisplayed && currentGraphState == SunBurstStates.FilterOnlyLevel2;
+
+            if (becameFilteredOnlyLevel2 && sortedColIndex == LowerGraphFoodGroupLv3ColInd) {
+                sortedColIndex = null;
+                sortedColState = SortStates.Unsorted;
+            } else if (becameFilteredOnlyLevel2 && sortedColIndex > LowerGraphFoodGroupLv3ColInd) {
+                --sortedColIndex;
+            } else if (prevGraphState == SunBurstStates.FilterOnlyLevel2 && currentGraphState == SunBurstStates.AllDisplayed && sortedColIndex >= LowerGraphFoodGroupLv3ColInd) {
+                ++sortedColIndex;
+            }
+        }
+
         // filterOnLevel2Groups(): Display only level 2 groups of the Sun Burst Graph
         function filterOnLevel2Groups(){
+            const prevGraphState = graphState;
             graphState = SunBurstStates.FilterOnlyLevel2;
+            updateSortedColInd(prevGraphState, graphState);
+
             const highestDepth = 3;
             let acc = 0;
 
@@ -543,11 +636,17 @@ export function lowerGraph(model){
 
             // update the filter for the table of the sunburst
             drawTable(ageSexGroup);
+
+            // update the title of the graph
+            updateGraphTitle(ageSexGroup);
         }
 
         // filterAllFoodGroups(): Display all levels of the Sun Burst Graph
         function filterAllFoodGroups() {
+            const prevGraphState = graphState;
             graphState = SunBurstStates.AllDisplayed;
+            updateSortedColInd(prevGraphState, graphState);
+
             root.each(d => d.target = {
                 depth: d.depth,
                 data: d.data,
@@ -572,6 +671,9 @@ export function lowerGraph(model){
 
             // update the filter for the table of the sunburst
             drawTable(ageSexGroup);
+
+            // update the title for the graph
+            updateGraphTitle(ageSexGroup);
         }
 
         // arcOnClick(event, i): Handle zoom on click when clicking on an arc.
@@ -606,6 +708,9 @@ export function lowerGraph(model){
             // update the table based off the selected arc
             drawTable(ageSexGroup);
 
+            // update the title of the graph based off the selected arc
+            updateGraphTitle(ageSexGroup);
+
             if (isTransitionArc) {
                 transitionArcs();
             }
@@ -619,22 +724,49 @@ export function lowerGraph(model){
     return drawGraph;
 
 
+    // getTitleTranslateKeys(ageSexGroup): Retrieves the translation keys used for picking the correct title for the sunburst
+    function getTitleTranslateKeys(ageSexGroup) {
+        const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}};
+
+        let filterTranslateKey = ""
+        if (graphState == SunBurstStates.FilterOnlyLevel2) {
+            filterTranslateKey = "Filter Only Level 2";
+        } else if (sunBurstNode.depth == 1) {
+            filterTranslateKey = "All Items";
+        } else if (sunBurstNode.depth > 1) {
+            filterTranslateKey = "Filtered Data";
+        }
+
+        const ageGroupTranslateKey = ageSexGroup == Translation.translate("AgeSexGroupHeadings.Population1Up") ? "Population1Up" : "OtherAgeGroups";
+        return {filterTranslateKey, ageGroupTranslateKey};
+    }
+
+    // updateGraphTitle(ageSexGroup): Updates the title for the graph
+    function updateGraphTitle(ageSexGroup) {
+        const titleKeys = getTitleTranslateKeys(ageSexGroup);
+        graphTitleText = Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
+                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: selectedNode !== null ? selectedNode.data.name : "" });
+        lowerGraphChartHeading.text(graphTitleText)
+    }
+
     // draws the table for the sun burst graph
-    function drawTable(ageSexGroup){
+    function drawTable(ageSexGroup, reloadData = true){
         const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}} 
-        const sunBurstTable = model.createSunburstTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name);
+        const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name) : model.sunburstTable;
 
         // --------------- draws the table -------------------------
 
-        /* Create subheading columns */
-        const amountLeftIndex = 3;
+        /* Create heading columns */
+        const amountLeftIndex = graphState == SunBurstStates.AllDisplayed ? 3 : 2;
 
         lowerGraphTableHeading.selectAll("tr").remove();
-        lowerGraphTableHeading.append("tr")
-            .selectAll("td")
+        const tableHeaders = lowerGraphTableHeading.append("tr")
+            .selectAll("th")
             .data(sunBurstTable.headings)
             .enter()
-            .append("td")
+            .append("th")
+                .attr("class", "text-center lowerTableHeader")
+                .style("width", (d, i) => i < amountLeftIndex ? "150px" : "60px")
                 .style("min-width", (d, i) => i < amountLeftIndex ? "50px" : "40px")
                 .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
@@ -647,20 +779,46 @@ export function lowerGraph(model){
 
                     return FontWeight.Normal;
                 })
-                .style("opacity", (d, i) => {
+                .style("color", (d, i) => {
                     const colNum = (i - amountLeftIndex) % 4;
                     if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
-                        return 0.8;
+                        return "rgba(51,51,51,0.8)";
                     }
 
-                    return 1;
+                    return "rgba(51,51,51,1)";
                 })
                 .attr("colspan", 1)
-                .text(d => Translation.translate(d))
-        
+                .text(headingData => Translation.translate(headingData.heading))
+                
+                // add the sorting event listeners
+                .filter((headingData, headingInd) => { return sunBurstTable.compareFuncs[headingInd] !== null })
+                .on("click", (headingData) => { 
+                    sortedColState = headingData.ind == sortedColIndex ? SortStates.getNext(sortedColState) : SortStates.Ascending; 
+                    sortedColIndex = headingData.ind;
+                    drawTable(ageSexGroup, false);
+                })
+                .on("mouseenter", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Pointer; })
+                .on("mouseleave", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Default; })
+
+                // add in the sorting icon
+                .append("i")
+                .attr("class", (headingData) => { return `sortIcon ${sortedColIndex == headingData.ind ? SortIconClasses[sortedColState] : SortIconClasses[SortStates.Unsorted]}` })
+                .attr("aria-hidden", true);
+
+        // sort the table data
+        let sunBurstTableDataRows = sunBurstTable.table;
+        const hasCompareFunc = sortedColIndex !== null && sunBurstTable.compareFuncs[sortedColIndex] !== null;
+
+        if (hasCompareFunc && sortedColState == SortStates.Ascending) {
+            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
+        } else if (hasCompareFunc && sortedColState == SortStates.Descending) {
+            sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
+        }
+
         lowerGraphTableBody.selectAll("tr").remove();
 
-        for (const row of sunBurstTable.table) {
+        // create the rows for the table
+        for (const row of sunBurstTableDataRows) {
             const newRow = lowerGraphTableBody.append("tr")
                 .selectAll("td")
                 .data(row)
@@ -679,35 +837,21 @@ export function lowerGraph(model){
 
                         return FontWeight.Normal; 
                     })
-                    .style("opacity", (d, i) => {
+                    .style("color", (d, i) => {
                         const colNum = (i - amountLeftIndex) % 4;
                         if (i >= amountLeftIndex && (colNum === 3 || colNum === 1)) {
-                            return 0.8;
+                            return "rgba(51,51,51,0.8)";
                         }
 
-                        return 1;
+                        return "rgba(51,51,51,1)";
                     });
         }
 
         // ---------------------------------------------------------
 
-        let lowerGraphTitleFoodGroup = ""
-        if (graphState == SunBurstStates.FilterOnlyLevel2) {
-            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleLevel2Data");
-        } else if (sunBurstNode.depth == 1) {
-            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleAllData");
-        } else if (sunBurstNode.depth > 1) {
-            lowerGraphTitleFoodGroup = Translation.translate("lowerGraph.tableTitleFilteredData", { chosenCategory: sunBurstNode.data.name });
-        }
-
-        const lowerGraphTitleFront = Translation.translate("lowerGraph.tableTitle", { amountUnit: nutrientUnit, nutrient, ageSexGroup });
-
-        // For some food groups with special characters like "Fruits & Vegetables", we want the title to be displayed as "Fruits & Vegetables" instead of "Fruits &amp; Vegatables"
-        //  After passing in the food group into the i18next library, the library encoded the food group to be "Fruits &amp; Vegatables"
-        // So all the special characters got encoded to their corresponding HTML Entities (eg. &lt; , &gt; , &quot;)
-        //
-        // So we need to decode back the encoded string with HTML entities to turn back "Fruits &amp; Vegetables" to "Fruits & Vegetables"
-        lowerGraphTableTitle.text(`${lowerGraphTitleFront}, ${he.decode(lowerGraphTitleFoodGroup)}`);
+        const titleKeys = getTitleTranslateKeys(ageSexGroup);
+        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
+        lowerGraphTableTitle.text(tableTitleText);
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
@@ -814,13 +958,13 @@ export function lowerGraph(model){
 
         element.attr("startOffset", 0);
         element.text(text);
-        let textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+        let textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize, undefined, GraphDims.lowerGraphArcLabelLetterSpacing);
         let textTruncated = false;
 
         while (textLength > availableLength && text){
             text = text.slice(0, text.length - 1);
             element.text(`${text}...`);
-            textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize);
+            textLength = getTextWidth(text, GraphDims.lowerGraphArcLabelFontSize, undefined, GraphDims.lowerGraphArcLabelLetterSpacing);
             textTruncated = true;
         }
 
@@ -841,6 +985,14 @@ export function lowerGraph(model){
         element.attr("startOffset", GraphDims.lowerGraphArcPadding + textX);
     }
 
+    // hideInfoBox(): Hides the info box
+    function hideInfoBox() {
+        drawText({textGroup: lowerGraphInfoBox.textGroup});
+        drawText({textGroup: lowerGraphInfoBox.titleGroup});
+        drawText({textGroup: lowerGraphInfoBox.subTitleGroup});
+        lowerGraphInfoBox.highlight.attr("stroke", Colours.None);
+    }
+
     /* Update food group description box */
     function updateInfoBox(d){
         let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
@@ -854,46 +1006,98 @@ export function lowerGraph(model){
         mouseOverFoodGroupName = foodGroupName;
 
         let desc = "";
-        if (foodGroupName != Translation.translate("LegendKeys.All Items")) {
+        const isAllFoodGroups = foodGroupName == Translation.translate("LegendKeys.All Items");
+        if (!isAllFoodGroups) {
             desc = model.getFoodDescription(nutrient, foodGroupName);
         }
 
         // ---------- Updates the infobox --------------
 
-        const infoBoxPadding = GraphDims.lowerGraphInfoBoxPadding;
+        const textGroupPosX = GraphDims.lowerGraphInfoBoxBorderWidth + GraphDims.lowerGraphInfoBoxPadding;
+        let currentTextGroupPosY = GraphDims.lowerGraphInfoBoxPadding;
+
+        // change the title
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : "Food Group Description", width: GraphDims.lowerGraphInfoBoxWidth,
+                                    fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
+
+        // change the subtitle
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.lowerGraphInfoBoxWidth,
+                                       fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change text
         const textDims = drawText({textGroup: lowerGraphInfoBox.textGroup, text: desc, width: GraphDims.lowerGraphInfoBoxWidth, 
-                                   fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+                                   fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
+
+        // update the position of the title
+        lowerGraphInfoBox.titleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm;
+
+        // update the position of the subtitle
+        lowerGraphInfoBox.subTitleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += subTitleDims.textBottomYPos;
+
+        // update the position for the text box of the description
+        lowerGraphInfoBox.textGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += textDims.textBottomYPos;
 
         // change colour
         lowerGraphInfoBox.highlight.attr("stroke", colour);
 
         // update the height of the info box to be larger than the height of the text
-        let infoBoxHeight = lowerGraphInfoBox.highlight.node().getBBox()["height"];
-        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding + textDims.textBottomYPos + infoBoxPadding);
+        let infoBoxHeight = Math.max(GraphDims.lowerGraphInfoBoxHeight,  currentTextGroupPosY + GraphDims.lowerGraphInfoBoxPadding);
         lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
     }
 
     // saveAsImage(): Saves the bar graph as an image
-    function saveAsImage() {
+    async function saveAsImage() {
+        // use await so that the below operations can happen in the order they are listed
+        //  to simulate a mutex.
+        // 
+        // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
+        //  (or else you may have a picture of a graph without the source text)
+        // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
+        await sourceTextBox.attr("visibility", "visible");
         const svg = document.getElementById("lowerGraph").firstChild;
-        saveSvgAsPng(svg, "SunburstGraph.png", {backgroundColor: "white"});
+        await saveSvgAsPng(svg, `${graphTitleText}.png`, {backgroundColor: "white"});
+        await sourceTextBox.attr("visibility", "hidden");
     }
 
-    // downloadTable(): Exports the table of the bar graph as a CSV file
-    function downloadTable() {
+    // downloadDisplayedTable(): Exports the displayed table of the sunburst graph as a CSV file
+    function downloadDisplayedTable() {
         const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunburstTable.csvContent);
 
         // creates a temporary link for exporting the table
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
-        link.setAttribute('download', 'SunBurstTable.csv');
+        link.setAttribute('download', `${tableTitleText}.csv`);
 
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    // downloadFullTable(): Exports the table for all the data of the sunburst graph as a CSV file
+    function downloadFullTable() {
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunBurstTableAllData);
+
+        // creates a temporary link for exporting the table
+        const fileName = Translation.translate(`lowerGraph.allDataCSVFileName`, { nutrient })
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', `${fileName}.csv`);
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // scrollToNutrientSelection(): scrolls smoothly to the nutrient selection at the top of the bar graph
+    function scrollToNutrientSelection() {
+        const nutrientSelect = document.querySelector("#upperGraphNutrientSelect");
+        const nutrientSelectTopPos = nutrientSelect.getBoundingClientRect().top + document.documentElement.scrollTop;
+        const nutrientSelectTopMargin = 20;
+        window.scrollTo({top: Math.max(nutrientSelectTopPos - nutrientSelectTopMargin, 0), behavior: 'smooth'});
     }
 }

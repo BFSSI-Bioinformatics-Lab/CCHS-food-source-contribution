@@ -241,6 +241,16 @@ What it contains:
                     <div class="row">
                         <figure id="upperGraph" class="col-sm-12"></figure>
                         <div class="col-xs-12">
+                            <section class="alert alert-warning">
+                                <h3>Interpretation of the data</h3>
+                                <p>
+                                    Foods that are known to be rich sources of a nutrient may not be a major contributor to population intakes of that nutrient 
+                                    if they are consumed in low amounts. On the other hand, some less nutrient-dense foods may make a large contribution to population 
+                                    intakes simply because they are widely consumed and/or consumed in large amounts.
+                                </p>
+                            </section>
+                        </div>
+                        <div class="col-xs-12">
                             <details>
                                 <summary id="upperGraphTableTitle"></summary>
                                 <div class="table-responsive mrgn-tp-lg">
@@ -280,7 +290,7 @@ What it contains:
                                     }'>
                                     </table>
                                 </div>
-                                <button type="button" id="upperGraphSaveTable" class="btn btn-sm btn-success">
+                                <button type="button" id="upperGraphSaveTable" class="btn btn-sm btn-success mrgn-tp-md">
                                     <span class="text-white glyphicon glyphicon-cloud-download px-2"></span>
                                     Download table (.csv)
                                 </button>                            
@@ -296,7 +306,7 @@ What it contains:
                         <select class="form-control" name="ageSexSelect" title="Select age-sex group" id="lowerGraphAgeSexSelect"></select>
                     </div>
                     <div class="graphExtra">
-                        <button class="btn btn-info" id="lowerGraphFilterGroupsButton">Filter on Level 2 groups</button>
+                        <button class="btn btn-info" id="lowerGraphFilterGroupsButton"></button>
                         <button class="btn btn-success" id="lowerGraphSaveGraph">Save graph</button>
                     </div>
                     <div class="row">
@@ -304,7 +314,10 @@ What it contains:
                             <figure id="lowerGraph"></figure>
                         </div>
                     </div>
-                    <div class="col-xs-12">
+                    <div class="mrgn-top-md">
+                        <button class="btn btn-info" id="lowerGraphReturnToSelection">Return to Nutrient Selection</button>
+                    </div>
+                    <div class="col-xs-12 mrgn-tp-md">
                         <details>
                             <summary id="lowerGraphTableTitle"></summary>
                             <div class="table-responsive mrgn-tp-lg lowerGraphTableScroll">
@@ -330,10 +343,16 @@ What it contains:
                                 }'>
                                 </table>
                             </div>
-                            <button type="button" id="lowerGraphSaveTable" class="btn btn-sm btn-success">
-                                <span class="text-white glyphicon glyphicon-cloud-download px-2"></span>
-                                Download table (.csv)
-                            </button>                            
+                            <div class="mrgn-tp-md">
+                                <button type="button" id="lowerGraphSaveTable" class="btn btn-sm btn-success">
+                                    <span class="text-white glyphicon glyphicon-cloud-download px-2"></span>
+                                    Download displayed data (.csv)
+                                </button>     
+                                <button type="button" id="lowerGraphSaveAllData" class="btn btn-sm btn-success">
+                                    <span class="text-white glyphicon glyphicon-cloud-download px-2"></span>
+                                    Download all data (.csv)
+                                </button>   
+                            </div>                    
                         </details>
                     </div>
                 </section>

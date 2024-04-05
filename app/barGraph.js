@@ -20,7 +20,7 @@
 
 
 
-import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation } from "./assets.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation, SortIconClasses, SortStates } from "./assets.js";
 import { drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -46,13 +46,21 @@ export function upperGraph(model){
     // unit for the nutrient
     let nutrientUnit = "";
 
+    // titles for the graph and table
+    let graphTitleText = ""
+    let tableTitleText = ""
+
+    // table column that is being sorted
+    let sortedColIndex = null;
+    let sortedColState = SortStates.Unsorted;
+
     // whether to display numbers/percentae for the graph
     /* Sets up alternator between graph types (percentage vs number) */
     const typeIterator = getGraphType();
     let graphType = typeIterator.next().value;
 
     const upperGraphSvgWidth = GraphDims.upperGraphWidth + GraphDims.upperGraphLeft + GraphDims.upperGraphRight;
-    const upperGraphSvgHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom;
+    const upperGraphSvgHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom + GraphDims.upperGraphFooter;
     const upperGraphRightPos = GraphDims.upperGraphLeft + GraphDims.upperGraphWidth + GraphDims.upperGraphInfoBoxLeftMargin;
 
     // register the button to save the bar graph as a png
@@ -110,6 +118,31 @@ export function upperGraph(model){
 
     const upperGraphTable = d3.select("#upperGraphTable");
 
+    // ------------ draw the footnotes for the graph -----------------
+
+    const footNoteWidth = upperGraphSvgWidth - 2 * GraphDims.upperGraphFooterPaddingHor;
+
+    const footNotesContainer = upperGraphSvg.append("g")
+        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${GraphDims.upperGraphHeight + GraphDims.upperGraphTop + GraphDims.upperGraphBottom})`);
+    
+    // foot note for excluding pregnancy and lactating
+    const exclusionFootNoteTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, 0)`)
+        .attr("font-size", GraphDims.upperGraphFooterFontSize);
+
+    const exclusionFootNoteTextDims = drawText({textGroup: exclusionFootNoteTextBox, text: Translation.translate("FootNotes.excludePregnantAndLactating"), width: footNoteWidth, 
+                                                fontSize: GraphDims.upperGraphFooterFontSize});
+
+    // foot note for the source text
+    const sourceTextBox = footNotesContainer.append("text")
+        .attr("transform", `translate(${GraphDims.upperGraphFooterPaddingHor}, ${exclusionFootNoteTextDims.textBottomYPos + GraphDims.upperGraphFootNoteSpacing})`)
+        .attr("font-size", GraphDims.upperGraphFooterFontSize)
+        .attr("visibility", "hidden");
+
+    drawText({textGroup: sourceTextBox, text: Translation.translate("FootNotes.sourceText"), width: footNoteWidth, fontSize: GraphDims.upperGraphFooterFontSize});
+
+    // -----------------------------------------------------------------
+
     // remove any dummy tables that says "no data available in table" produced by JQuery
     upperGraphTable.selectAll("thead").remove();
     upperGraphTable.selectAll("tbody").remove();
@@ -125,10 +158,7 @@ export function upperGraph(model){
     // attributes for the info box
     const infoBox = {};
     let infoBoxHeight = GraphDims.upperGraphInfoBoxHeight;
-    const infoBoxBorderWidth = GraphDims.upperGraphInfoBoxBorderWidth;
-    const infoBoxPadding = GraphDims.upperGraphInfoBoxPadding;
-
-    const infoBoxTextGroupHeight = Math.max(infoBoxHeight, infoBoxHeight - infoBoxPadding - infoBoxPadding);
+    const infoBoxTextGroupHeight = Math.max(infoBoxHeight, infoBoxHeight - 2 * GraphDims.upperGraphInfoBoxPadding);
 
     // group for the info box
     infoBox.group = upperGraphSvg.append("g")
@@ -136,25 +166,26 @@ export function upperGraph(model){
 
     // border line for the info box
     infoBox.highlight = infoBox.group.append("line")
-        .attr("x1", infoBoxBorderWidth / 2)
-        .attr("x2", infoBoxBorderWidth / 2)
+        .attr("x1", GraphDims.upperGraphInfoBoxBorderWidth / 2)
+        .attr("x2", GraphDims.upperGraphInfoBoxBorderWidth / 2)
         .attr("y2", infoBoxHeight)
-        .attr("stroke-width", infoBoxBorderWidth)
+        .attr("stroke-width", GraphDims.upperGraphInfoBoxBorderWidth)
         .attr("visibility", "visible")
         .attr("stroke-linecap", "round");
 
+    // container to hold the title
+    infoBox.titleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.upperGraphInfoBoxTitleFontSize)
+        .attr("font-weight", FontWeight.Bold);
+
+    // container to hold the subtitle
+    infoBox.subTitleGroup = infoBox.group.append("text")
+        .attr("font-size", GraphDims.upperGraphInfoBoxFontSize)
+        .attr("font-weight", FontWeight.Bold);
+
     // container to hold the text
     infoBox.textGroup = infoBox.group.append("text")
-        .attr("font-size", GraphDims.upperGraphInfoBoxFontSize)
-        .attr("transform", `translate(${infoBoxBorderWidth + infoBoxPadding}, ${infoBoxPadding})`);
-    
-    // draw the text
-    const textDims = drawText({textGroup: infoBox.textGroup, fontSize: GraphDims.upperGraphInfoBoxFontSize, 
-                               lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, padding: infoBoxPadding});
-
-    // update the height of the info box to be larger than the height of the text
-    infoBoxHeight = Math.max(infoBoxTextGroupHeight, textDims.textBottomYPos + infoBoxPadding);
-    infoBox.highlight.attr("y2", infoBoxHeight);
+        .attr("font-size", GraphDims.upperGraphInfoBoxFontSize);
 
     const upperGraphInfoBox = infoBox;
 
@@ -221,8 +252,8 @@ export function upperGraph(model){
             )
 
         // draw the graph title
-        upperGraphHeading.text(Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit}))
-            .attr("font-weight", FontWeight.Bold);
+        graphTitleText = Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit});
+        upperGraphHeading.text(graphTitleText).attr("font-weight", FontWeight.Bold);
 
         //draw the table
         drawTable(nutrient);
@@ -334,7 +365,7 @@ export function upperGraph(model){
 
     /* Set the opacity of the hovered bar's info to be 1 */
     function onBarHover(d, i, index, elements){
-        updateInfoBox({name: d[0], d: d});
+        updateInfoBox({name: d[0]});
 
         const toolTipId = `barHover${i}`
         const mousePos = d3.mouse(upperGraphSvg.node());
@@ -358,8 +389,8 @@ export function upperGraph(model){
     }
 
     // drawTable(nutrient): Draws the table for the graph
-    function drawTable(nutrient){
-        const barGraphTable = model.createBarGraphTable();
+    function drawTable(nutrient, reloadData = true){
+        const barGraphTable = reloadData ? model.createBarGraphTable() : model.barGraphTable;
         const amountLeftIndex = 1;
 
         // --------------- draws the table -------------------------
@@ -405,11 +436,36 @@ export function upperGraph(model){
                     return 1;
                 })
                 .attr("colspan", 1)
-                .text(d => Translation.translate(d))
+                .text(subHeadingData => Translation.translate(subHeadingData.heading))
+
+                // add the sorting event listeners
+                .filter((headingData, headingInd) => { return barGraphTable.compareFuncs[headingInd] !== null })
+                .on("click", (headingData) => { 
+                    sortedColState = headingData.ind == sortedColIndex ? SortStates.getNext(sortedColState) : SortStates.Ascending; 
+                    sortedColIndex = headingData.ind;
+                    drawTable(nutrient, false);
+                })
+                .on("mouseenter", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Pointer; })
+                .on("mouseleave", (headingData, ind, tableHeaders) => { tableHeaders[ind].style.cursor = MousePointer.Default; })
+
+                // add in the sorting icon
+                .append("i")
+                .attr("class", (headingData) => { return `sortIcon ${sortedColIndex == headingData.ind ? SortIconClasses[sortedColState] : SortIconClasses[SortStates.Unsorted]}` })
+                .attr("aria-hidden", true);
+
+        // sort the table data
+        let barGraphTableDataRows = barGraphTable.table;
+        const hasCompareFunc = sortedColIndex !== null && barGraphTable.compareFuncs[sortedColIndex] !== null;
+
+        if (hasCompareFunc && sortedColState == SortStates.Ascending) {
+            barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
+        } else if (hasCompareFunc && sortedColState == SortStates.Descending) {
+            barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
+        }
         
         upperGraphTableBody.selectAll("tr").remove();
 
-        for (const row of barGraphTable.table) {
+        for (const row of barGraphTableDataRows) {
             const newRow = upperGraphTableBody.append("tr")
             .selectAll("td")
             .data(row)
@@ -438,15 +494,16 @@ export function upperGraph(model){
                 });
         }
 
-        upperGraphTableTitle.text(Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient }))
+        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
+        upperGraphTableTitle.text(tableTitleText);
 
         // ---------------------------------------------------------
     }
 
     // showInfoBox(name, colour, legendItem): Shows the info box
     function showInfoBox({name = "", colour = Colours.None, legendItem = null} = {}) {
-        updateInfoBox({name: name, colour: colour});
-        legendItem.group.   style("cursor", MousePointer.Pointer);
+        updateInfoBox({name: name});
+        legendItem.group.style("cursor", MousePointer.Pointer);
     }
 
     // hideInfoBox(): Hides the food group description box
@@ -454,7 +511,9 @@ export function upperGraph(model){
         mouseOverFoodGroupName = null;
 
         upperGraphInfoBox.highlight.attr("stroke", Colours.None);
+        drawWrappedText({textGroup: upperGraphInfoBox.titleGroup});
         drawWrappedText({textGroup: upperGraphInfoBox.textGroup});
+        drawWrappedText({textGroup: upperGraphInfoBox.subTitleGroup});
     }
 
     // legendItemOnMouseLeave(name, colour, legendItem): Event function when the user's mouse leaves a key
@@ -467,7 +526,9 @@ export function upperGraph(model){
     // legendItemOnClick(name, colour): Event function when the user clicks on a key in the legend
     function legendItemOnClick({name = "", colour = Colours.None} = {}) {
         let newFocusedFoodGroup = null;
-        if (focusedFoodGroup === null || name != focusedFoodGroup[0]) {
+        const isAllFoodGroups = name == Translation.translate("LegendKeys.All Items")
+
+        if (!isAllFoodGroups && (focusedFoodGroup === null || name != focusedFoodGroup[0])) {
             newFocusedFoodGroup = [name, 0];
         }
 
@@ -481,29 +542,57 @@ export function upperGraph(model){
     }
 
     // Update food group description box
-    function updateInfoBox({name = "", colour = Colours.None, amount = 0} = {}){
+    function updateInfoBox({name = ""} = {}){
         const foodGroupName = name;
         if (mouseOverFoodGroupName !== null && mouseOverFoodGroupName == foodGroupName) {
             return;
         }
 
+        let colour = GraphColours[foodGroupName];
+        colour = colour === undefined ? null : colour;
+
         mouseOverFoodGroupName = foodGroupName;
-        const desc = model.getFoodDescription(nutrient, foodGroupName);
+
+        let desc = "";
+        const isAllFoodGroups = foodGroupName == Translation.translate("LegendKeys.All Items");
+        if (!isAllFoodGroups) {
+            desc = model.getFoodDescription(nutrient, foodGroupName);
+        }
 
         // ---------- Updates the infobox --------------
 
-        const infoBoxPadding = GraphDims.upperGraphInfoBoxPadding;
+        const textGroupPosX = GraphDims.upperGraphInfoBoxBorderWidth + GraphDims.upperGraphInfoBoxPadding;
+        let currentTextGroupPosY = GraphDims.upperGraphInfoBoxPadding;
+
+        // change the title
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : "Food Group Description", width: GraphDims.upperGraphInfoBoxWidth,
+                                    fontSize: GraphDims.upperGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
+
+        // change the subtitle
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.upperGraphInfoBoxWidth,
+                                       fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change text
-        const textDims = drawText({textGroup: upperGraphInfoBox.textGroup, text: desc, width: GraphDims.upperGraphInfoBoxWidth, 
-                                   fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: infoBoxPadding, paddingRight: infoBoxPadding});
+        const textDims = drawText({textGroup: upperGraphInfoBox.textGroup, text: desc, width: GraphDims.upperGraphInfoBoxWidth,
+                                   fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
+        
+        // update the position of the title
+        upperGraphInfoBox.titleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`)
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm;
+        
+        // update the position of the subtitle
+        upperGraphInfoBox.subTitleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += subTitleDims.textBottomYPos;
+
+        // update the position for the text box of the description
+        upperGraphInfoBox.textGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+        currentTextGroupPosY += textDims.textBottomYPos;
 
         // change colour
-        upperGraphInfoBox.highlight.attr("stroke", GraphColours[foodGroupName]);
+        upperGraphInfoBox.highlight.attr("stroke", colour);
 
         // update the height of the info box to be larger than the height of the text
-        let infoBoxHeight = upperGraphInfoBox.highlight.node().getBBox()["height"];
-        infoBoxHeight = Math.max(infoBoxHeight, infoBoxPadding + textDims.textBottomYPos + infoBoxPadding);
+        let infoBoxHeight = Math.max(GraphDims.upperGraphInfoBoxHeight, infoBoxTextGroupHeight,  currentTextGroupPosY + GraphDims.upperGraphInfoBoxPadding);
         upperGraphInfoBox.highlight.attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
@@ -518,10 +607,11 @@ export function upperGraph(model){
         // attributes for the legend
         const legendItemPaddingHor = 0;
         const legendItemPaddingVert = 2;
+        const legendItemAllFoodGroupPaddingVert = 20;
         const legendItemTextPaddingHor = 5;
         const legendItemTextPaddingVert = 0;
         const legendItemFontSize = 12;
-        const legendData = Object.entries(titleToColours).filter(nameColourKVP => nameColourKVP[0] != "All Items");
+        const legendData = Object.entries(titleToColours);
         const colourBoxWidth = GraphDims.legendSquareSize;
         const colourBoxHeight = GraphDims.legendSquareSize;
         const legendItems = [];
@@ -532,9 +622,10 @@ export function upperGraph(model){
             .attr("transform", `translate(${upperGraphRightPos}, ${GraphDims.upperGraphTop})`);
 
         // draw all the keys for the legend
-        for (const legendKey of legendData) {
-            let legendKeyText = Translation.translate(`LegendKeys.${legendKey[0]}`);
-            let legendKeyColour = legendKey[1];
+        const legendDataLen = legendData.length;
+        for (let i = 0; i < legendDataLen; ++i) {
+            let legendKeyText = Translation.translate(`LegendKeys.${legendData[i][0]}`);
+            let legendKeyColour = legendData[i][1];
 
             // ***************** draws a key in the legend *********************
             
@@ -563,7 +654,15 @@ export function upperGraph(model){
 
             // *****************************************************************
 
-            currentLegendItemYPos += legendItemPaddingVert + legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+            currentLegendItemYPos += legendItemPaddingVert + legendItemGroup.node().getBBox()["height"];
+
+            // whether to add extra spacing for the "All Food Groups" legend key
+            if (i == legendData.length - 2) {
+                currentLegendItemYPos += legendItemAllFoodGroupPaddingVert;
+            } else {
+                currentLegendItemYPos += legendItemPaddingVert;
+            }
+
             legendItems.push(legendItem);
         }
 
@@ -587,13 +686,14 @@ export function upperGraph(model){
     function hoverTooltip(d, i){
         const toolTipId = `barHover${i}`;
         const colour = GraphColours[d[0]];
-        const lines = Translation.translate("upperGraph.infoBox", { 
+        const title = Translation.translate("upperGraph.toolTipTitle", {name: d[0]});
+        const lines = Translation.translate("upperGraph.toolTip", { 
             returnObjects: true, 
             context: graphType,
             amount: parseFloat(d[1]).toFixed(1),
-            name: d[0],
             percentage: parseFloat(d[1]).toFixed(1),
-            nutrient: d[0]
+            nutrient: d[0],
+            unit: nutrientUnit
         });
         
         // ------- draw the tooltip ------------
@@ -601,16 +701,11 @@ export function upperGraph(model){
         // attributes for the tool tip
         const toolTip = {};
         let toolTipWidth = GraphDims.upperGraphTooltipMinWidth;
-        let toolTipHeight = 50;
-        const toolTipBorderWidth = 3;
-        const toolTipBackgroundColor = Colours.White;
-        const toolTipPaddingHor = GraphDims.upperGraphTooltipLeftPadding;
-        const toolTipPaddingVert = GraphDims.upperGraphTooltipTopPadding;
-        const toolTipTextPaddingHor = GraphDims.upperGraphTooltipTextPaddingHor;
-        const toolTipTextPaddingVert = GraphDims.upperGraphTooltipTextPaddingVert;
+        let toolTipHeight = GraphDims.upperGraphTooltipHeight;
+        const textGroupPosX = GraphDims.upperGraphTooltipBorderWidth + GraphDims.upperGraphTooltipPaddingHor +  GraphDims.upperGraphTooltipTextPaddingHor;
+        let currentTextGroupPosY = GraphDims.upperGraphTooltipPaddingVert + GraphDims.upperGraphTooltipTextPaddingVert;
 
-        const toolTipTextGroupWidth = Math.max(toolTipWidth, toolTipWidth - toolTipPaddingHor - toolTipPaddingHor);
-        const toolTipHighlightXPos = toolTipPaddingHor + toolTipBorderWidth / 2;
+        const toolTipHighlightXPos = GraphDims.upperGraphTooltipPaddingHor + GraphDims.upperGraphTooltipBorderWidth / 2;
 
         // draw the container for the tooltip
         toolTip.group = upperGraphTooltips.append("g")
@@ -621,7 +716,7 @@ export function upperGraph(model){
         toolTip.background = toolTip.group.append("rect")
             .attr("height", toolTipHeight)
             .attr("width", toolTipWidth)
-            .attr("fill", toolTipBackgroundColor)
+            .attr("fill", Colours.White)
             .attr("stroke", colour)
             .attr("stroke-width", 1)
             .attr("rx", 5);
@@ -630,27 +725,40 @@ export function upperGraph(model){
         toolTip.highlight = toolTip.group.append("line")
             .attr("x1", toolTipHighlightXPos)
             .attr("x2", toolTipHighlightXPos)
-            .attr("y1", toolTipPaddingVert)
-            .attr("y2", toolTipHeight - toolTipPaddingVert)
+            .attr("y1", GraphDims.upperGraphTooltipPaddingVert)
+            .attr("y2", toolTipHeight - GraphDims.upperGraphTooltipPaddingVert)
             .attr("stroke", colour) 
-            .attr("stroke-width", toolTipBorderWidth)
+            .attr("stroke-width", GraphDims.upperGraphTooltipBorderWidth)
             .attr("stroke-linecap", "round");
+
+        // draw the title
+        toolTip.titleGroup = toolTip.group.append("text")
+            .attr("font-size", GraphDims.upperGraphTooltipFontSize)
+            .attr("font-weight", FontWeight.Bold)
+            .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+
+        const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, fontSize: GraphDims.upperGraphTooltipFontSize, 
+                                    textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipPaddingVert});
+
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphTooltipTitleMarginBtm;
 
         // draw the text
         toolTip.textGroup = toolTip.group.append("text")
             .attr("font-size", GraphDims.upperGraphTooltipFontSize)
-            .attr("transform", `translate(${toolTipBorderWidth + toolTipPaddingHor +  toolTipTextPaddingHor}, ${toolTipPaddingVert + toolTipTextPaddingVert})`);
+            .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
 
-        const textDims = drawText({textGroup: toolTip.textGroup, text: lines, width: toolTipTextGroupWidth, fontSize: GraphDims.upperGraphTooltipFontSize, 
-                                   lineSpacing: GraphDims.upperGraphTooltipLineSpacing, textWrap: TextWrap.NoWrap, padding: toolTipPaddingVert});
+        const textDims = drawText({textGroup: toolTip.textGroup, text: lines, fontSize: GraphDims.upperGraphTooltipFontSize, 
+                                   textWrap: TextWrap.NoWrap, padding: GraphDims.upperGraphTooltipPaddingVert});
+
+        currentTextGroupPosY += textDims.textBottomYPos;
 
         // update the height of the tooltip to be larger than the height of all the text
-        toolTipHeight = Math.max(toolTipHeight, toolTipPaddingVert + toolTipTextPaddingVert + textDims.textBottomYPos + toolTipTextPaddingVert + toolTipPaddingVert);
+        toolTipHeight = Math.max(toolTipHeight, currentTextGroupPosY + GraphDims.upperGraphTooltipPaddingVert + GraphDims.upperGraphTooltipTextPaddingVert);
         toolTip.background.attr("height", toolTipHeight);
-        toolTip.highlight.attr("y2", toolTipHeight - toolTipPaddingVert - toolTipPaddingVert);
+        toolTip.highlight.attr("y2", toolTipHeight - GraphDims.upperGraphTooltipPaddingVert);
 
         // update the width of the tooltip to be larger than the width of all the text
-        toolTipWidth = Math.max(toolTipWidth, toolTipPaddingHor + toolTipBorderWidth + toolTipTextPaddingHor + textDims.width + toolTipTextPaddingHor + toolTipPaddingHor);
+        toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.upperGraphTooltipPaddingHor + GraphDims.upperGraphTooltipBorderWidth + 2 * GraphDims.upperGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
         toolTip.background.attr("width", toolTipWidth);
 
         // -------------------------------------
@@ -660,9 +768,17 @@ export function upperGraph(model){
     }
 
     // saveAsImage(): Saves the bar graph as an image
-    function saveAsImage() {
+    async function saveAsImage() {
+        // use await so that the below operations can happen in the order they are listed
+        //  to simulate a mutex.
+        // 
+        // We do not want the operations to run at the same time or have the compiler reorder the lines for optimization.
+        //  (or else you may have a picture of a graph without the source text)
+        // https://blog.mayflower.de/6369-javascript-mutex-synchronizing-async-operations.html
+        await sourceTextBox.attr("visibility", "visible");
         const svg = document.getElementById("upperGraph").firstChild;
-        saveSvgAsPng(svg, "BarGraph.png", {backgroundColor: "white"});
+        await saveSvgAsPng(svg, `${graphTitleText}.png`, {backgroundColor: "white"});
+        await sourceTextBox.attr("visibility", "hidden");
     }
 
     // downloadTable(): Exports the table of the bar graph as a CSV file
@@ -672,7 +788,7 @@ export function upperGraph(model){
         // creates a temporary link for exporting the table
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
-        link.setAttribute('download', 'BarGraphTable.csv');
+        link.setAttribute('download', `${tableTitleText}.csv`);
 
         document.body.appendChild(link);
         link.click();

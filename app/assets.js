@@ -33,7 +33,7 @@ export const GraphColours = {
     "Fruits & Vegetables": "#3CCF4E",
     "Grain Products": "#EF5B0C",
     "Meat & Poultry": "#BB2525",
-    "Meat Alternatives": "#482121",
+    "Meat Alternatives": "#AC7339",
     "Nutritional Beverages & Bars": "#84F1CD",
     "Soups - Sauces - Spices & Other Ingredients": "#005DD0",
     "Sweets - Sugars & Savoury Snacks": "#824BD0",
@@ -65,29 +65,37 @@ export const GraphDims = Object.freeze({
     upperGraphRight: 400,
     upperGraphTop: 60,
     upperGraphBottom: 60,
+    upperGraphFooter: 50,
     upperGraphTooltipMinWidth: 140,
     upperGraphAxesFontSize: 20,
     upperGraphXAxisTickFontSize: 13,
     upperGraphYAxisTickFontSize: 14,
-    upperGraphTooltipFontSize: 12,
-    upperGraphTooltipTopPadding: 8,
-    upperGraphTooltipLeftPadding: 10,
-    upperGraphTooltipLineSpacing: 3,
+    upperGraphTooltipFontSize: 14,
+    upperGraphTooltipPaddingVert: 8,
+    upperGraphTooltipPaddingHor: 10,
+    upperGraphTooltipTitleMarginBtm: 10,
     upperGraphTooltipTextPaddingHor: 5,
     upperGraphTooltipTextPaddingVert: 3,
     upperGraphTooltipHighlightWidth: 1,
+    upperGraphTooltipHeight: 50,
+    upperGraphTooltipBorderWidth: 3,
     upperGraphInfoBoxWidth: 240,
-    upperGraphInfoBoxHeight: 200,
-    upperGraphInfoBoxFontSize: 14,
+    upperGraphInfoBoxHeight: 224,
+    upperGraphInfoBoxFontSize: 15,
+    upperGraphInfoBoxTitleFontSize: 18,
     upperGraphInfoBoxBorderWidth: 10,
     upperGraphInfoBoxPadding: 10,
+    upperGraphInfoBoxTitleMarginBtm: 15,
     upperGraphInfoBoxLineSpacing: 5,
     upperGraphInfoBoxLeftMargin: 30,
     upperGraphChartHeadingFontSize: 20,
     upperGraphTableSubHeadingFontSize: 12,
     upperGraphTableHeadingFontSize: 16,
+    upperGraphFooterFontSize: 12,
+    upperGraphFooterPaddingHor: 10,
+    upperGraphFootNoteSpacing: 10,
     lowerGraphWidth: 700,
-    lowerGraphHeight: 700,
+    lowerGraphHeight: 600,
     lowerGraphLeft: 60,
     lowerGraphRight: 400,
     lowerGraphTop: 60,
@@ -98,23 +106,32 @@ export const GraphDims = Object.freeze({
     lowerGraphCenterArcMargin: 1,
     lowerGraphCenterFontSize: 18,
     lowerGraphTooltipMinWidth: 140,
-    lowerGraphTooltipFontSize: 12,
+    lowerGraphTooltipFontSize: 14,
     lowerGraphTooltipTextPaddingHor: 5,
     lowerGraphTooltipTextPaddingVert: 3,
     lowerGraphTooltipHighlightWidth: 1,
     lowerGraphTooltipPaddingHor: 10,
     lowerGraphTooltipPaddingVert: 8,
+    lowerGraphTooltipHeight: 50,
+    lowerGraphTooltipBorderWidth: 3,
+    lowerGraphTooltipTitleMarginBtm: 10,
     lowerGraphInfoBoxWidth: 240,
-    lowerGraphInfoBoxHeight: 200,
-    lowerGraphArcLabelFontSize: 12,
+    lowerGraphInfoBoxHeight: 224,
+    lowerGraphArcLabelFontSize: 14,
+    lowerGraphArcLabelLetterSpacing: 1,
     lowerGraphArcPadding: 10,
     lowerGraphChartHeadingFontSize: 20,    
-    lowerGraphInfoBoxFontSize: 14, 
+    lowerGraphInfoBoxFontSize: 15,
+    lowerGraphInfoBoxTitleFontSize: 18,
     lowerGraphInfoBoxBorderWidth: 10,
     lowerGraphInfoBoxPadding: 10,
     lowerGraphInfoBoxLineSpacing: 10,
+    lowerGraphInfoBoxTitleMarginBtm: 15,
     lowerGraphTableSubHeadingFontSize: 12,
     lowerGraphTableHeadingFontSize: 16,
+    lowerGraphFooterFontSize: 12,
+    lowerGraphFooterPaddingHor: 10,
+    lowerGraphFootNoteSpacing: 10,
     legendFontSize: 12,
     legendSquareSize: 12,
     legendRowHeight: 20,
@@ -180,8 +197,8 @@ export const FoodIngredientDataColNames = {
     amount: "Amount",
     amountSE: "Amount_SE",
     percentage: "Percentage",
-    percentageSE: "Percentage_SE"
-
+    percentageSE: "Percentage_SE",
+    interpretationNotes: "Interpretation_Notes"
 };
 
 // Different display states of the sun burst graph
@@ -199,6 +216,28 @@ AgeSexGroupOrder["YouthAndAdolescents"] = 2;
 AgeSexGroupOrder["AdultMales"] = 3;
 AgeSexGroupOrder["AdultFemales"] = 4;
 
+// Different states for sorting tables
+export const SortStates = {
+    Unsorted: "unsorted",
+    Ascending: "ascending",
+    Descending: "descending",
+
+    getNext: function(sortState) {
+        if (sortState == SortStates.Unsorted) return SortStates.Ascending
+        else if (sortState == SortStates.Ascending) return SortStates.Descending
+        else return SortStates.Unsorted;
+    }
+};
+
+// icons for the different sorting states
+export const SortIconClasses = {};
+SortIconClasses[SortStates.Unsorted] = "fa fa-sort"
+SortIconClasses[SortStates.Ascending] = "fa fa-sort-down"
+SortIconClasses[SortStates.Descending] = "fa fa-sort-up"
+
+// column index for the "Food Group Level 3" column of the sunburst graph's table
+export const LowerGraphFoodGroupLv3ColInd = 2;
+
 
 // Translation: Helper class for doing translations
 export class Translation {
@@ -213,8 +252,17 @@ export class Translation {
         i18next.changeLanguage();
     }
     
+    // Note:
+    // For some food groups with special characters like "Fruits & Vegetables", we want the title to be displayed as "Fruits & Vegetables" instead of "Fruits &amp; Vegatables"
+    //  After passing in the food group into the i18next library, the library encoded the food group to be "Fruits &amp; Vegatables"
+    // So all the special characters got encoded to their corresponding HTML Entities (eg. &lt; , &gt; , &quot;)
+    //
+    // So we need to decode back the encoded string with HTML entities to turn back "Fruits &amp; Vegetables" to "Fruits & Vegetables"
     static translate(key, args){
-        return i18next.t(key, args)
+        const result = i18next.t(key, args);
+
+        if (typeof result !== 'string') return result;
+        return he.decode(result);
     }
 }
 
@@ -268,68 +316,79 @@ export const TranslationObj = {
                     "Sodium": "Vegetables Including Potatoes (sodium only)"
                 }
             },
+            
+            // Footnotes used in graphs and tables
+            "FootNotes": {
+                "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6% to 33.3%; interpret with caution.", 
+                "FInterpretationNote": "F: Data with a CV greater than 33.3% with a 95% confidence interval not entirely between 0 and 3%; suppressed due to extreme sampling variability.", 
+                "XInterpretationNote": "X: Food with less than 10 eaters; suppressed to meet confidentiality requirements.", 
+                "excludePregnantAndLactating": "*Excludes pregnant and lactating women",
+                "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
+            },
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": "Daily {{ nutrient }} intake per person ({{ amountUnit }}/d) provided by 12 food groups.",
+                    "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
                     "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
                     "switchTypeButton": "Switch to Percentage"
                 },
                 "percentage": {
-                    "graphTitle": "Percentage of total {{ nutrient }} intake provided by 12 food groups.",
+                    "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
-                "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of 12 food groups to daily {{nutrient}} intake",   
-                "infoBox_number": [
-                    "{{- name }}",
-                    "Amount: {{amount}}"
+                "tableTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
+                "toolTipTitle": "{{- name }}",
+                "toolTip_number": [
+                    "Amount: {{amount}} {{ unit }}"
                 ],
-                "infoBox_percentage": [
-                    "{{- name }}",
-                    "{{ percentage }}% of total {{- nutrient }} intake."
+                "toolTip_percentage": [
+                    "{{ percentage }}%"
                 ],
+                "tableSubHeadingFirstCol": "Food Group",
                 "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"]
             },
             "lowerGraph": {
-                "graphTitle": "Food groups and sub-groups contribution to {{ nutrient }} intake in Canadian {{ ageSexGroup }}",
-                "graphFootnote": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-                "tableTitle": "Absolute ({{ amountUnit }}/day) and relative (%) contribution of food groups and sub-groups to daily {{nutrient}} intake in Canadian {{ ageSexGroup }}, 2015",
-                "tableTitleAllData": "All Data",
-                "tableTitleLevel2Data": "Level 2 Data",
-                "tableTitleFilteredData": "Filtered Data by {{ chosenCategory }}",
-                "seeLevel2Groups": "Filter on level 2 groups",
-                "seeAllGroups": "See all food groups",
+                "graphTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadian {{ ageSexGroup }}"
+                    },
+
+                    "Population1Up": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
+                    }
+                },
+                "tableTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadian {{ ageSexGroup }}"
+                    },
+
+                    "Population1Up": {
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
+                    }
+                },
+                "seeLevel2Groups": "Show level 2 groups only",
+                "seeAllGroups": "Show all food groups",
                 "allFoodGroupsLabel": "All Food Groups",
-                "infoBoxLevel_1": [
-                    "{{- name }}",
-                    "{{ percentage }}% of total {{ nutrient }} intake."
-                ],
-                "infoBoxLevel_2": [
-                    "{{- name }}",
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }} group: {{ parentPercentage }}%"
-                ],
-                "infoBoxLevel_3": [
-                    "{{- name }}",
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }}: {{ parentPercentage }}%"
-                ],
-                "infoBoxLevel_4": [
-                    "{{- name }}",
-                    "Contribution to:",
-                    "Total {{ nutrient }} intake: {{ percentage }}%",
-                    "{{- parentGroup }}: {{ parentPercentage }}%"
+                "toolTipTitle": "{{- name }}",
+                "toolTipLevel": [
+                    "{{ percentage }}% of {{ nutrient }} intake"
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    "{{- name }}",
-                    "{{ percentage }}% of total {{ nutrient }} intake."
+                    "{{ percentage }}% of {{ nutrient }} intake."
                 ],
-                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"]
+                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "allDataCSVFileName": "Contribution of food groups and sub-groups to {{nutrient}} intake"
             }
         }
     },
@@ -378,66 +437,77 @@ export const TranslationObj = {
                 }
             },
 
+            // Footnotes used in graphs and tables
+            "FootNotes": {
+                "EInterpretationNote": REMPLACER_MOI, 
+                "FInterpretationNote": REMPLACER_MOI, 
+                "XInterpretationNote": REMPLACER_MOI, 
+                "excludePregnantAndLactating": REMPLACER_MOI,
+                "sourceText": REMPLACER_MOI,
+            },
+
             "upperGraph": {
                 "number": {
-                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} ({{ amountUnit }}/j)`,
+                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ amountUnit }}/j`,
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} ({{ amountUnit }}/j)`,
                     "switchTypeButton": "Changer Au Pourcentage"
                 },
                 "percentage": {
-                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }}`,
+                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }} {{ amountUnit }}/j`,
                     "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{nutrient}}`,
                     "switchTypeButton": "Changer Aux Nombres"
                 },
-                "graphFootnote": REMPLACER_MOI,
                 "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
-                "infoBox_number": [
-                    "{{- name }}",
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}}`
+                "toolTipTitle": "{{- name }}",
+                "toolTip_number": [
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}} {{ unit }}`
                 ],
-                "infoBox_percentage": [
-                    "{{- name }}",
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{- nutrient }} `
+                "toolTip_percentage": [
+                    `{{ percentage }}%`
                 ],
+                "tableSubHeadingFirstCol": "Groupes Alimentaires",
                 "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
             },
             "lowerGraph": {
-                "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ ageSexGroup }}`,
-                "graphFootnote": REMPLACER_MOI,
-                "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour)  {{nutrient}}  {{ ageSexGroup }}`,
-                "tableTitleAllData": REMPLACER_MOI,
-                "tableTitleLevel2Data": REMPLACER_MOI,
-                "tableTitleFilteredData": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ chosenCategory }}`,
-                "seeLevel2Groups": `Voyer les Groupes à Niveau 2`,
-                "seeAllGroups": `Toutes les Groupes Alimentaires`,
-                "infoBoxLevel_1": [
-                    "{{- name }}",
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}%  {{ nutrient }} `
-                ],
-                "infoBoxLevel_2": [
-                    "{{- name }}",
-                    REMPLACER_MOI,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
-                ],
-                "infoBoxLevel_3": [
-                    "{{- name }}",
-                    REMPLACER_MOI,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
-                ],
-                "infoBoxLevel_4": [
-                    "{{- name }}",
-                    REMPLACER_MOI,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ percentage }}%`,
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{- parentGroup }}  {{ parentPercentage }}%`
+                "graphTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}  {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`
+                    },
+
+                    "Population1Up": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                    }
+                },
+                "tableTitle": {
+                    "OtherAgeGroups": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}  {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`
+                    },
+
+                    "Population1Up": {
+                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
+                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}`,
+                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                    }
+                },
+                "seeLevel2Groups": REMPLACER_MOI,
+                "seeAllGroups": REMPLACER_MOI,
+                "toolTipTitle": "{{- name }}",
+                "toolTipLevel": [
+                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{nutrient}}`
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    "{{- name }}",
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
-                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
+                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "tableAllDataHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "allDataCSVFileName": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
             }
         }
     }
