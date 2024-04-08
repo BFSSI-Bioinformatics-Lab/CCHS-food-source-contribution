@@ -45,6 +45,18 @@ export function lowerGraph(model){
 
     // --------------------------------------------------------
 
+    // update the header widths of the table when the table is displayed
+    //  so that the header of the table aligns with the body of the table
+    const details = d3.select("#lowerTableDetails");
+    let dtTable;
+
+    details.on("toggle", () => {
+        if (details.attr("open") !== null) {
+            dtTable = $("#lowerGraphTable").DataTable();
+            dtTable.columns.adjust();
+        }
+    });
+
     // all the hover tooltips for the graph
     const hoverToolTips = {};
 
@@ -766,6 +778,7 @@ export function lowerGraph(model){
             .enter()
             .append("th")
                 .attr("class", "text-center lowerTableHeader")
+                .style("width", (d, i) => i < amountLeftIndex ? "150px" : "60px")
                 .style("min-width", (d, i) => i < amountLeftIndex ? "50px" : "40px")
                 .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
@@ -826,7 +839,7 @@ export function lowerGraph(model){
                     .attr("colspan", 1)
                     .text((d) => Number.isNaN(d) ? "" : d)
                     .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
-                    .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
+                    .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "") 
                     .style("font-size", "12px")
                     .style("font-weight", (d, i) => {
                         const colNum = (i - amountLeftIndex) % 4;
@@ -844,6 +857,11 @@ export function lowerGraph(model){
 
                         return "rgba(51,51,51,1)";
                     });
+        }
+
+        // update the header widths
+        if (dtTable !== undefined) {
+            dtTable.columns.adjust();
         }
 
         // ---------------------------------------------------------
