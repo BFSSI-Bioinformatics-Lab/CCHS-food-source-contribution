@@ -766,7 +766,6 @@ export function lowerGraph(model){
             .enter()
             .append("th")
                 .attr("class", "text-center lowerTableHeader")
-                .style("width", (d, i) => i < amountLeftIndex ? "150px" : "60px")
                 .style("min-width", (d, i) => i < amountLeftIndex ? "50px" : "40px")
                 .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
