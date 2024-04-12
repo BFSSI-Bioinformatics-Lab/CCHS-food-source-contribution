@@ -330,6 +330,9 @@ export const TranslationObj = {
                 "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
             },
 
+            // title for the popup tables on the website
+            "popUpTableTitle": "Table: {{title}}",
+
             "upperGraph": {
                 "number": {
                     "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
@@ -452,6 +455,9 @@ export const TranslationObj = {
                 "excludePregnantAndLactating": REMPLACER_MOI,
                 "sourceText": REMPLACER_MOI,
             },
+
+            // title for the popup tables on the website
+            "popUpTableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{title}}`,
 
             "upperGraph": {
                 "number": {

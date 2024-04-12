@@ -495,7 +495,7 @@ export function upperGraph(model){
         }
 
         tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
-        upperGraphTableTitle.text(tableTitleText);
+        upperGraphTableTitle.text(Translation.translate("popUpTableTitle", { title: tableTitleText }));
 
         // ---------------------------------------------------------
     }
