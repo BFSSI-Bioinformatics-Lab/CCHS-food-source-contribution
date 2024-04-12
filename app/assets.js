@@ -379,8 +379,8 @@ export const TranslationObj = {
                         "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
                     }
                 },
-                "seeLevel2Groups": "Show level 2 groups only",
-                "seeAllGroups": "Show all food groups",
+                "seeLevel2Groups": "Show Sub-groups Only",
+                "seeAllGroups": "Show All Food Groups",
                 "allFoodGroupsLabel": "All Food Groups",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
