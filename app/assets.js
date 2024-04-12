@@ -350,7 +350,7 @@ export const TranslationObj = {
                     "{{ percentage }}%"
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
-                "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"]
+                "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"]
             },
             "lowerGraph": {
                 "graphTitle": {
@@ -390,8 +390,8 @@ export const TranslationObj = {
                 "hoverBoxLevel_other": [ 
                     "{{ percentage }}% of {{ nutrient }} intake."
                 ],
-                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
-                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
+                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
+                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
                 "allDataCSVFileName": {
                     "All Displayed": "Contribution of food groups and sub-groups to {{nutrient}} intake",
                     "Filter Only Level 2": "Contribution of level 2 food groups to {{nutrient}} intake" 
@@ -473,7 +473,7 @@ export const TranslationObj = {
                     `{{ percentage }}%`
                 ],
                 "tableSubHeadingFirstCol": "Groupes Alimentaires",
-                "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
+                "tableSubHeadings": [`${REMPLACER_MOI_AVEC_ARGUMENTS} {{unit}}`, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
             },
             "lowerGraph": {
                 "graphTitle": {
@@ -512,8 +512,8 @@ export const TranslationObj = {
                 "hoverBoxLevel_other": [ 
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
-                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
-                "tableAllDataHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, `${REMPLACER_MOI_AVEC_ARGUMENTS} {{unit}}`, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
+                "tableAllDataHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, `${REMPLACER_MOI_AVEC_ARGUMENTS} {{unit}}`, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
                 "allDataCSVFileName": {
                     "All Displayed": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
                     "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}` 

@@ -271,7 +271,7 @@ export class Model {
     // createBarGraphTable(): Creates the data for the table of the bar graph
     createBarGraphTable() {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
-        const headingsPerSexAgeGroup = Translation.translate("upperGraph.tableSubHeadings", { returnObjects: true });
+        const headingsPerSexAgeGroup = Translation.translate("upperGraph.tableSubHeadings", { returnObjects: true, unit: this.getNutrientUnit() });
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         const nutrientAgeGroups = Object.keys(nutrientData);
@@ -349,7 +349,7 @@ export class Model {
         let nutrientData = this.tableNutrientTables[this.nutrient];
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
-        let sunBurstTableHeadings = Translation.translate("lowerGraph.tableAllDataHeadings", { returnObjects: true });
+        let sunBurstTableHeadings = Translation.translate("lowerGraph.tableAllDataHeadings", { returnObjects: true, unit: this.getNutrientUnit() });
         let donutTableHeadings = sunBurstTableHeadings.toSpliced(LowerGraphAllDataColInd.FoodGroupLv3, 1);
 
         // create the data rows for the table
@@ -428,7 +428,7 @@ export class Model {
             }
         }
 
-        let tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
+        let tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true, unit: this.getNutrientUnit() });
         if (!graphIsAllDisplayed) {
             tableHeadings.splice(LowerGraphFoodGroupLv3ColInd, 1);
         }
