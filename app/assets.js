@@ -237,6 +237,10 @@ SortIconClasses[SortStates.Descending] = "fa fa-sort-up"
 
 // column index for the "Food Group Level 3" column of the sunburst graph's table
 export const LowerGraphFoodGroupLv3ColInd = 2;
+export const LowerGraphAllDataColInd = {
+    FoodGroupLv2: 2,
+    FoodGroupLv3: 3
+};
 
 
 // Translation: Helper class for doing translations
@@ -388,7 +392,10 @@ export const TranslationObj = {
                 ],
                 "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
                 "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
-                "allDataCSVFileName": "Contribution of food groups and sub-groups to {{nutrient}} intake"
+                "allDataCSVFileName": {
+                    "All Displayed": "Contribution of food groups and sub-groups to {{nutrient}} intake",
+                    "Filter Only Level 2": "Contribution of level 2 food groups to {{nutrient}} intake" 
+                }
             }
         }
     },
@@ -507,7 +514,10 @@ export const TranslationObj = {
                 ],
                 "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
                 "tableAllDataHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
-                "allDataCSVFileName": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                "allDataCSVFileName": {
+                    "All Displayed": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
+                    "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}` 
+                }
             }
         }
     }

@@ -1083,10 +1083,10 @@ export function lowerGraph(model){
 
     // downloadFullTable(): Exports the table for all the data of the sunburst graph as a CSV file
     function downloadFullTable() {
-        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunBurstTableAllData);
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunBurstTableAllData[graphState]);
 
         // creates a temporary link for exporting the table
-        const fileName = Translation.translate(`lowerGraph.allDataCSVFileName`, { nutrient })
+        const fileName = Translation.translate(`lowerGraph.allDataCSVFileName.${graphState}`, { nutrient })
         const link = document.createElement('a');
         link.setAttribute('href', encodedUri);
         link.setAttribute('download', `${fileName}.csv`);
