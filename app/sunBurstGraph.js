@@ -854,7 +854,7 @@ export function lowerGraph(model){
 
         const titleKeys = getTitleTranslateKeys(ageSexGroup);
         tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
-        lowerGraphTableTitle.text(tableTitleText);
+        lowerGraphTableTitle.text(Translation.translate("popUpTableTitle", { title: tableTitleText }));
     }
 
     // getArcColour(treeNode): if a particular tree node in the data does not have a colour, 
