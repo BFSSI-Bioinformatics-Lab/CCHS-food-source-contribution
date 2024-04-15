@@ -390,7 +390,8 @@ export function upperGraph(model){
 
     // drawTable(nutrient): Draws the table for the graph
     function drawTable(nutrient, reloadData = true){
-        const barGraphTable = reloadData ? model.createBarGraphTable() : model.barGraphTable;
+        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
+        const barGraphTable = reloadData ? model.createBarGraphTable(tableTitleText) : model.barGraphTable;
         const amountLeftIndex = 1;
 
         // --------------- draws the table -------------------------
@@ -494,7 +495,6 @@ export function upperGraph(model){
                 });
         }
 
-        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
         upperGraphTableTitle.text(Translation.translate("popUpTableTitle", { title: tableTitleText }));
 
         // ---------------------------------------------------------
