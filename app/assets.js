@@ -293,7 +293,7 @@ export const TranslationObj = {
                 "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
                 "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
                 "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
-                "All Items": "All Food Groups"
+                "All Items": "All Food Groups (Reset)"
             },
 
             // Names for the age-sex groups
@@ -382,6 +382,7 @@ export const TranslationObj = {
                         "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
                     }
                 },
+                "allItems": "All Food Groups",
                 "seeLevel2Groups": "Show Sub-groups Only",
                 "seeAllGroups": "Show All Food Groups",
                 "allFoodGroupsLabel": "All Food Groups",
@@ -419,7 +420,7 @@ export const TranslationObj = {
                 "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
                 "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
                 "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
-                "All Items": "Toutes les Groupes Alimentaires"
+                "All Items": REMPLACER_MOI
             },
 
             // Names for the age-sex groups
@@ -508,6 +509,7 @@ export const TranslationObj = {
                         "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
                     }
                 },
+                "allItems": REMPLACER_MOI,
                 "seeLevel2Groups": REMPLACER_MOI,
                 "seeAllGroups": REMPLACER_MOI,
                 "toolTipTitle": "{{- name }}",
