@@ -226,7 +226,7 @@ export class Model {
                 children: []
             }));
             return objLevel1;
-        }, { name: Translation.translate("LegendKeys.All Items"), row: {Percentage: 100}, children: [] });
+        }, { name: Translation.translate("lowerGraph.allItems"), row: {Percentage: 100}, children: [] });
 
         groupedPercentages = {name: "data", children: [groupedPercentages]}
         return groupedPercentages;
