@@ -646,8 +646,11 @@ export function lowerGraph(model){
 
         transitionArcs(1000);
         setFilterButtonToLevel2Groups();
+        
+        // Comment out the lines below if we want to get back to the previously clicked arc
+        selectedNodeIndex = 1;
+        selectedNode = null;
 
-        // get back to the previously clicked arc
         arcOnClick(null, selectedNodeIndex);
 
         // update the filter for the table of the sunburst
