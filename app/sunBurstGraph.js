@@ -613,7 +613,7 @@ export function lowerGraph(model){
         updateArcThickness();
         
         transitionArcs(1000);
-        setFilterButton("lowerGraph.seeAllGroups", () => filterAllFoodGroups());
+        setFilterButton("lowerGraph.seeAllGroups", "assets/sunburst-icon.png", () => filterAllFoodGroups());
 
         // update the filter for the table of the sunburst
         drawTable();
@@ -660,16 +660,27 @@ export function lowerGraph(model){
         updateGraphTitle();
     }
 
-    // setFilterButton(translationKey, onClickAction): Changes the state of the filter button
+    // setFilterButton(translationKey, icon, onClickAction): Changes the state of the filter button
     //  based on 'translationKey' and 'onClickAction'
-    function setFilterButton(translationKey, onClickAction) {
-        lowerGraphFilterGroupsButton.text(Translation.translate(translationKey));
+    function setFilterButton(translationKey, icon, onClickAction) {
+        const buttonText = Translation.translate(translationKey);
+
+        // change the icon
+        lowerGraphFilterGroupsButton.select("img")
+            .attr("src", icon)
+            .attr("alt", buttonText);
+        
+        // set the text for the button
+        const buttonTextGroup = lowerGraphFilterGroupsButton.select("span")
+        buttonTextGroup.text(buttonText)
+
+        // register the event once the button is clicked
         lowerGraphFilterGroupsButton.on("click", onClickAction);
     }
 
     // setFilterButtonToLevel2Groups(): Changes the filter button to be to filter on level 2 groups
     function setFilterButtonToLevel2Groups() {
-        setFilterButton("lowerGraph.seeLevel2Groups", () => filterOnLevel2Groups());
+        setFilterButton("lowerGraph.seeLevel2Groups", "assets/donut-icon.png", () => filterOnLevel2Groups());
     }
 
     /* Shows arc only when the arc has a depth between 1-4 and a nonzero angle */
