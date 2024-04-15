@@ -756,7 +756,12 @@ export function lowerGraph(model){
     // draws the table for the sun burst graph
     function drawTable(ageSexGroup, reloadData = true){
         const sunBurstNode = selectedNode ?? { depth: 1, data: {name: Translation.translate("LegendKeys.All Items")}} 
-        const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name) : model.sunburstTable;
+
+        // update the text for the title
+        const titleKeys = getTitleTranslateKeys(ageSexGroup);
+        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
+        
+        const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, tableTitleText) : model.sunburstTable;
 
         // --------------- draws the table -------------------------
 
@@ -852,8 +857,6 @@ export function lowerGraph(model){
 
         // ---------------------------------------------------------
 
-        const titleKeys = getTitleTranslateKeys(ageSexGroup);
-        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
         lowerGraphTableTitle.text(Translation.translate("popUpTableTitle", { title: tableTitleText }));
     }
 
