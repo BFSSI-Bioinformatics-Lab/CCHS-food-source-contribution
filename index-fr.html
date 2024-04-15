@@ -255,7 +255,7 @@ What it contains:
                         <div class="col-xs-12">
                             <details>
                                 <summary id="upperGraphTableTitle"></summary>
-                                <div class="table-responsive mrgn-tp-lg">
+                                <div class="table-responsive mrgn-tp-lg graphTableContainer">
                                     <table class="dataTable table table-striped table-hover table-condensed text-center"
                                     aria-live="polite"
                                     id="upperGraphTable">
@@ -277,11 +277,14 @@ What it contains:
                         <select class="form-control" name="ageSexSelect" title="Select age-sex group" id="lowerGraphAgeSexSelect"></select>
                     </div>
                     <div class="graphExtra">
-                        <button class="btn btn-info" id="lowerGraphFilterGroupsButton"></button>
+                        <button class="btn btn-info" id="lowerGraphFilterGroupsButton">
+                            <img class="lowerGraphBtnIcon mrgn-rght-sm">
+                            <span></span>
+                        </button>
                         <button class="btn btn-success" id="lowerGraphSaveGraph">Save graph</button>
                     </div>
                     <div class="row">
-                        <div class="col-sm-12">
+                        <div>
                             <figure id="lowerGraph"></figure>
                         </div>
                     </div>
@@ -291,7 +294,7 @@ What it contains:
                     <div class="col-xs-12 mrgn-tp-md">
                         <details id="lowerTableDetails">
                             <summary id="lowerGraphTableTitle"></summary>
-                            <div class="table-responsive mrgn-tp-lg lowerGraphTableContainer">
+                            <div class="table-responsive mrgn-tp-lg graphTableContainer">
                                 <table class="dataTable table table-striped table-hover table-condensed text-center"
                                 aria-live="polite"
                                 id="lowerGraphTable">

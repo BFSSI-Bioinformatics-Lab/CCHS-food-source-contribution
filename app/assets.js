@@ -232,8 +232,8 @@ export const SortStates = {
 // icons for the different sorting states
 export const SortIconClasses = {};
 SortIconClasses[SortStates.Unsorted] = "fa fa-sort"
-SortIconClasses[SortStates.Ascending] = "fa fa-sort-down"
-SortIconClasses[SortStates.Descending] = "fa fa-sort-up"
+SortIconClasses[SortStates.Ascending] = "fa fa-sort-amount-down"
+SortIconClasses[SortStates.Descending] = "fa fa-sort-amount-up"
 
 // column index for the "Food Group Level 3" column of the sunburst graph's table
 export const LowerGraphFoodGroupLv3ColInd = 2;
