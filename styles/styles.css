@@ -18,8 +18,11 @@
 }
 
 .graphTableContainer {
-    height: 400px;
     overflow: auto !important;
+}
+
+.lowerGraphTableContainer {
+    max-height: 500px;
 }
 
 .sortIcon {
