@@ -924,7 +924,7 @@ export function lowerGraph(model){
         let foundColour;
 
         while(foundColour === undefined && treeNode.depth > 1) {
-            foundColour = GraphColours[treeNode.data.name];
+            foundColour = GraphColours[Translation.translate(`LegendKeyVars.${treeNode.data.name}`)];
             treeNode = treeNode.parent;
         }
 
@@ -1059,7 +1059,7 @@ export function lowerGraph(model){
 
     /* Update food group description box */
     function updateInfoBox(d){
-        let colour = GraphColours[d.data.row[FoodIngredientDataColNames.foodGroupLv1]];
+        let colour = GraphColours[Translation.translate(`LegendKeyVars.${d.data.row[FoodIngredientDataColNames.foodGroupLv1]}`)];
         colour = colour === undefined ? null : colour;
 
         let foodGroupName = d.data.name;
@@ -1081,7 +1081,7 @@ export function lowerGraph(model){
         let currentTextGroupPosY = GraphDims.lowerGraphInfoBoxPadding;
 
         // change the title
-        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : "Food Group Description", width: GraphDims.lowerGraphInfoBoxWidth,
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : Translation.translate("infoBoxTitle"), width: GraphDims.lowerGraphInfoBoxWidth,
                                     fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change the subtitle
@@ -1130,11 +1130,12 @@ export function lowerGraph(model){
 
     // downloadDisplayedTable(): Exports the displayed table of the sunburst graph as a CSV file
     function downloadDisplayedTable() {
-        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunburstTable.csvContent);
+        const universalBOM = "\uFEFF";
+        const encodedUri = encodeURI(universalBOM + model.sunburstTable.csvContent);
 
         // creates a temporary link for exporting the table
         const link = document.createElement('a');
-        link.setAttribute('href', encodedUri);
+        link.setAttribute('href', "data:text/csv;charset=utf-8," + encodedUri);
         link.setAttribute('download', `${tableTitleText}.csv`);
 
         document.body.appendChild(link);
@@ -1144,12 +1145,13 @@ export function lowerGraph(model){
 
     // downloadFullTable(): Exports the table for all the data of the sunburst graph as a CSV file
     function downloadFullTable() {
-        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.sunBurstTableAllData[graphState]);
+        const universalBOM = "\uFEFF";
+        const encodedUri = encodeURI(universalBOM + model.sunBurstTableAllData[graphState]);
 
         // creates a temporary link for exporting the table
         const fileName = Translation.translate(`lowerGraph.allDataCSVFileName.${graphState}`, { nutrient })
         const link = document.createElement('a');
-        link.setAttribute('href', encodedUri);
+        link.setAttribute('href', "data:text/csv;charset=utf-8," + encodedUri);
         link.setAttribute('download', `${fileName}.csv`);
 
         document.body.appendChild(link);
