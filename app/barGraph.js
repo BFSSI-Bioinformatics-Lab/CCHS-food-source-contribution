@@ -303,6 +303,8 @@ export function upperGraph(model){
                         /* So that there arent gaps between bars due to rounding */
                         (i !== groupEntries.length - 1 ? 1 : 0);
                 })
+
+                // d[0] references the first element of [food group, intake] in line 281
                 .attr("fill", d => GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)]);
         
         accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
