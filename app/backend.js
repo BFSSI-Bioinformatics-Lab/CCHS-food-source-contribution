@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates, LowerGraphFoodGroupLv3ColInd } from "./assets.js";
+import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates, LowerGraphFoodGroupLv3ColInd, LowerGraphAllDataColInd } from "./assets.js";
 
 
 // ================== CONSTANTS ==========================================
@@ -226,7 +226,7 @@ export class Model {
                 children: []
             }));
             return objLevel1;
-        }, { name: Translation.translate("LegendKeys.All Items"), row: {Percentage: 100}, children: [] });
+        }, { name: Translation.translate("lowerGraph.allItems"), row: {Percentage: 100}, children: [] });
 
         groupedPercentages = {name: "data", children: [groupedPercentages]}
         return groupedPercentages;
@@ -268,10 +268,10 @@ export class Model {
         return foodIngredientRow[column];
     }
 
-    // createBarGraphTable(): Creates the data for the table of the bar graph
-    createBarGraphTable() {
+    // createBarGraphTable(title): Creates the data for the table of the bar graph
+    createBarGraphTable(title) {
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient];
-        const headingsPerSexAgeGroup = Translation.translate("upperGraph.tableSubHeadings", { returnObjects: true });
+        const headingsPerSexAgeGroup = Translation.translate("upperGraph.tableSubHeadings", { returnObjects: true, unit: this.getNutrientUnit() });
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
 
         const nutrientAgeGroups = Object.keys(nutrientData);
@@ -304,6 +304,14 @@ export class Model {
             result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
         });
 
+        // create the title for the CSV
+        const csvTitle = [];
+        for (let i = 0; i < 2; ++i) {
+            csvTitle.push(subHeadings.map(() => { return ""}));
+        }
+
+        csvTitle[0][0] = title;
+
         // get the footnotes to the CSV
         const csvFootNotes = [];
         for (let i = 0; i < 6; ++i) {
@@ -329,7 +337,7 @@ export class Model {
         csvHeadings = csvHeadings.flat();
         csvHeadings.splice(0, 0, "");
 
-        const csvContent = TableTools.createCSVContent([csvHeadings, subHeadings].concat(result).concat(csvFootNotes));
+        const csvContent = TableTools.createCSVContent(csvTitle.concat([csvHeadings, subHeadings]).concat(result).concat(csvFootNotes));
 
         // -----------------------------------------------------------------------------------------
 
@@ -346,41 +354,64 @@ export class Model {
 
     // createSunburstAllTable(): Creates the data for the table of the sunburst graph to display all the age-sex groups
     createSunburstAllTable() {
-        const nutrientData = this.tableNutrientTables[this.nutrient];
+        let nutrientData = this.tableNutrientTables[this.nutrient];
         const headingsPerSexAgeGroupKeys = [FoodIngredientDataColNames.amount, FoodIngredientDataColNames.amountSE, FoodIngredientDataColNames.percentage, FoodIngredientDataColNames.percentageSE];
-        let tableHeadings = Translation.translate("lowerGraph.tableAllDataHeadings", { returnObjects: true });
+
+        let sunBurstTableHeadings = Translation.translate("lowerGraph.tableAllDataHeadings", { returnObjects: true, unit: this.getNutrientUnit() });
+        let donutTableHeadings = sunBurstTableHeadings.toSpliced(LowerGraphAllDataColInd.FoodGroupLv3, 1);
 
         // create the data rows for the table
-        let result = [];
+        let sunBurstData = [];
         for (const row of nutrientData) {
-            let newRow = [row["Age-sex group (*: excludes pregnant or breastfeeding)"], row["Food group_level1"], row["Food group_level2"], row["Food group_level3"]];
+            let newRow = [row[FoodIngredientDataColNames.ageSexGroup], row[FoodIngredientDataColNames.foodGroupLv1], row[FoodIngredientDataColNames.foodGroupLv2], row[FoodIngredientDataColNames.foodGroupLv3]];
             newRow = newRow.map((cellValue) => { return Number.isNaN(cellValue) ? "" : cellValue});
 
             const amountData = headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(row, key));
-            result.push(newRow.concat(amountData));
+            sunBurstData.push(newRow.concat(amountData));
         }
+
+        // filter the data for the donut
+        let donutData = sunBurstData.filter((row) => { return (row[LowerGraphAllDataColInd.FoodGroupLv2] != "" &&  row[LowerGraphAllDataColInd.FoodGroupLv3] == "") });
+        donutData = donutData.map((row) => {  return row.toSpliced(LowerGraphAllDataColInd.FoodGroupLv3, 1); });
+
+        // create the title for the CSV
+        const sunBurstCsvTitle = [];
+        const donutCsvTitle = [];
+        for (let i = 0; i < 2; ++i) {
+            sunBurstCsvTitle.push(sunBurstTableHeadings.map(() => { return ""}));
+            donutCsvTitle.push(sunBurstTableHeadings.map(() => { return ""}));
+        }
+
+        sunBurstCsvTitle[0][0] = Translation.translate("lowerGraph.allDataCSVFileName.All Displayed", {nutrient: this.nutrient});
+        donutCsvTitle[0][0] = Translation.translate("lowerGraph.allDataCSVFileName.Filter Only Level 2", {nutrient: this.nutrient});
 
         // get the footnotes to the CSV
-        const csvFootNotes = [];
+        const sunBurstCsvFootNotes = [];
         for (let i = 0; i < 6; ++i) {
-            csvFootNotes.push(tableHeadings.map(() => { return ""}));
+            sunBurstCsvFootNotes.push(sunBurstTableHeadings.map(() => { return ""}));
         }
 
-        csvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
-        csvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
-        csvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
-        csvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
-        csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
+        sunBurstCsvFootNotes[1][0] = Translation.translate("FootNotes.EInterpretationNote");
+        sunBurstCsvFootNotes[2][0] = Translation.translate("FootNotes.FInterpretationNote");
+        sunBurstCsvFootNotes[3][0] = Translation.translate("FootNotes.XInterpretationNote");
+        sunBurstCsvFootNotes[4][0] = Translation.translate("FootNotes.excludePregnantAndLactating");
+        sunBurstCsvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
+
+        const donutCsvFootNotes = sunBurstCsvFootNotes.map((row) => { return row.toSpliced(LowerGraphAllDataColInd.FoodGroupLv3, 1); });
 
         // get the text needed for the CSV export
-        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
+        const sunBurstCsvContent = TableTools.createCSVContent(sunBurstCsvTitle.concat([sunBurstTableHeadings]).concat(sunBurstData).concat(sunBurstCsvFootNotes));
+        const donutCsvContent = TableTools.createCSVContent(donutCsvTitle.concat([donutTableHeadings]).concat(donutData).concat(donutCsvFootNotes));
 
-        this.sunBurstTableAllData = csvContent;
+        this.sunBurstTableAllData = {};
+        this.sunBurstTableAllData[SunBurstStates.AllDisplayed] = sunBurstCsvContent;
+        this.sunBurstTableAllData[SunBurstStates.FilterOnlyLevel2] = donutCsvContent;
+
         return this.sunBurstTableAllData;
     }
 
-    // createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName): Creates the data for the table of the sunburst graph
-    createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName) {
+    // createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName, title): Creates the data for the table of the sunburst graph
+    createSunburstDisplayedTable(ageSexGroup, sunBurstState, foodGroupDepth, foodGroupName, title) {
         const graphIsAllDisplayed = sunBurstState == SunBurstStates.AllDisplayed;
         const nutrientData = this.tableNutrientTablesByDemoGroupLv1[this.nutrient][ageSexGroup];
         foodGroupName = foodGroupName.trim().toLowerCase();
@@ -416,7 +447,7 @@ export class Model {
             }
         }
 
-        let tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true });
+        let tableHeadings = Translation.translate("lowerGraph.tableHeadings", { returnObjects: true, unit: this.getNutrientUnit() });
         if (!graphIsAllDisplayed) {
             tableHeadings.splice(LowerGraphFoodGroupLv3ColInd, 1);
         }
@@ -436,6 +467,14 @@ export class Model {
             return foodGroupData.concat(amountData);
         });
 
+        // create the title for the CSV
+        const csvTitle = [];
+        for (let i = 0; i < 2; ++i) {
+            csvTitle.push(tableHeadings.map(() => { return ""}));
+        }
+
+        csvTitle[0][0] = title;
+
         // get the footnotes to the CSV
         const csvFootNotes = [];
         for (let i = 0; i < 6; ++i) {
@@ -449,7 +488,7 @@ export class Model {
         csvFootNotes[5][0] = Translation.translate("FootNotes.sourceText");
 
         // get the text needed for the CSV export
-        const csvContent = TableTools.createCSVContent([tableHeadings].concat(result).concat(csvFootNotes));
+        const csvContent = TableTools.createCSVContent(csvTitle.concat([tableHeadings]).concat(result).concat(csvFootNotes));
 
         // get the compare functions of each heading for sorting
         let compareFuncs = [Model.defaultCompare, Model.defaultCompare];

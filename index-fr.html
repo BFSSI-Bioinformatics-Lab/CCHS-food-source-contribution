@@ -64,7 +64,7 @@ What it contains:
             <section id="wb-lng" class="text-right">
                 <h2 class="wb-inv">Language selection</h2>
                 <ul class="list-inline margin-bottom-none">
-                    <li><a lang="fr" hreflang="fr" href="index.html">English</a></li>
+                    <li><a lang="en" hreflang="en" href="index.html">English</a></li>
                 </ul>
             </section>
             <div class="row">
@@ -240,6 +240,7 @@ What it contains:
                     </div>
                     <div class="row">
                         <figure id="upperGraph" class="col-sm-12"></figure>
+                        <!-- Uncomment this if we want the warning for the interpretation notes for the bar graph again --
                         <div class="col-xs-12">
                             <section class="alert alert-warning">
                                 <h3>Interpretation of the data</h3>
@@ -249,45 +250,15 @@ What it contains:
                                     intakes simply because they are widely consumed and/or consumed in large amounts.
                                 </p>
                             </section>
-                        </div>
+                        </div> 
+                          ------------------------------------------------------------------------------------------------->
                         <div class="col-xs-12">
                             <details>
                                 <summary id="upperGraphTableTitle"></summary>
-                                <div class="table-responsive mrgn-tp-lg">
-                                    <table class="wb-tables table table-striped table-hover table-condensed text-center"
+                                <div class="table-responsive mrgn-tp-lg graphTableContainer">
+                                    <table class="dataTable table table-striped table-hover table-condensed text-center"
                                     aria-live="polite"
-                                    id="upperGraphTable"
-                                    data-wb-tables='{
-                                    "scrollX": false,
-                                    "paging": false,
-                                    "ordering" : false,
-                                    "searching": false,
-                                    "processing": false,
-                                    "info": false,
-                                    "columns": [
-                                        { "data" : "Food group"},
-                                        { "data":"Population age 1+" }, 
-                                        { "data": "Children 1 to 8 y" }, 
-                                        { "data":"Youth & adolescents 9 to 18 y"},
-                                        { "data":"Adult males 19 y +"},
-                                        { "data":"Adult females* 19 y +"},
-                                        { "data":"Population age 1+" }, 
-                                        { "data": "Children 1 to 8 y" }, 
-                                        { "data":"Youth & adolescents 9 to 18 y"},
-                                        { "data":"Adult males 19 y +"},
-                                        { "data":"Adult females* 19 y +"},
-                                        { "data":"Population age 1+" }, 
-                                        { "data": "Children 1 to 8 y" }, 
-                                        { "data":"Youth & adolescents 9 to 18 y"},
-                                        { "data":"Adult males 19 y +"},
-                                        { "data":"Adult females* 19 y +"},
-                                        { "data":"Population age 1+" }, 
-                                        { "data": "Children 1 to 8 y" }, 
-                                        { "data":"Youth & adolescents 9 to 18 y"},
-                                        { "data":"Adult males 19 y +"},
-                                        { "data":"Adult females* 19 y +"}
-                                    ]
-                                    }'>
+                                    id="upperGraphTable">
                                     </table>
                                 </div>
                                 <button type="button" id="upperGraphSaveTable" class="btn btn-sm btn-success mrgn-tp-md">
@@ -306,11 +277,14 @@ What it contains:
                         <select class="form-control" name="ageSexSelect" title="Select age-sex group" id="lowerGraphAgeSexSelect"></select>
                     </div>
                     <div class="graphExtra">
-                        <button class="btn btn-info" id="lowerGraphFilterGroupsButton"></button>
+                        <button class="btn btn-info" id="lowerGraphFilterGroupsButton">
+                            <img class="lowerGraphBtnIcon mrgn-rght-sm">
+                            <span></span>
+                        </button>
                         <button class="btn btn-success" id="lowerGraphSaveGraph">Save graph</button>
                     </div>
                     <div class="row">
-                        <div class="col-sm-12">
+                        <div>
                             <figure id="lowerGraph"></figure>
                         </div>
                     </div>
@@ -318,29 +292,12 @@ What it contains:
                         <button class="btn btn-info" id="lowerGraphReturnToSelection">Return to Nutrient Selection</button>
                     </div>
                     <div class="col-xs-12 mrgn-tp-md">
-                        <details>
+                        <details id="lowerTableDetails">
                             <summary id="lowerGraphTableTitle"></summary>
-                            <div class="table-responsive mrgn-tp-lg lowerGraphTableScroll">
-                                <table class="wb-tables table table-striped table-hover table-condensed text-center"
+                            <div class="table-responsive mrgn-tp-lg graphTableContainer lowerGraphTableContainer">
+                                <table class="dataTable table table-striped table-hover table-condensed text-center"
                                 aria-live="polite"
-                                id="lowerGraphTable"
-                                data-wb-tables='{
-                                "scrollX": false,
-                                "paging": false,
-                                "ordering" : false,
-                                "searching": false,
-                                "processing": false,
-                                "info": false,
-                                "columns": [
-                                    { "data": "Food Group Level 1"},
-                                    { "data": "Food Group Level 2" },
-                                    { "data": "Food Group Level 3" },
-                                    { "data": "Amount (g)" },
-                                    { "data": "Amount SE" },
-                                    { "data": "% of total intake" },
-                                    { "data": "% SE" }
-                                ]
-                                }'>
+                                id="lowerGraphTable">
                                 </table>
                             </div>
                             <div class="mrgn-tp-md">

@@ -223,6 +223,13 @@ export function upperGraph(model){
 
         xAxisTicks = upperGraphXAxisLine.selectAll(".tick").attr("font-size", GraphDims.upperGraphXAxisTickFontSize);
 
+        // draw the wrapped text for the x-axis ticks
+        upperGraphXAxisLine.selectAll(".tick text").each((data, ind, textElements) => {
+            const textGroup = d3.select(textElements[ind]);
+            textGroup.text("").attr("dy", null);
+            drawWrappedText({textGroup: textGroup, text: data, width: GraphDims.upperGraphBarWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
+        });
+
         const nutrientTotalByAgeSexGroup = model.findNutrientTotalAmtPerAgeSexGroup(graphType);
         groupedAmount = nutrientTotalByAgeSexGroup.groupedAmount;
         const maxAccumulatedAmount = nutrientTotalByAgeSexGroup.maxAccumulatedAmount;
@@ -282,7 +289,7 @@ export function upperGraph(model){
             .data(groupEntries)
             .enter()
             .append("rect")
-                .attr("width", 100)                                     
+                .attr("width", GraphDims.upperGraphBarWidth)                                     
                 .attr("height", (d, i) => 
                     GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]) + 
                     /* So that there arent gaps between bars due to rounding */
@@ -296,7 +303,9 @@ export function upperGraph(model){
                         /* So that there arent gaps between bars due to rounding */
                         (i !== groupEntries.length - 1 ? 1 : 0);
                 })
-                .attr("fill", d => GraphColours[d[0]]);
+
+                // d[0] references the first element of [food group, intake] in line 281
+                .attr("fill", d => GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)]);
         
         accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
         
@@ -390,7 +399,8 @@ export function upperGraph(model){
 
     // drawTable(nutrient): Draws the table for the graph
     function drawTable(nutrient, reloadData = true){
-        const barGraphTable = reloadData ? model.createBarGraphTable() : model.barGraphTable;
+        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
+        const barGraphTable = reloadData ? model.createBarGraphTable(tableTitleText) : model.barGraphTable;
         const amountLeftIndex = 1;
 
         // --------------- draws the table -------------------------
@@ -494,8 +504,7 @@ export function upperGraph(model){
                 });
         }
 
-        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
-        upperGraphTableTitle.text(tableTitleText);
+        upperGraphTableTitle.text(Translation.translate("popUpTableTitle", { title: tableTitleText }));
 
         // ---------------------------------------------------------
     }
@@ -548,7 +557,7 @@ export function upperGraph(model){
             return;
         }
 
-        let colour = GraphColours[foodGroupName];
+        let colour = GraphColours[Translation.translate(`LegendKeyVars.${foodGroupName}`)];
         colour = colour === undefined ? null : colour;
 
         mouseOverFoodGroupName = foodGroupName;
@@ -565,7 +574,7 @@ export function upperGraph(model){
         let currentTextGroupPosY = GraphDims.upperGraphInfoBoxPadding;
 
         // change the title
-        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : "Food Group Description", width: GraphDims.upperGraphInfoBoxWidth,
+        const titleDims = drawText({textGroup: infoBox.titleGroup, text: isAllFoodGroups ? "" : Translation.translate("infoBoxTitle"), width: GraphDims.upperGraphInfoBoxWidth,
                                     fontSize: GraphDims.upperGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change the subtitle
@@ -685,7 +694,7 @@ export function upperGraph(model){
     /* Creates tooltip for hovering over bars */
     function hoverTooltip(d, i){
         const toolTipId = `barHover${i}`;
-        const colour = GraphColours[d[0]];
+        const colour = GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)];
         const title = Translation.translate("upperGraph.toolTipTitle", {name: d[0]});
         const lines = Translation.translate("upperGraph.toolTip", { 
             returnObjects: true, 
@@ -783,11 +792,12 @@ export function upperGraph(model){
 
     // downloadTable(): Exports the table of the bar graph as a CSV file
     function downloadTable() {
-        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + model.barGraphTable.csvContent);
+        const universalBOM = "\uFEFF";
+        const encodedUri = encodeURI(universalBOM + model.barGraphTable.csvContent);
 
         // creates a temporary link for exporting the table
         const link = document.createElement('a');
-        link.setAttribute('href', encodedUri);
+        link.setAttribute('href', "data:text/csv;charset=utf-8," + encodedUri);
         link.setAttribute('download', `${tableTitleText}.csv`);
 
         document.body.appendChild(link);

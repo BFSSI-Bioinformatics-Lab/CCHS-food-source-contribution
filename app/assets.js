@@ -66,6 +66,7 @@ export const GraphDims = Object.freeze({
     upperGraphTop: 60,
     upperGraphBottom: 60,
     upperGraphFooter: 50,
+    upperGraphBarWidth: 100,
     upperGraphTooltipMinWidth: 140,
     upperGraphAxesFontSize: 20,
     upperGraphXAxisTickFontSize: 13,
@@ -232,11 +233,15 @@ export const SortStates = {
 // icons for the different sorting states
 export const SortIconClasses = {};
 SortIconClasses[SortStates.Unsorted] = "fa fa-sort"
-SortIconClasses[SortStates.Ascending] = "fa fa-sort-down"
-SortIconClasses[SortStates.Descending] = "fa fa-sort-up"
+SortIconClasses[SortStates.Ascending] = "fa fa-sort-amount-down"
+SortIconClasses[SortStates.Descending] = "fa fa-sort-amount-up"
 
 // column index for the "Food Group Level 3" column of the sunburst graph's table
 export const LowerGraphFoodGroupLv3ColInd = 2;
+export const LowerGraphAllDataColInd = {
+    FoodGroupLv2: 2,
+    FoodGroupLv3: 3
+};
 
 
 // Translation: Helper class for doing translations
@@ -289,7 +294,24 @@ export const TranslationObj = {
                 "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
                 "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
                 "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
-                "All Items": "All Food Groups"
+                "All Items": "All Food Groups (Reset)"
+            },
+
+            // Variable names for the legend
+            // Note: Copy the exact food group lv1 name from from the food ingredient CSV file to the keys of the dictionary
+            LegendKeyVars: {
+                "Baby Foods": "Baby Foods",
+                "Beverages (Excluding Milks)": "Beverages (Excluding Milks)",
+                "Dairy & Plant-Based Beverages": "Dairy & Plant-Based Beverages",
+                "Fats & Oils": "Fats & Oils",
+                "Fish & Seafood": "Fish & Seafood",
+                "Fruits & Vegetables": "Fruits & Vegetables",
+                "Grain Products": "Grain Products",
+                "Meat & Poultry": "Meat & Poultry",
+                "Meat Alternatives": "Meat Alternatives",
+                "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
+                "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
+                "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
             },
 
             // Names for the age-sex groups
@@ -326,6 +348,12 @@ export const TranslationObj = {
                 "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
             },
 
+            // title for the popup tables on the website
+            "popUpTableTitle": "Table: {{title}}",
+
+            // title for the infobox
+            "infoBoxTitle": "Food Group Description",
+
             "upperGraph": {
                 "number": {
                     "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
@@ -346,7 +374,7 @@ export const TranslationObj = {
                     "{{ percentage }}%"
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
-                "tableSubHeadings": ["Amount (g)", "Amount SE", "% of total intake", "% SE"]
+                "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"]
             },
             "lowerGraph": {
                 "graphTitle": {
@@ -375,8 +403,9 @@ export const TranslationObj = {
                         "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
                     }
                 },
-                "seeLevel2Groups": "Show level 2 groups only",
-                "seeAllGroups": "Show all food groups",
+                "allItems": "All Food Groups",
+                "seeLevel2Groups": "Show Sub-groups Only",
+                "seeAllGroups": "Show All Food Groups",
                 "allFoodGroupsLabel": "All Food Groups",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
@@ -386,9 +415,12 @@ export const TranslationObj = {
                 "hoverBoxLevel_other": [ 
                     "{{ percentage }}% of {{ nutrient }} intake."
                 ],
-                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
-                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount (g)", "Amount SE", "% of total intake", "% SE"],
-                "allDataCSVFileName": "Contribution of food groups and sub-groups to {{nutrient}} intake"
+                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
+                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
+                "allDataCSVFileName": {
+                    "All Displayed": "Contribution of food groups and sub-groups to {{nutrient}} intake",
+                    "Filter Only Level 2": "Contribution of level 2 food groups to {{nutrient}} intake" 
+                }
             }
         }
     },
@@ -397,43 +429,60 @@ export const TranslationObj = {
             // Names used for the legend
             // Note: Copy the exact food group lv1 name from the source CSV files
             LegendKeys: {
-                "Baby Foods": "Baby Foods",
-                "Beverages (Excluding Milks)": "Beverages (Excluding Milks)",
-                "Dairy & Plant-Based Beverages": "Dairy & Plant-Based Beverages",
-                "Fats & Oils": "Fats & Oils",
-                "Fish & Seafood": "Fish & Seafood",
-                "Fruits & Vegetables": "Fruits & Vegetables",
-                "Grain Products": "Grain Products",
-                "Meat & Poultry": "Meat & Poultry",
-                "Meat Alternatives": "Meat Alternatives",
-                "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
-                "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
-                "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
-                "All Items": "Toutes les Groupes Alimentaires"
+                "Baby Foods": "Aliments pour bébés",
+                "Beverages (Excluding Milks)": "Boissons (excluant laits)",
+                "Dairy & Plant-Based Beverages": "Produits laitiers et Boissons à base de plantes",
+                "Fats & Oils": "Graisses et huiles",
+                "Fish & Seafood": "Poissons et fruits de mer",
+                "Fruits & Vegetables": "Fruits et légumes",
+                "Grain Products": "Produits céréaliers",
+                "Meat & Poultry": "Viandes et volailles",
+                "Meat Alternatives": "Substituts de viande",
+                "Nutritional Beverages & Bars": "Boissons et barres nutritionnelles",
+                "Soups - Sauces - Spices & Other Ingredients": "Soupes - sauces - épices et autres ingrédients",
+                "Sweets - Sugars & Savoury Snacks": "Confiserie - sucres et grignotines salées",
+                "All Items": "Toutes les Groupes d'Aliments (réinitialiser)"
+            },
+
+            // Variable names for the legend
+            // Note: Copy the exact food group lv1 name from from the food ingredient CSV file to the keys of the dictionary
+            LegendKeyVars: {
+                "Aliments pour bébés": "Baby Foods",
+                "Boissons (excluant laits)": "Beverages (Excluding Milks)",
+                "Produits laitiers et Boissons à base de plantes": "Dairy & Plant-Based Beverages",
+                "Graisses et huiles": "Fats & Oils",
+                "Poissons et fruits de mer": "Fish & Seafood",
+                "Fruits et légumes": "Fruits & Vegetables",
+                "Produits céréaliers": "Grain Products",
+                "Viandes et volailles": "Meat & Poultry",
+                "Substituts de viande": "Meat Alternatives",
+                "Boissons et barres nutritionnelles": "Nutritional Beverages & Bars",
+                "Soupes - sauces - épices et autres ingrédients": "Soups - Sauces - Spices & Other Ingredients",
+                "Confiserie - sucres et grignotines salées": "Sweets - Sugars & Savoury Snacks",
             },
 
             // Names for the age-sex groups
             // Note: Copy the exact age-sex group name from the food description CSV file
             AgeSexGroupHeadings: {
-                Population1Up: `Population age 1+`, 
-                Children1To8: "Children 1 to 8 y", 
-                YouthAndAdolescents: "Youth & adolescents* 9 to 18 y",
-                AdultMales: "Adult males 19 y +",
-                AdultFemales: "Adult females* 19 y +"
+                Population1Up: `Population 1 an et +`, 
+                Children1To8: "Enfants 1 à 8 ans", 
+                YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans ",
+                AdultMales: "Hommes adultes 19 ans +",
+                AdultFemales: "Femmes adultes* 19 ans +"
             },
 
             // certain keys in the graph's food ingredient CSV file that do not map to
             //  any keys in the food description CSV file
             // Note: Copy the exact food group names (for both keys and values) from the food description CSV file
             FoodDescriptionExceptionKeys: {
-                "Spices - Seasonings & Other Ingredients": {
-                    "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
-                    "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
+                "Épices - assaisonnements et autres ingrédients": {
+                    "OtherNutrients": "Épices - assaisonnements et autres ingrédients  (tous les nutriments excluant sodium)",
+                    "Sodium": "Épices - assaisonnements et autres ingrédients (sodium uniquement)"
                 },
 
-                "Vegetables Including Potatoes": {
-                    "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
-                    "Sodium": "Vegetables Including Potatoes (sodium only)"
+                "Légumes incluant pommes de terre": {
+                    "OtherNutrients": "Légumes incluant pommes de terre (tous les nutriments excluant sodium)",
+                    "Sodium": "Légumes incluant pommes de terre  (sodium uniquement)"
                 }
             },
 
@@ -445,6 +494,12 @@ export const TranslationObj = {
                 "excludePregnantAndLactating": REMPLACER_MOI,
                 "sourceText": REMPLACER_MOI,
             },
+
+            // title for the popup tables on the website
+            "popUpTableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{title}}`,
+
+            // title for the infobox
+            "infoBoxTitle": "Description des Groupes d'Aliments",
 
             "upperGraph": {
                 "number": {
@@ -465,8 +520,8 @@ export const TranslationObj = {
                 "toolTip_percentage": [
                     `{{ percentage }}%`
                 ],
-                "tableSubHeadingFirstCol": "Groupes Alimentaires",
-                "tableSubHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI]
+                "tableSubHeadingFirstCol": "Groupe d'Aliments",
+                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", REMPLACER_MOI, "ET %"]
             },
             "lowerGraph": {
                 "graphTitle": {
@@ -495,8 +550,9 @@ export const TranslationObj = {
                         "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
                     }
                 },
-                "seeLevel2Groups": REMPLACER_MOI,
-                "seeAllGroups": REMPLACER_MOI,
+                "allItems": "Toutes les Groupes d'Aliments",
+                "seeLevel2Groups": "Montre Seulement les Sous-groupes",
+                "seeAllGroups": "Montre Toutes les Groupes d'Aliments",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{nutrient}}`
@@ -505,9 +561,13 @@ export const TranslationObj = {
                 "hoverBoxLevel_other": [ 
                     `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
                 ],
-                "tableHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
-                "tableAllDataHeadings": [REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI, REMPLACER_MOI],
-                "allDataCSVFileName": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", REMPLACER_MOI, "ET %"],
+                "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", REMPLACER_MOI, "ET %"],
+
+                "allDataCSVFileName": {
+                    "All Displayed": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
+                    "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}` 
+                }
             }
         }
     }

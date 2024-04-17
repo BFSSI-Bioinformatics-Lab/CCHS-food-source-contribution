@@ -17,9 +17,12 @@
     position:relative;
 }
 
-.lowerGraphTableScroll {
-    overflow:auto;
-    height: 400px;
+.graphTableContainer {
+    overflow: auto !important;
+}
+
+.lowerGraphTableContainer {
+    max-height: 500px;
 }
 
 .sortIcon {
@@ -31,4 +34,9 @@
     position: sticky;
     top: 0;
     background-color: #fff;
+}
+
+.lowerGraphBtnIcon {
+    width: 18px;
+    height: 18px;
 }
