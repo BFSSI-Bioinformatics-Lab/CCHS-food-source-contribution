@@ -24,6 +24,8 @@ import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStat
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 
 
+const LegendKeyTreeDepth = 2;
+
 export function lowerGraph(model){
     // nutrient selected
     let nutrient = model.nutrient;
@@ -82,6 +84,9 @@ export function lowerGraph(model){
     let selectedNodeIndex = 1;
     let selectedNode = null;
     let legendNodeIndices = {};
+
+    // which key in the legend has been clicked
+    let clickedLegendKey = null;
 
     // table column that is being sorted
     let sortedColIndex = null;
@@ -238,11 +243,14 @@ export function lowerGraph(model){
         legendItems.push(legendItem);
     }
 
+    const allFoodGroupsName = Translation.translate(`LegendKeys.All Items`);
+
     // add the mouse events to the keys of the legend
     for (const legendItem of legendItems) {
         const name = legendItem.name;
         const colour = legendItem.colour;
         const legendItemGroup = legendItem.group;
+        const isAllItems = name == allFoodGroupsName;
 
         const dummyRow = {};
         dummyRow[FoodIngredientDataColNames.foodGroupLv1] = name;
@@ -256,8 +264,16 @@ export function lowerGraph(model){
             legendItemGroup.style("cursor", MousePointer.Default);
             hideInfoBox(); 
         });
-        legendItemGroup.on("click", () => { 
-            if (graphState == SunBurstStates.AllDisplayed) {
+        legendItemGroup.on("click", () => {
+            if (!isAllItems && (clickedLegendKey === null || clickedLegendKey != name)) {
+                clickedLegendKey = name;
+            } else {
+                clickedLegendKey = null;
+            }
+
+            if (clickedLegendKey === null) {
+                arcOnClick(null, legendNodeIndices[allFoodGroupsName]);
+            } else if (graphState == SunBurstStates.AllDisplayed) {
                 arcOnClick(null, legendNodeIndices[name]);
             }
         });
@@ -320,6 +336,9 @@ export function lowerGraph(model){
         // reset the selected arc that was clicked
         selectedNodeIndex = 1;
         selectedNode = null;
+
+        // reset the clicked legend key
+        clickedLegendKey = null;
 
         // get the units for the nutrient
         nutrientUnit = model.getNutrientUnit()
@@ -737,6 +756,11 @@ export function lowerGraph(model){
 
         // set the correct state for the filter button
         setFilterButtonToLevel2Groups();
+
+        // whether to reset the selected key of the legend
+        if (selectedNode.depth != LegendKeyTreeDepth) {
+            clickedLegendKey = null;
+        }
     }
 
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
