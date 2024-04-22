@@ -261,8 +261,7 @@ export function upperGraph(model){
         // draw the graph title
         graphTitleText = Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit});
         upperGraphHeading.attr("font-weight", FontWeight.Bold);
-        
-        console.log(graphTitleText);
+
         drawWrappedText({textGroup: upperGraphHeading, text: graphTitleText, width: upperGraphSvgWidth - GraphDims.upperGraphLeft - GraphDims.upperGraphRight, fontSize: GraphDims.upperGraphChartHeadingFontSize,
                          textX: GraphDims.upperGraphLeft + GraphDims.upperGraphWidth / 2}); 
 
