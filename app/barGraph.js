@@ -85,10 +85,10 @@ export function upperGraph(model){
 
     const upperGraphHeading = upperGraphSvg.append("g")
         .append("text")
-            .attr("text-anchor", "middle")
-            .attr("font-size", GraphDims.upperGraphChartHeadingFontSize)
-            .attr("x", GraphDims.upperGraphLeft + GraphDims.upperGraphWidth / 2)
-            .attr("y", GraphDims.upperGraphTop - GraphDims.upperGraphChartHeadingFontSize * 1.25)
+        .attr("text-anchor", "middle")
+        .attr("font-size", GraphDims.upperGraphChartHeadingFontSize)
+        .attr("x", GraphDims.upperGraphLeft + GraphDims.upperGraphWidth / 2)
+        .attr("y", GraphDims.upperGraphTop - GraphDims.upperGraphChartHeadingFontSize * 1.25)
 
     const upperGraphBars = upperGraphSvg.append("g")
     .attr("transform", `translate(${GraphDims.upperGraphLeft}, 0)`)
@@ -260,7 +260,11 @@ export function upperGraph(model){
 
         // draw the graph title
         graphTitleText = Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit});
-        upperGraphHeading.text(graphTitleText).attr("font-weight", FontWeight.Bold);
+        upperGraphHeading.attr("font-weight", FontWeight.Bold);
+        
+        console.log(graphTitleText);
+        drawWrappedText({textGroup: upperGraphHeading, text: graphTitleText, width: upperGraphSvgWidth - GraphDims.upperGraphLeft - GraphDims.upperGraphRight, fontSize: GraphDims.upperGraphChartHeadingFontSize,
+                         textX: GraphDims.upperGraphLeft + GraphDims.upperGraphWidth / 2}); 
 
         //draw the table
         drawTable(nutrient);
