@@ -138,7 +138,18 @@ export class Model {
             .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
             .object(data));
 
-        return [this.tableNutrientTables, this.tableNutrientTablesByDemoGroupLv1];
+        this.tableNutrientTablesByFoodGroups = Object.freeze(d3.nest()
+        .key(d => 
+                (Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? 
+                    Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv2]) ? 
+                        d[FoodIngredientDataColNames.foodGroupLv1]
+                        : d[FoodIngredientDataColNames.foodGroupLv2]
+                    : d[FoodIngredientDataColNames.foodGroupLv3]).trim()
+            )
+            .rollup(d => d[0])
+            .object(data));
+
+        return [this.tableNutrientTables, this.tableNutrientTablesByDemoGroupLv1, this.tableNutrientTablesByFoodGroups];
     }
 
     // getInterpretationValue(interpretationValue): Retrieves the interpretation value to be displayed
@@ -190,6 +201,23 @@ export class Model {
 
         const foodDescriptionKey = this.foodDescExeceptions[foodGroup][nutrient];
         return this.foodGroupDescriptionData[foodDescriptionKey][FoodGroupDescDataColNames.description];
+    }
+
+    // getFoodGroupArticle(foodGroup): Retrieves the article that prefixes a food group
+    // Note:
+    //  Used for French translations
+    getFoodGroupArticle(foodGroup) {
+        const foodGroupData = this.tableNutrientTablesByFoodGroups[foodGroup];
+
+        if (foodGroupData === undefined) {
+            return "";
+        }
+
+        const foodGroupDepth = parseInt(foodGroupData[FoodIngredientDataColNames.foodGroupDepth]);
+        let articleColName = FoodIngredientDataColNames[`articleGroupLv${foodGroupDepth}`];
+
+        const result = foodGroupData[articleColName];
+        return result ?? "";
     }
 
     // buildSunBurstTree(nutrient, ageSexGroup): Build the tree needed for the data of the sun burst graph

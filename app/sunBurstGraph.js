@@ -830,8 +830,11 @@ export function lowerGraph(model){
     // updateGraphTitle(): Updates the title for the graph
     function updateGraphTitle() {
         const titleKeys = getTitleTranslateKeys();
+        const foodGroup = selectedNode !== null ? selectedNode.data.name : "";
+        const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
+
         graphTitleText = Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
-                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: selectedNode !== null ? selectedNode.data.name : "" });
+                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle});
         lowerGraphChartHeading.text(graphTitleText)
     }
 
@@ -841,7 +844,10 @@ export function lowerGraph(model){
 
         // update the text for the title
         const titleKeys = getTitleTranslateKeys();
-        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
+        const foodGroup = sunBurstNode.data.name;
+        const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
+
+        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle });
         
         const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, tableTitleText) : model.sunburstTable;
 

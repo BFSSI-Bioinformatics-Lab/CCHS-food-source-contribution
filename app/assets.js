@@ -199,7 +199,11 @@ export const FoodIngredientDataColNames = {
     amountSE: "Amount_SE",
     percentage: "Percentage",
     percentageSE: "Percentage_SE",
-    interpretationNotes: "Interpretation_Notes"
+    interpretationNotes: "Interpretation_Notes",
+    articleGroupLv1: "Article_group1",
+    articleGroupLv2: "Article_group2",
+    articleGroupLv3: "Article_group3",
+    foodGroupDepth: "Food_Group_Level"
 };
 
 // Different display states of the sun burst graph
@@ -379,9 +383,9 @@ export const TranslationObj = {
             "lowerGraph": {
                 "graphTitle": {
                     "OtherAgeGroups": {
-                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
-                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
-                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadian {{ ageSexGroup }}"
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in {{ ageSexGroup }}",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in {{ ageSexGroup }}",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in {{ ageSexGroup }}"
                     },
 
                     "Population1Up": {
@@ -392,9 +396,9 @@ export const TranslationObj = {
                 },
                 "tableTitle": {
                     "OtherAgeGroups": {
-                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
-                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadian {{ ageSexGroup }}",
-                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadian {{ ageSexGroup }}"
+                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in {{ ageSexGroup }}",
+                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in {{ ageSexGroup }}",
+                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in {{ ageSexGroup }}"
                     },
 
                     "Population1Up": {
@@ -464,9 +468,9 @@ export const TranslationObj = {
             // Names for the age-sex groups
             // Note: Copy the exact age-sex group name from the food description CSV file
             AgeSexGroupHeadings: {
-                Population1Up: `Population 1 an et +`, 
+                Population1Up: "Population 1 an et +", 
                 Children1To8: "Enfants 1 à 8 ans", 
-                YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans ",
+                YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans",
                 AdultMales: "Hommes adultes 19 ans +",
                 AdultFemales: "Femmes adultes* 19 ans +"
             },
@@ -488,66 +492,66 @@ export const TranslationObj = {
 
             // Footnotes used in graphs and tables
             "FootNotes": {
-                "EInterpretationNote": REMPLACER_MOI, 
-                "FInterpretationNote": REMPLACER_MOI, 
-                "XInterpretationNote": REMPLACER_MOI, 
-                "excludePregnantAndLactating": REMPLACER_MOI,
-                "sourceText": REMPLACER_MOI,
+                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6 % à 33,3 %; interpréter avec prudence.", 
+                "FInterpretationNote": "F: Données dont le CV est supérieur à 33, 3%, avec un intervalle de confiance de 95% pas entièrement compris ", 
+                "XInterpretationNote": "X: Groupe d’aliment avec moins de 10 mangeurs ; supprimé pour des raisons de confidentialité.", 
+                "excludePregnantAndLactating": "*Exclut les femmes enceintes et allaitantes",
+                "sourceText": "Source des données : Statistique Canada, Enquête sur la santé dans les collectivités canadiennes 2015 - Nutrition, 2015, Fichier partagé.",
             },
 
             // title for the popup tables on the website
-            "popUpTableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{title}}`,
+            "popUpTableTitle": `Tableau: {{title}}`,
 
             // title for the infobox
             "infoBoxTitle": "Description des Groupes d'Aliments",
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ nutrient }} {{ amountUnit }}/j`,
-                    "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} ({{ amountUnit }}/j)`,
-                    "switchTypeButton": "Changer Au Pourcentage"
+                    "graphTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{ nutrient }} {{ amountUnit }}/j et % de l'apport total`,
+                    "yAxisTitle": `Apports en {{nutrient}} ({{ amountUnit }}/j)`,
+                    "switchTypeButton": "Afficher les pourcentages "
                 },
                 "percentage": {
-                    "graphTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{ nutrient }} {{ amountUnit }}/j`,
-                    "yAxisTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS}  {{nutrient}}`,
-                    "switchTypeButton": "Changer Aux Nombres"
+                    "graphTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{ nutrient }} {{ amountUnit }}/j et % de l'apport total`,
+                    "yAxisTitle": `% de l'apport total en {{nutrient}}`,
+                    "switchTypeButton": "Afficher les nombres"
                 },
-                "tableTitle": `${REMPLACER_MOI_AVEC_ARGUMENTS} ({{ amountUnit }}/jour) {{nutrient}}`,   
+                "tableTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{nutrient}} ({{ amountUnit }}/jour) et % de l'apport total`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{amount}} {{ unit }}`
+                    `Quantité: {{amount}} {{ unit }}`
                 ],
                 "toolTip_percentage": [
                     `{{ percentage }}%`
                 ],
                 "tableSubHeadingFirstCol": "Groupe d'Aliments",
-                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", REMPLACER_MOI, "ET %"]
+                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"]
             },
             "lowerGraph": {
                 "graphTitle": {
                     "OtherAgeGroups": {
-                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`,
-                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}  {{ ageSexGroup }}`,
-                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`
+                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
                     },
 
                     "Population1Up": {
-                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
-                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}`,
-                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
                     }
                 },
                 "tableTitle": {
                     "OtherAgeGroups": {
-                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`,
-                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}  {{ ageSexGroup }}`,
-                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}} {{ ageSexGroup }}`
+                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
                     },
 
                     "Population1Up": {
-                        "All Items": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
-                        "Filtered Data": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ foodGroup }}  {{nutrient}}`,
-                        "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`
+                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
                     }
                 },
                 "allItems": "Toutes les Groupes d'Aliments",
@@ -555,18 +559,18 @@ export const TranslationObj = {
                 "seeAllGroups": "Montre Toutes les Groupes d'Aliments",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{nutrient}}`
+                    `{{ percentage }}% de l'apport en {{nutrient}}`
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    `${REMPLACER_MOI_AVEC_ARGUMENTS} {{ percentage }}% {{ nutrient }}`
+                    `{{ percentage }}% de l'apport en {{ nutrient }}`
                 ],
-                "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", REMPLACER_MOI, "ET %"],
-                "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", REMPLACER_MOI, "ET %"],
+                "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
+                "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
 
                 "allDataCSVFileName": {
-                    "All Displayed": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}`,
-                    "Filter Only Level 2": `${REMPLACER_MOI_AVEC_ARGUMENTS} {{nutrient}}` 
+                    "All Displayed": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}}`,
+                    "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}}`
                 }
             }
         }
