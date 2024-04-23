@@ -55,7 +55,7 @@ export class TableTools {
 
             // clean up the text for each cell
             for (let i = 0; i < colLen; ++i) {
-                let cleanedText = `${row[i]}`.replace(/"/g, '\\"').replace(/'/g, "\\'");
+                let cleanedText = `${row[i]}`.replace(/"/g, "'");
                 cleanedText = `"${cleanedText}"`;
                 csvRow.push(cleanedText);
             }
