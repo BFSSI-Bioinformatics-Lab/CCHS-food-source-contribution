@@ -836,7 +836,8 @@ export function lowerGraph(model){
         graphTitleText = Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
                                                 { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle});
 
-        drawWrappedText({textGroup: lowerGraphChartHeading, text: graphTitleText, width: width - GraphDims.lowerGraphLeft - GraphDims.lowerGraphRight, textX: width/2, fontSize: GraphDims.lowerGraphChartHeadingFontSize});        
+        drawWrappedText({textGroup: lowerGraphChartHeading, text: graphTitleText, width: GraphDims.lowerGraphWidth, 
+                         textX: GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2, fontSize: GraphDims.lowerGraphChartHeadingFontSize});    
     }
 
     // draws the table for the sun burst graph
