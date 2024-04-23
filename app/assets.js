@@ -445,7 +445,7 @@ export const TranslationObj = {
                 "Nutritional Beverages & Bars": "Boissons et barres nutritionnelles",
                 "Soups - Sauces - Spices & Other Ingredients": "Soupes - sauces - épices et autres ingrédients",
                 "Sweets - Sugars & Savoury Snacks": "Confiserie - sucres et grignotines salées",
-                "All Items": "Toutes les Groupes d'Aliments (réinitialiser)"
+                "All Items": "Tous les groupes d’aliments (réinitialiser)"
             },
 
             // Variable names for the legend
@@ -536,9 +536,9 @@ export const TranslationObj = {
                     },
 
                     "Population1Up": {
-                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
+                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
+                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
+                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`
                     }
                 },
                 "tableTitle": {
@@ -549,14 +549,14 @@ export const TranslationObj = {
                     },
 
                     "Population1Up": {
-                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
+                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
+                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
+                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`
                     }
                 },
-                "allItems": "Toutes les Groupes d'Aliments",
-                "seeLevel2Groups": "Montre Seulement les Sous-groupes",
-                "seeAllGroups": "Montre Toutes les Groupes d'Aliments",
+                "allItems": "Tous les groupes d’aliments",
+                "seeLevel2Groups": "Afficher sous-groupes uniquement",
+                "seeAllGroups": "Afficher tous les groupes",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
                     `{{ percentage }}% de l'apport en {{nutrient}}`
