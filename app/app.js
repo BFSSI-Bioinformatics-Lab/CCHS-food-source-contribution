@@ -23,7 +23,7 @@ function setup(model) {
     const updateBarGraph = upperGraph(model);
     const updateSunburst = lowerGraph(model);
 
-    const nutrientOptions = Object.keys(model.graphNutrientTablesByDemoGroupLv1);
+    const nutrientOptions = Object.keys(model.graphNutrientTablesByDemoGroupLv1).sort(Intl.Collator().compare);
     d3.select(nutrientSelectorId)
         .on("change", () => { update() })
         .selectAll("option")
