@@ -475,10 +475,22 @@ export function upperGraph(model){
         } else if (hasCompareFunc && sortedColState == SortStates.Descending) {
             barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
         }
+
+        // translate the numbers for French
+        const barGraphDisplayedTable = [];
+        for (const row of barGraphTableDataRows) {
+            const currentRow = [];
+            const colLen = row.length;
+            for (let i = 0; i < colLen; ++i) {
+                currentRow.push(model.barGraphTable.colIsNumbered[i] ? Translation.translateNum(row[i]) : row[i]);
+            }
+
+            barGraphDisplayedTable.push(currentRow);
+        }
         
         upperGraphTableBody.selectAll("tr").remove();
 
-        for (const row of barGraphTableDataRows) {
+        for (const row of barGraphDisplayedTable) {
             const newRow = upperGraphTableBody.append("tr")
             .selectAll("td")
             .data(row)
@@ -702,8 +714,8 @@ export function upperGraph(model){
         const lines = Translation.translate("upperGraph.toolTip", { 
             returnObjects: true, 
             context: graphType,
-            amount: parseFloat(d[1]).toFixed(1),
-            percentage: parseFloat(d[1]).toFixed(1),
+            amount: Translation.translateNum(parseFloat(d[1]).toFixed(1)),
+            percentage: Translation.translateNum(parseFloat(d[1]).toFixed(1)),
             nutrient: d[0],
             unit: nutrientUnit
         });

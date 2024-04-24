@@ -913,10 +913,22 @@ export function lowerGraph(model){
             sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
         }
 
+        // translate the numbers for French
+        const sunBurstDisplayedTable = [];
+        for (const row of sunBurstTableDataRows) {
+            const currentRow = [];
+            const colLen = row.length;
+            for (let i = 0; i < colLen; ++i) {
+                currentRow.push(model.sunburstTable.colIsNumbered[i] ? Translation.translateNum(row[i]) : row[i]);
+            }
+
+            sunBurstDisplayedTable.push(currentRow);
+        }
+
         lowerGraphTableBody.selectAll("tr").remove();
 
         // create the rows for the table
-        for (const row of sunBurstTableDataRows) {
+        for (const row of sunBurstDisplayedTable) {
             const newRow = lowerGraphTableBody.append("tr")
                 .selectAll("td")
                 .data(row)
