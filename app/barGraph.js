@@ -714,8 +714,8 @@ export function upperGraph(model){
         const lines = Translation.translate("upperGraph.toolTip", { 
             returnObjects: true, 
             context: graphType,
-            amount: parseFloat(d[1]).toFixed(1),
-            percentage: parseFloat(d[1]).toFixed(1),
+            amount: Translation.translateNum(parseFloat(d[1]).toFixed(1)),
+            percentage: Translation.translateNum(parseFloat(d[1]).toFixed(1)),
             nutrient: d[0],
             unit: nutrientUnit
         });
