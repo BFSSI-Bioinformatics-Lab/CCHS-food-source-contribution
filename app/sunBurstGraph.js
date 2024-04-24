@@ -24,6 +24,8 @@ import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStat
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 
 
+const LegendKeyTreeDepth = 2;
+
 export function lowerGraph(model){
     // nutrient selected
     let nutrient = model.nutrient;
@@ -82,6 +84,9 @@ export function lowerGraph(model){
     let selectedNodeIndex = 1;
     let selectedNode = null;
     let legendNodeIndices = {};
+
+    // which key in the legend has been clicked
+    let clickedLegendKey = null;
 
     // table column that is being sorted
     let sortedColIndex = null;
@@ -238,11 +243,14 @@ export function lowerGraph(model){
         legendItems.push(legendItem);
     }
 
+    const allFoodGroupsName = Translation.translate(`LegendKeys.All Items`);
+
     // add the mouse events to the keys of the legend
     for (const legendItem of legendItems) {
         const name = legendItem.name;
         const colour = legendItem.colour;
         const legendItemGroup = legendItem.group;
+        const isAllItems = name == allFoodGroupsName;
 
         const dummyRow = {};
         dummyRow[FoodIngredientDataColNames.foodGroupLv1] = name;
@@ -256,8 +264,16 @@ export function lowerGraph(model){
             legendItemGroup.style("cursor", MousePointer.Default);
             hideInfoBox(); 
         });
-        legendItemGroup.on("click", () => { 
-            if (graphState == SunBurstStates.AllDisplayed) {
+        legendItemGroup.on("click", () => {
+            if (!isAllItems && (clickedLegendKey === null || clickedLegendKey != name)) {
+                clickedLegendKey = name;
+            } else {
+                clickedLegendKey = null;
+            }
+
+            if (clickedLegendKey === null) {
+                arcOnClick(null, legendNodeIndices[allFoodGroupsName]);
+            } else if (graphState == SunBurstStates.AllDisplayed) {
                 arcOnClick(null, legendNodeIndices[name]);
             }
         });
@@ -320,6 +336,9 @@ export function lowerGraph(model){
         // reset the selected arc that was clicked
         selectedNodeIndex = 1;
         selectedNode = null;
+
+        // reset the clicked legend key
+        clickedLegendKey = null;
 
         // get the units for the nutrient
         nutrientUnit = model.getNutrientUnit()
@@ -737,6 +756,11 @@ export function lowerGraph(model){
 
         // set the correct state for the filter button
         setFilterButtonToLevel2Groups();
+
+        // whether to reset the selected key of the legend
+        if (selectedNode.depth != LegendKeyTreeDepth) {
+            clickedLegendKey = null;
+        }
     }
 
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
@@ -806,9 +830,14 @@ export function lowerGraph(model){
     // updateGraphTitle(): Updates the title for the graph
     function updateGraphTitle() {
         const titleKeys = getTitleTranslateKeys();
+        const foodGroup = selectedNode !== null ? selectedNode.data.name : "";
+        const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
+
         graphTitleText = Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
-                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: selectedNode !== null ? selectedNode.data.name : "" });
-        lowerGraphChartHeading.text(graphTitleText)
+                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle});
+
+        drawWrappedText({textGroup: lowerGraphChartHeading, text: graphTitleText, width: GraphDims.lowerGraphWidth, 
+                         textX: GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2, fontSize: GraphDims.lowerGraphChartHeadingFontSize});    
     }
 
     // draws the table for the sun burst graph
@@ -817,7 +846,10 @@ export function lowerGraph(model){
 
         // update the text for the title
         const titleKeys = getTitleTranslateKeys();
-        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup: sunBurstNode.data.name });
+        const foodGroup = sunBurstNode.data.name;
+        const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
+
+        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle });
         
         const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, tableTitleText) : model.sunburstTable;
 
@@ -881,10 +913,22 @@ export function lowerGraph(model){
             sunBurstTableDataRows = sunBurstTableDataRows.toSorted((row1, row2) => { return sunBurstTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
         }
 
+        // translate the numbers for French
+        const sunBurstDisplayedTable = [];
+        for (const row of sunBurstTableDataRows) {
+            const currentRow = [];
+            const colLen = row.length;
+            for (let i = 0; i < colLen; ++i) {
+                currentRow.push(model.sunburstTable.colIsNumbered[i] ? Translation.translateNum(row[i]) : row[i]);
+            }
+
+            sunBurstDisplayedTable.push(currentRow);
+        }
+
         lowerGraphTableBody.selectAll("tr").remove();
 
         // create the rows for the table
-        for (const row of sunBurstTableDataRows) {
+        for (const row of sunBurstDisplayedTable) {
             const newRow = lowerGraphTableBody.append("tr")
                 .selectAll("td")
                 .data(row)
