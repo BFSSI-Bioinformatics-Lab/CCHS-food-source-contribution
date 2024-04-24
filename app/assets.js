@@ -277,7 +277,9 @@ export class Translation {
     // translateNumStr(numStr): Translate a number to its correct
     //  numeric represented string for different languages
     // eg. '1.2' -> '1,2' in French
-    static translateNum(num) {
+    static translateNum(numStr) {
+        const num = Number(numStr);
+        if (Number.isNaN(num)) return numStr;
         return this.translate("Number", {num});
     }
 }
