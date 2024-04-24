@@ -22,6 +22,7 @@
 
 import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation, SortIconClasses, SortStates } from "./assets.js";
 import { drawWrappedText, drawText } from "./visuals.js";
+import { Model } from "./backend.js";
 
 
 export function upperGraph(model){
@@ -406,6 +407,16 @@ export function upperGraph(model){
         const barGraphTable = reloadData ? model.createBarGraphTable(tableTitleText) : model.barGraphTable;
         const amountLeftIndex = 1;
 
+        // keep track of which column indices refer to numbered columns
+        const numColIndices = [];
+        const compareFuncsLen = barGraphTable.compareFuncs.length;
+
+        for (let i = 0; i < compareFuncsLen; ++i) {
+            if (barGraphTable.compareFuncs[i] == Model.strNumCompare) {
+                numColIndices.push(i);
+            }
+        }
+
         // --------------- draws the table -------------------------
 
         /* Create top-level heading */
@@ -474,6 +485,16 @@ export function upperGraph(model){
             barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row1 [sortedColIndex], row2[sortedColIndex]) });
         } else if (hasCompareFunc && sortedColState == SortStates.Descending) {
             barGraphTableDataRows = barGraphTableDataRows.toSorted((row1, row2) => { return barGraphTable.compareFuncs[sortedColIndex](row2[sortedColIndex], row1[sortedColIndex]) });
+        }
+
+        console.log("NumColIndices: ", numColIndices);
+
+        // translate the numbers for French
+        const barGraphDisplayedTable = [];
+        for (const row of barGraphTableDataRows) {
+            for (const colInd of numColIndices) {
+                row[colInd] = Translation.translateNum(row[colInd]);
+            }
         }
         
         upperGraphTableBody.selectAll("tr").remove();

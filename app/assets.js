@@ -273,6 +273,13 @@ export class Translation {
         if (typeof result !== 'string') return result;
         return he.decode(result);
     }
+
+    // translateNumStr(numStr): Translate a number to its correct
+    //  numeric represented string for different languages
+    // eg. '1.2' -> '1,2' in French
+    static translateNum(num) {
+        return this.translate("Number", {num});
+    }
 }
 
 
@@ -283,6 +290,8 @@ const REMPLACER_MOI_AVEC_ARGUMENTS = `${REMPLACER_MOI} - les arguments du texte:
 export const TranslationObj = {
     en: {
         translation: {
+            Number: "{{num, number}}",
+
             // Names used for the legend
             // Note: Copy the exact food group lv1 name from the food ingredient CSV file
             LegendKeys: {
@@ -430,6 +439,8 @@ export const TranslationObj = {
     },
     fr: { 
         translation: {
+            Number: "{{num, number}}",
+
             // Names used for the legend
             // Note: Copy the exact food group lv1 name from the source CSV files
             LegendKeys: {

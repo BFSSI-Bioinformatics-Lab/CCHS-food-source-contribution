@@ -269,6 +269,7 @@ export class Model {
 
     // strNumCompare(value1, value): Compare function that gives numbers precedence over strings
     static strNumCompare(value1, value2) {
+        console.log("value1: ", value1, " AND val2: ", value2);
         const num1 = parseFloat(value1);
         const num2 = parseFloat(value2);
         const num1IsNAN = Number.isNaN(num1);
