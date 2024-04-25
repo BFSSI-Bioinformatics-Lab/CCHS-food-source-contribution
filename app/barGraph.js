@@ -490,6 +490,8 @@ export function upperGraph(model){
         
         upperGraphTableBody.selectAll("tr").remove();
 
+        // Note: change 'barGraphDisplayedTable' to 'barGraphTableDataRows' if we want the app to display French numbers
+        //  with a decimal point instead of a comma
         for (const row of barGraphDisplayedTable) {
             const newRow = upperGraphTableBody.append("tr")
             .selectAll("td")

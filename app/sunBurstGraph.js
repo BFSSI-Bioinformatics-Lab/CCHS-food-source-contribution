@@ -928,6 +928,8 @@ export function lowerGraph(model){
         lowerGraphTableBody.selectAll("tr").remove();
 
         // create the rows for the table
+        // Note: change 'sunBurstDisplayedTable' to 'sunBurstTableDataRows' if we want the app to display French numbers
+        //  with a decimal point instead of a comma
         for (const row of sunBurstDisplayedTable) {
             const newRow = lowerGraphTableBody.append("tr")
                 .selectAll("td")
