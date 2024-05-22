@@ -248,7 +248,7 @@ export function upperGraph(model){
         if (focusedFoodGroup !== null) {
             barOnClick(focusedFoodGroup);
         }
-
+        // console.log(groupedAmount)
         upperGraphBars.selectAll("g")
             .data(Object.values(groupedAmount))
             .enter()

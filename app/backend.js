@@ -172,7 +172,7 @@ export class Model {
         /* If graph type is number, get data from "Amount" col, otherwise use "Percentage" */
         const keyName = graphType === "number" ? "Amount" : "Percentage"
 
-        const groupedAmount = Object.keys(nutrientData).reduce((obj, ageSexGroup) => {
+        const groupedAmount = this.ageSexGroupHeadings.reduce((obj, ageSexGroup) => {
             obj[ageSexGroup] = Object.keys(nutrientData[ageSexGroup]).reduce((innerObj, foodLevelGroup) => {
                 innerObj[foodLevelGroup] = nutrientData[ageSexGroup][foodLevelGroup].reduce((amount, dataRow) => {
                     // we want only the overall amounts for each food group, so ignore the rows representing subgroups
