@@ -376,7 +376,8 @@ export const TranslationObj = {
                     "switchTypeButton": "Switch to Percentage"
                 },
                 "percentage": {
-                    "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
+                    "graphTitle": "Percentage of total {{ nutrient }} intake provided by" +
+                        " 12 food groups",
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
