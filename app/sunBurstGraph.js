@@ -475,9 +475,9 @@ export function lowerGraph(model){
             const title = Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name})
             const lines = Translation.translate("lowerGraph.toolTipLevel", { 
                 returnObjects: true, 
-                percentage: Math.round( d.data.row.Percentage * 10) / 10,
+                percentage: Translation.translateNum(d.data.row.Percentage),
                 parentGroup: d.depth > 1 ? d.parent.data.name : "",
-                parentPercentage: d.depth > 1 ? Math.round(d.data.row.Percentage / d.parent.data.row.Percentage * 1000) / 10 : 0,
+                parentPercentage: Translation.translateNum(d.depth > 1 ? d.data.row.Percentage / d.parent.data.row.Percentage * 100 : 0),
                 nutrient
             });
 
