@@ -274,13 +274,23 @@ export class Translation {
         return he.decode(result);
     }
 
-    // translateNumStr(numStr): Translate a number to its correct
+    // translateNumStr(numStr, decimalPlaces): Translate a number to its correct
     //  numeric represented string for different languages
     // eg. '1.2' -> '1,2' in French
-    static translateNum(numStr) {
-        const num = Number(numStr);
+    //
+    // Note:
+    //  See https://www.i18next.com/translation-function/formatting for more formatting
+    static translateNum(numStr, decimalPlaces = 1) {
+        let num = Number(numStr);
         if (Number.isNaN(num)) return numStr;
-        return this.translate("Number", {num});
+
+        let translateArgs = {num}
+        if (decimalPlaces) {
+            translateArgs["minimumFractionDigits"] = decimalPlaces;
+            translateArgs["maximumFractionDigits"] = decimalPlaces;
+        }
+
+        return this.translate("Number", translateArgs);
     }
 }
 
@@ -384,10 +394,10 @@ export const TranslationObj = {
                 "tableTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
-                    "Amount: {{amount, number}} {{ unit }}"
+                    "Amount: {{amount}} {{ unit }}"
                 ],
                 "toolTip_percentage": [
-                    "{{ percentage, number }}%"
+                    "{{ percentage}}%"
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
                 "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"]
@@ -425,11 +435,11 @@ export const TranslationObj = {
                 "allFoodGroupsLabel": "All Food Groups",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
-                    "{{ percentage, number }}% of {{ nutrient }} intake"
+                    "{{ percentage }}% of {{ nutrient }} intake"
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    "{{ percentage, number }}% of {{ nutrient }} intake."
+                    "{{ percentage }}% of {{ nutrient }} intake."
                 ],
                 "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
                 "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
@@ -533,10 +543,10 @@ export const TranslationObj = {
                 "tableTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{nutrient}} ({{ amountUnit }}/jour) et % de l'apport total`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
-                    `Quantité: {{amount, number }} {{ unit }}`
+                    `Quantité: {{amount }} {{ unit }}`
                 ],
                 "toolTip_percentage": [
-                    `{{ percentage, number }}%`
+                    `{{ percentage }}%`
                 ],
                 "tableSubHeadingFirstCol": "Groupe d'Aliments",
                 "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"]
@@ -573,11 +583,11 @@ export const TranslationObj = {
                 "seeAllGroups": "Afficher tous les groupes",
                 "toolTipTitle": "{{- name }}",
                 "toolTipLevel": [
-                    `{{ percentage, number }}% de l'apport en {{nutrient}}`
+                    `{{ percentage }}% de l'apport en {{nutrient}}`
                 ],
                 /* If the context number is not between 1-4 */
                 "hoverBoxLevel_other": [ 
-                    `{{ percentage, number }}% de l'apport en {{ nutrient }}`
+                    `{{ percentage }}% de l'apport en {{ nutrient }}`
                 ],
                 "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
                 "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
