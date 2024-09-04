@@ -7,6 +7,41 @@
  *          graphs                                                   *
  *********************************************************************/
 
+/* For small phone screeens */
+@media screen and (max-width: 600px) {
+    body { 
+        font-size: calc(1em + 1vw) !important; 
+    }
+
+    main {
+        font-size: calc(1em + 1vw) !important;
+    }
+    
+    h1 {
+        font-size: calc(1.7em + 1vw) !important; 
+    }
+    
+    h3 {
+        font-size: calc(1em + 1vw) !important; 
+    }
+
+    .btn {
+        font-size: calc(0.6em + 1vw) !important;
+        margin: 3px 0;
+    }
+
+    .graphExtra {
+        float: left !important;
+    }
+
+    #notes-table {
+        table-layout:fixed !important;
+    }
+
+    .chart-legend {
+        width: 90%;
+    }
+}
 
 .graphExtra {
     margin: 10px 0 0 0;
