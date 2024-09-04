@@ -10,11 +10,11 @@
 /* For small phone screeens */
 @media screen and (max-width: 600px) {
     body { 
-        font-size: calc(1em + 1vw) !important; 
+        font-size: calc(0.8em + 1vw) !important; 
     }
 
     main {
-        font-size: calc(1em + 1vw) !important;
+        font-size: calc(0.8em + 1vw) !important;
     }
     
     h1 {
@@ -40,6 +40,10 @@
 
     .chart-legend {
         width: 90%;
+    }
+
+    .interestedLinkIcon {
+        height: calc(2.5em + 1vw) !important;
     }
 }
 
