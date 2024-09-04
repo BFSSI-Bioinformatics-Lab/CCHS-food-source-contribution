@@ -174,13 +174,30 @@ export class Model {
 
         const groupedAmount = this.ageSexGroupHeadings.reduce((obj, ageSexGroup) => {
             obj[ageSexGroup] = Object.keys(nutrientData[ageSexGroup]).reduce((innerObj, foodLevelGroup) => {
-                innerObj[foodLevelGroup] = nutrientData[ageSexGroup][foodLevelGroup].reduce((amount, dataRow) => {
+                let amountObj = {};
+                amountObj[graphType] = 0;
+                amountObj[FoodIngredientDataColNames.interpretationNotes] = undefined;
+
+                for (let dataRow of nutrientData[ageSexGroup][foodLevelGroup]) {
                     // we want only the overall amounts for each food group, so ignore the rows representing subgroups
-                    return amount + (isNaN(dataRow[keyName]) || dataRow["Food group_level2"] || dataRow["Food group_level3"] ? 0 : dataRow[keyName])
-                }, 0);
+                    const notValidFoodGroupLv1Amount = isNaN(dataRow[keyName]) || dataRow["Food group_level2"] || dataRow["Food group_level3"];
+                    if (notValidFoodGroupLv1Amount) {
+                        continue;
+                    }
+
+                    amountObj[graphType] += dataRow[keyName];
+
+                    let intepretationValue = dataRow[FoodIngredientDataColNames.interpretationNotes];
+                    if (typeof intepretationValue === 'string' && !amountObj[FoodIngredientDataColNames.interpretationNotes]) {
+                        amountObj[FoodIngredientDataColNames.interpretationNotes] = Model.getInterpretationValue(intepretationValue);
+                    }
+                }
+
+                innerObj[foodLevelGroup] = amountObj;
                 return innerObj;
             }, {})
-            maxAccumulatedAmount = Math.max(maxAccumulatedAmount, Object.values(obj[ageSexGroup]).reduce((sum, cur) => sum + cur, 0))
+
+            maxAccumulatedAmount = Math.max(maxAccumulatedAmount, Object.values(obj[ageSexGroup]).reduce((sum, cur) => sum + cur[graphType], 0))
             return obj;
         }, {})
 
@@ -230,18 +247,20 @@ export class Model {
 
             objLevel1.children.push(Object.keys(nutrientData[ageSexGroup][foodLevel1]).filter(d => d).reduce((objLevel2, foodLevel2) => {
                 const foodLevel2Group = foodLevel1Group[foodLevel2];
-                objLevel2.value -= foodLevel2Group[""]["Amount"];
+                objLevel2.value -= foodLevel2Group[""][FoodIngredientDataColNames.amount];
                 const newChild = {
                     name: foodLevel2,
-                    value: foodLevel2Group[""]["Amount"],
+                    value: foodLevel2Group[""][FoodIngredientDataColNames.amount],
+                    interpretationValue: Model.getInterpretationValue(foodLevel2Group[""][FoodIngredientDataColNames.interpretationNotes]),
                     row: foodLevel2Group[""]
                 };
                 newChild.children = Object.keys(foodLevel2Group).filter(d => d).map((foodLevel3) => {
                     const foodLevel3Group = foodLevel2Group[foodLevel3];
-                    newChild.value -= foodLevel3Group["Amount"];
+                    newChild.value -= foodLevel3Group[FoodIngredientDataColNames.amount];
                     return {
                         name: foodLevel3,
-                        value: foodLevel3Group["Amount"],
+                        value: foodLevel3Group[FoodIngredientDataColNames.amount],
+                        interpretationValue: Model.getInterpretationValue(foodLevel3Group[FoodIngredientDataColNames.interpretationNotes]),
                         row: foodLevel3Group
                     }
                 })
@@ -249,7 +268,8 @@ export class Model {
                 return objLevel2;
             }, { 
                 name: foodLevel1, 
-                value: foodLevel1Group[""][""]["Amount"], // key "" represents the overall group including all subgroups
+                value: foodLevel1Group[""][""][FoodIngredientDataColNames.amount], // key "" represents the overall group including all subgroups
+                interpretationValue: Model.getInterpretationValue(foodLevel1Group[""][""][FoodIngredientDataColNames.interpretationNotes]),
                 row: foodLevel1Group[""][""], 
                 children: []
             }));
