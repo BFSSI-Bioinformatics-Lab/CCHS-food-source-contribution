@@ -20,7 +20,7 @@
 
 
 
-import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation, SortIconClasses, SortStates } from "./assets.js";
+import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation, SortIconClasses, SortStates, FoodIngredientDataColNames } from "./assets.js";
 import { drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -248,7 +248,7 @@ export function upperGraph(model){
         if (focusedFoodGroup !== null) {
             barOnClick(focusedFoodGroup);
         }
-        // console.log(groupedAmount)
+        //console.log(groupedAmount)
         upperGraphBars.selectAll("g")
             .data(Object.values(groupedAmount))
             .enter()
@@ -280,8 +280,8 @@ export function upperGraph(model){
     // drawUpperGraphStackedBars(element, groups, transform, onClick, mult): Draws the stacked bars for the graph
     function drawUpperGraphStackedBars(element, groups, transform, onClick, mult) {
         const groupEntries = Object.entries(groups);
-        //  sort the [food group, intake] pairs in decreasing order by intake
-        groupEntries.sort((a, b) => b[1]- a[1]);
+        //  sort the [food group, {graphType: intake, interpretationNotes: interpretationValue}] pairs in decreasing order by intake
+        groupEntries.sort((a, b) => b[1][graphType]- a[1][graphType]);
         let accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
 
         groupEntries.forEach((d, i) => hoverTooltip(d, mult * 100 + i));
@@ -294,13 +294,13 @@ export function upperGraph(model){
             .append("rect")
                 .attr("width", GraphDims.upperGraphBarWidth)                                     
                 .attr("height", (d, i) => 
-                    GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]) + 
+                    GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1][graphType]) ? 0 : d[1][graphType]) + 
                     /* So that there arent gaps between bars due to rounding */
                     (i !== groupEntries.length - 1 ? 1 : 0)
                 )
                 .attr("x", -50)
                 .attr("y", (d, i) => {
-                    const scaledHeight = GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]);
+                    const scaledHeight = GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1][graphType]) ? 0 : d[1][graphType]);
                     accumulatedHeight -= scaledHeight;
                     return (accumulatedHeight) - 
                         /* So that there arent gaps between bars due to rounding */
@@ -321,13 +321,13 @@ export function upperGraph(model){
             .append("rect")
                 .attr("width", 100)                                     
                 .attr("height", (d, i) => 
-                    GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]) + 
+                    GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1][graphType]) ? 0 : d[1][graphType]) + 
                     /* So that there arent gaps between bars due to rounding */
                     (i !== groupEntries.length - 1 ? 1 : 0)
                 )
                 .attr("x", -50)
                 .attr("y", (d, i) => {
-                    const scaledHeight = GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1]) ? 0 : d[1]);
+                    const scaledHeight = GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1][graphType]) ? 0 : d[1][graphType]);
                     accumulatedHeight -= scaledHeight;
                     return (accumulatedHeight) - 
                         /* So that there arent gaps between bars due to rounding */
@@ -713,13 +713,24 @@ export function upperGraph(model){
         const toolTipId = `barHover${i}`;
         const colour = GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)];
         const title = Translation.translate("upperGraph.toolTipTitle", {name: d[0]});
+
+        let lineContext = graphType;
+        let interpretationValue = d[1][FoodIngredientDataColNames.interpretationNotes];
+
+        if (interpretationValue == "F" || interpretationValue == "X") {
+            lineContext += "OnlyInterpretation";
+        } else if (typeof interpretationValue === 'string') {
+            lineContext += "WithInterpretation";
+        }
+
         const lines = Translation.translate("upperGraph.toolTip", { 
             returnObjects: true, 
-            context: graphType,
-            amount: Translation.translateNum(d[1]),
-            percentage: Translation.translateNum(d[1]),
+            context: lineContext,
+            amount: Translation.translateNum(d[1][graphType]),
+            percentage: Translation.translateNum(d[1][graphType]),
             nutrient: d[0],
-            unit: nutrientUnit
+            unit: nutrientUnit,
+            interpretationValue: interpretationValue
         });
         
         // ------- draw the tooltip ------------

@@ -471,14 +471,25 @@ export function lowerGraph(model){
         function hoverCard(d, root, i, nutrient){
             const arcColour = d3.select(`#arcPath${i}`).attr("fill");
 
+            let interpretationValue = d.data.interpretationValue;
+            let context = undefined;
+
+            if (interpretationValue == "F" || interpretationValue == "X") {
+                context = "OnlyInterpretation";
+            } else if (typeof interpretationValue === "string") {
+                context = "WithInterpretation"
+            }
+
             /* Content of tooltip */
             const title = Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name})
-            const lines = Translation.translate("lowerGraph.toolTipLevel", { 
+            const lines = Translation.translate("lowerGraph.toolTip", { 
+                context: context,
                 returnObjects: true, 
                 percentage: Translation.translateNum(d.data.row.Percentage),
                 parentGroup: d.depth > 1 ? d.parent.data.name : "",
                 parentPercentage: Translation.translateNum(d.depth > 1 ? d.data.row.Percentage / d.parent.data.row.Percentage * 100 : 0),
-                nutrient
+                nutrient,
+                interpretationValue
             });
 
             const toolTipId = `arcHover${i}`;
