@@ -353,12 +353,12 @@ export const TranslationObj = {
             //  any keys in the food description CSV file
             // Note: Copy the exact food group name from the food description CSV file
             FoodDescriptionExceptionKeys: {
-                "spices - seasonings & other ingredients": {
+                "Spices - Seasonings & Other Ingredients": {
                     "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
                     "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
                 },
 
-                "vegetables including potatoes": {
+                "Vegetables Including Potatoes": {
                     "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
                     "Sodium": "Vegetables Including Potatoes (sodium only)"
                 }
@@ -517,12 +517,12 @@ export const TranslationObj = {
             //  any keys in the food description CSV file
             // Note: Copy the exact food group names (for both keys and values) from the food description CSV file
             FoodDescriptionExceptionKeys: {
-                "épices - assaisonnements et autres ingrédients": {
+                "Épices - assaisonnements et autres ingrédients": {
                     "OtherNutrients": "Épices - assaisonnements et autres ingrédients  (tous les nutriments excluant sodium)",
                     "Sodium": "Épices - assaisonnements et autres ingrédients (sodium uniquement)"
                 },
 
-                "légumes incluant pommes de terre": {
+                "Légumes incluant pommes de terre": {
                     "OtherNutrients": "Légumes incluant pommes de terre (tous les nutriments excluant sodium)",
                     "Sodium": "Légumes incluant pommes de terre  (sodium uniquement)"
                 }
