@@ -79,8 +79,7 @@ export class Model {
         this.foodDescExeceptions = Translation.translate("FoodDescriptionExceptionKeys", { returnObjects: true });
 
         let result = await Promise.all([this.loadFoodGroupDescriptionData(), this.loadGraphFoodIngredientsData(), this.loadTableFoodIngredientsData()]);
-        this.checkFoodGroupNames();
-
+        await this.checkFoodGroupNames();
         return result
     }
 
@@ -167,9 +166,9 @@ export class Model {
     }
 
     // checkFoodGroupNames(): Check whether the food group names from the GRAPH and TABLE CSVs match the food group names given in the Food Group Description CSV
-    checkFoodGroupNames() {
+    async checkFoodGroupNames() {
         // exception food group names to not check
-        let exceptionFoodGroupNames = new Set(Object.keys(this.foodDescExeceptions));
+        let exceptionFoodGroupNames = new Set(Object.keys(this.foodDescExeceptions).map(foodGroupName => Model.cleanFoodGroupName(foodGroupName)));
 
         // get all the food group names from the CSV files
         let descFoodGroupNames = new Set(Object.keys(this.foodGroupDescriptionData));
@@ -180,11 +179,11 @@ export class Model {
         let badGraphFoodGroupNames = graphFoodGroupNames.difference(descFoodGroupNames).difference(exceptionFoodGroupNames);
 
         if (badTableFoodGroupNames.size > 0) {
-            console.log("The following Food Groups in the TABLE Food Ingredients CSV do not match the food groups in Food Ingredients CSV: ", badTableFoodGroupNames);
+            console.log("The following Food Groups in the TABLE Food Ingredients CSV do not match the food groups in Food Group Descriptions CSV: ", badTableFoodGroupNames);
         }
 
         if (badGraphFoodGroupNames.size > 0) {
-            console.log("The following Food Groups in the GRAPH Food Ingredients CSV do not match the food groups in Food Ingredients CSV: ", badGraphFoodGroupNames);
+            console.log("The following Food Groups in the GRAPH Food Ingredients CSV do not match the food groups in Food Group Descriptions CSV: ", badGraphFoodGroupNames);
         }
     }
 
@@ -206,7 +205,9 @@ export class Model {
         return Object.values(Object.values(nutrientData)[0])[0][0]["Unit"];
     }
 
-    // calculate the total amount by nutrient per age-sex group
+    // findNutrientTotalAmtPerAgeSexGroup(graphType) calculate the total amount by nutrient per age-sex group
+    // Note:
+    //  This function creates the [food group, {graphType: intake, interpretationNotes: interpretationValue}] pairs needed for the bar graph
     findNutrientTotalAmtPerAgeSexGroup(graphType) {
         let maxAccumulatedAmount = 0;
         const nutrientData = this.graphNutrientTablesByDemoGroupLv1[this.nutrient];
@@ -248,8 +249,8 @@ export class Model {
 
     // getFoodDescription(nutrient, foodGroup): Retrieves the corresponding food description for 'foodGroup' and 'nutrient'
     getFoodDescription(nutrient, foodGroup) {
-        foodGroup = Model.cleanFoodGroupName(foodGroup);
         if (this.foodDescExeceptions[foodGroup] === undefined) {
+            foodGroup = Model.cleanFoodGroupName(foodGroup);
             return this.foodGroupDescriptionData[foodGroup][FoodGroupDescDataColNames.description];
         }
 
@@ -258,7 +259,7 @@ export class Model {
             nutrient = "OtherNutrients";
         }
 
-        const foodDescriptionKey = this.foodDescExeceptions[foodGroup][nutrient];
+        const foodDescriptionKey = Model.cleanFoodGroupName(this.foodDescExeceptions[foodGroup][nutrient]);
         return this.foodGroupDescriptionData[foodDescriptionKey][FoodGroupDescDataColNames.description];
     }
 
