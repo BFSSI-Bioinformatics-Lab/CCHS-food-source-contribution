@@ -78,7 +78,10 @@ export class Model {
         this.ageSexGroupHeadings = SortedAgeSexGroupKeys.map((ageSexKey) => Translation.translate(`AgeSexGroupHeadings.${ageSexKey}`));
         this.foodDescExeceptions = Translation.translate("FoodDescriptionExceptionKeys", { returnObjects: true });
 
-        return await Promise.all([this.loadFoodGroupDescriptionData(), this.loadGraphFoodIngredientsData(), this.loadTableFoodIngredientsData()]);
+        let result = await Promise.all([this.loadFoodGroupDescriptionData(), this.loadGraphFoodIngredientsData(), this.loadTableFoodIngredientsData()]);
+        this.checkFoodGroupNames();
+
+        return result
     }
 
     // loadFoodGroupDescriptionData(): Load the data for all the food group descriptions
@@ -88,11 +91,11 @@ export class Model {
     
         this.foodGroupDescriptionData = Object.freeze(d3.nest()
                 .key(d => 
-                        (Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv3]) ? 
+                        Model.cleanFoodGroupName((Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv3]) ? 
                             Number.isNaN(d[FoodGroupDescDataColNames.foodGroupLv2]) ? 
                                 d[FoodGroupDescDataColNames.foodGroupLv1]
                                 : d[FoodGroupDescDataColNames.foodGroupLv2]
-                            : d[FoodGroupDescDataColNames.foodGroupLv3]).trim()
+                            : d[FoodGroupDescDataColNames.foodGroupLv3]))
                     )
                     .rollup(d => d[0])
                     .object(data));
@@ -114,13 +117,24 @@ export class Model {
         this.graphNutrientTablesFullyNestedDataByFoodGroup = Object.freeze(d3.nest()
                                                             .key(d => d.Nutrient)
                                                             .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
-                                                            .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
-                                                            .key(d => Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv2]) ? "" : d[FoodIngredientDataColNames.foodGroupLv2].trim() )
-                                                            .key(d => Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? "" : d[FoodIngredientDataColNames.foodGroupLv3].trim() )
+                                                            .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim().toLowerCase())
+                                                            .key(d => Model.cleanFoodGroupName(Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv2]) ? "" : d[FoodIngredientDataColNames.foodGroupLv2]))
+                                                            .key(d => Model.cleanFoodGroupName(Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? "" : d[FoodIngredientDataColNames.foodGroupLv3]))
                                                             .rollup(d => d[0])
                                                             .object(data));
 
-        return [this.graphNutrientTablesByDemoGroupLv1, this.graphNutrientTablesFullyNestedDataByFoodGroup];
+        this.graphNutrientTablesByFoodGroups = Object.freeze(d3.nest()
+        .key(d => 
+                Model.cleanFoodGroupName((Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? 
+                    Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv2]) ? 
+                        d[FoodIngredientDataColNames.foodGroupLv1]
+                        : d[FoodIngredientDataColNames.foodGroupLv2]
+                    : d[FoodIngredientDataColNames.foodGroupLv3]))
+            )
+            .rollup(d => d[0])
+            .object(data));
+
+        return [this.graphNutrientTablesByDemoGroupLv1, this.graphNutrientTablesFullyNestedDataByFoodGroup, this.graphNutrientTablesByFoodGroups];
     }
 
     // loadTableFoodIngredientsData(): Load the data for all the food ingredients used in the tables
@@ -135,16 +149,16 @@ export class Model {
         this.tableNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
             .key(d => d.Nutrient)
             .key(d => d[FoodIngredientDataColNames.ageSexGroup].trim())
-            .key(d => d[FoodIngredientDataColNames.foodGroupLv1].trim())
+            .key(d => Model.cleanFoodGroupName(d[FoodIngredientDataColNames.foodGroupLv1]))
             .object(data));
 
         this.tableNutrientTablesByFoodGroups = Object.freeze(d3.nest()
         .key(d => 
-                (Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? 
+                Model.cleanFoodGroupName((Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv3]) ? 
                     Number.isNaN(d[FoodIngredientDataColNames.foodGroupLv2]) ? 
                         d[FoodIngredientDataColNames.foodGroupLv1]
                         : d[FoodIngredientDataColNames.foodGroupLv2]
-                    : d[FoodIngredientDataColNames.foodGroupLv3]).trim()
+                    : d[FoodIngredientDataColNames.foodGroupLv3]))
             )
             .rollup(d => d[0])
             .object(data));
@@ -152,10 +166,38 @@ export class Model {
         return [this.tableNutrientTables, this.tableNutrientTablesByDemoGroupLv1, this.tableNutrientTablesByFoodGroups];
     }
 
+    // checkFoodGroupNames(): Check whether the food group names from the GRAPH and TABLE CSVs match the food group names given in the Food Group Description CSV
+    checkFoodGroupNames() {
+        // exception food group names to not check
+        let exceptionFoodGroupNames = new Set(Object.keys(this.foodDescExeceptions));
+
+        // get all the food group names from the CSV files
+        let descFoodGroupNames = new Set(Object.keys(this.foodGroupDescriptionData));
+        let tableFoodGroupNames = new Set(Object.keys(this.tableNutrientTablesByFoodGroups));
+        let graphFoodGroupNames = new Set(Object.keys(this.graphNutrientTablesByFoodGroups));
+
+        let badTableFoodGroupNames = tableFoodGroupNames.difference(descFoodGroupNames).difference(exceptionFoodGroupNames);
+        let badGraphFoodGroupNames = graphFoodGroupNames.difference(descFoodGroupNames).difference(exceptionFoodGroupNames);
+
+        if (badTableFoodGroupNames.size > 0) {
+            console.log("The following Food Groups in the TABLE Food Ingredients CSV do not match the food groups in Food Ingredients CSV: ", badTableFoodGroupNames);
+        }
+
+        if (badGraphFoodGroupNames.size > 0) {
+            console.log("The following Food Groups in the GRAPH Food Ingredients CSV do not match the food groups in Food Ingredients CSV: ", badGraphFoodGroupNames);
+        }
+    }
+
     // getInterpretationValue(interpretationValue): Retrieves the interpretation value to be displayed
     //  in the table of the visual's
     static getInterpretationValue(interpretationValue) {
         return interpretationValue == "<10" ? "X" : interpretationValue;
+    }
+
+    // cleanFoodGroupName(foodGroupName): Normalizes the food group name when joining data between the Food Group Descriptions CSV and
+    //  the TABLE/GRAPH Food Ingredients CSVs
+    static cleanFoodGroupName(foodGroupName) {
+        return foodGroupName.trim().toLowerCase();
     }
 
     // getNutrientUnit(nutrient): Retrieves the unit for the nutrient
@@ -206,7 +248,7 @@ export class Model {
 
     // getFoodDescription(nutrient, foodGroup): Retrieves the corresponding food description for 'foodGroup' and 'nutrient'
     getFoodDescription(nutrient, foodGroup) {
-        foodGroup = foodGroup.trim();
+        foodGroup = Model.cleanFoodGroupName(foodGroup);
         if (this.foodDescExeceptions[foodGroup] === undefined) {
             return this.foodGroupDescriptionData[foodGroup][FoodGroupDescDataColNames.description];
         }
@@ -249,7 +291,7 @@ export class Model {
                 const foodLevel2Group = foodLevel1Group[foodLevel2];
                 objLevel2.value -= foodLevel2Group[""][FoodIngredientDataColNames.amount];
                 const newChild = {
-                    name: foodLevel2,
+                    name: foodLevel2Group[""][FoodIngredientDataColNames.foodGroupLv2],
                     value: foodLevel2Group[""][FoodIngredientDataColNames.amount],
                     interpretationValue: Model.getInterpretationValue(foodLevel2Group[""][FoodIngredientDataColNames.interpretationNotes]),
                     row: foodLevel2Group[""]
@@ -258,7 +300,7 @@ export class Model {
                     const foodLevel3Group = foodLevel2Group[foodLevel3];
                     newChild.value -= foodLevel3Group[FoodIngredientDataColNames.amount];
                     return {
-                        name: foodLevel3,
+                        name: foodLevel3Group[FoodIngredientDataColNames.foodGroupLv3],
                         value: foodLevel3Group[FoodIngredientDataColNames.amount],
                         interpretationValue: Model.getInterpretationValue(foodLevel3Group[FoodIngredientDataColNames.interpretationNotes]),
                         row: foodLevel3Group
@@ -267,7 +309,7 @@ export class Model {
                 objLevel2.children.push(newChild);
                 return objLevel2;
             }, { 
-                name: foodLevel1, 
+                name: foodLevel1Group[""][""][FoodIngredientDataColNames.foodGroupLv1],
                 value: foodLevel1Group[""][""][FoodIngredientDataColNames.amount], // key "" represents the overall group including all subgroups
                 interpretationValue: Model.getInterpretationValue(foodLevel1Group[""][""][FoodIngredientDataColNames.interpretationNotes]),
                 row: foodLevel1Group[""][""], 
