@@ -30,6 +30,25 @@ const FoodGroupDepthToCol = {2 : FoodIngredientDataColNames.foodGroupLv1,
 // =======================================================================
 // ================== TOOLS/UTILITIES ====================================
 
+// SetTools: Class for handling with Sets
+//     This class is mostly used to deal with compatibility issues with older browsers
+//     since some of Javascript's Set functions are only recently implemented in 2023-2024
+export class SetTools {
+
+    // difference(set1, set2, newCopy): Computes the set difference of set1 - set2
+    // Note:
+    //  If 'newCopy' is set to false, the result for the set difference is stored
+    //      back in 'set1'
+    static difference(set1, set2, newCopy = false) {
+        const result = newCopy ? new Set(set1) : set1;
+        for (const element of set2) {
+            result.delete(element);
+        }
+
+        return result;
+    }
+}
+
 // TableTools: Class for handling any table-like data ex. list of lists/matrices, list of dictionaries
 //    dictionaries of dictionaries, dictionaries of lists, etc...
 export class TableTools {
@@ -172,11 +191,14 @@ export class Model {
 
         // get all the food group names from the CSV files
         let descFoodGroupNames = new Set(Object.keys(this.foodGroupDescriptionData));
-        let tableFoodGroupNames = new Set(Object.keys(this.tableNutrientTablesByFoodGroups));
-        let graphFoodGroupNames = new Set(Object.keys(this.graphNutrientTablesByFoodGroups));
+        let badTableFoodGroupNames = new Set(Object.keys(this.tableNutrientTablesByFoodGroups));
+        let badGraphFoodGroupNames = new Set(Object.keys(this.graphNutrientTablesByFoodGroups));
 
-        let badTableFoodGroupNames = tableFoodGroupNames.difference(descFoodGroupNames).difference(exceptionFoodGroupNames);
-        let badGraphFoodGroupNames = graphFoodGroupNames.difference(descFoodGroupNames).difference(exceptionFoodGroupNames);
+        SetTools.difference(badTableFoodGroupNames, descFoodGroupNames);
+        SetTools.difference(badTableFoodGroupNames, exceptionFoodGroupNames);
+
+        SetTools.difference(badGraphFoodGroupNames, descFoodGroupNames);
+        SetTools.difference(badGraphFoodGroupNames, exceptionFoodGroupNames);
 
         if (badTableFoodGroupNames.size > 0) {
             console.log("The following Food Groups in the TABLE Food Ingredients CSV do not match the food groups in Food Group Descriptions CSV: ", badTableFoodGroupNames);
