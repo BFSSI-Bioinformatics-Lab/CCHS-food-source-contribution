@@ -107,6 +107,9 @@ export function lowerGraph(model){
     // the food group that the mouse is over
     let mouseOverFoodGroupName = null;
 
+    // the id of the tooltip that is last shown on the screen
+    let shownToolTipInd;
+
     const ageSexSelector = d3.select("#lowerGraphAgeSexSelect");
 
     const lowerGraphSvg = d3.select("#lowerGraph").append("svg")
@@ -271,11 +274,15 @@ export function lowerGraph(model){
                 clickedLegendKey = null;
             }
 
-            if (clickedLegendKey === null) {
+            if (clickedLegendKey === null && graphState !== SunBurstStates.FilterOnlyLevel2) {
                 arcOnClick(null, legendNodeIndices[allFoodGroupsName]);
             } else if (graphState == SunBurstStates.AllDisplayed) {
                 arcOnClick(null, legendNodeIndices[name]);
             }
+
+            // on mobile phones, hide the last shown tooltip and show the infobox when clicking on the legend item
+            arcUnHover();
+            updateInfoBox(dummyArcData);
         });
         legendItemGroup.on("mouseover", () => { 
             legendItemGroup.style("cursor", MousePointer.Pointer);
@@ -441,6 +448,7 @@ export function lowerGraph(model){
         hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseover", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseout", (data, index) => { arcUnHover(data, index) });
+        hoverPath.on("touchstart", (data, index) => { arcUnHover(data, index) });
 
         // update the node indices for the food groups referenced by the legend
         legendNodeIndices = {};
@@ -561,18 +569,6 @@ export function lowerGraph(model){
 
             hoverToolTips[toolTipId] = toolTip;
             positionHoverCard(toolTip, d);
-        }
-
-        /* Make the opacity of tooltip 1 */
-        function arcHover(d, i){
-            d3.select(`#arcHover${i}`).attr("opacity", 1);
-            updateInfoBox(d);
-        }
-
-        /* Make the opacity of tooltip 0 */
-        function arcUnHover(d, i){
-            d3.select(`#arcHover${i}`).attr("opacity", 0);
-            hideInfoBox();
         }
     }
 
@@ -772,6 +768,29 @@ export function lowerGraph(model){
         if (selectedNode.depth != LegendKeyTreeDepth) {
             clickedLegendKey = null;
         }
+    }
+
+    /* Make the opacity of tooltip 1 */
+    function arcHover(d, i){
+        // on mobile phones, we want the last shown tooltip to disappear
+        if (shownToolTipInd !== undefined) {
+            d3.select(`#arcHover${shownToolTipInd}`).attr("opacity", 0);
+        }
+
+        shownToolTipInd = i;
+        d3.select(`#arcHover${shownToolTipInd}`).attr("opacity", 1);
+        updateInfoBox(d);
+    }
+
+    /* Make the opacity of tooltip 0 */
+    function arcUnHover(d, i){
+        if (i === undefined) {
+            i = shownToolTipInd;
+        }
+
+        if (i === undefined) return;
+        d3.select(`#arcHover${i}`).attr("opacity", 0);
+        hideInfoBox();
     }
 
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph

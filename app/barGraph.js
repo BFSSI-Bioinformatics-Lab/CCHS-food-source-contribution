@@ -54,6 +54,11 @@ export function upperGraph(model){
     let sortedColIndex = null;
     let sortedColState = SortStates.Unsorted;
 
+    // name of the food group and index of the bar for the tooltip that is last shown on screen
+    let shownToolTipFoodGroup;
+    let shownToolTipBarInd;
+    let shownToolTipHoverInd;
+
     // whether to display numbers/percentae for the graph
     /* Sets up alternator between graph types (percentage vs number) */
     const typeIterator = getGraphType();
@@ -277,6 +282,12 @@ export function upperGraph(model){
             });
     }
 
+    // isShownToolTipBar(foodGroup, barInd): Determines the bar where the last shown tooltip appeared
+    function isShownToolTipBar(foodGroup, barInd) {
+        return (shownToolTipBarInd !== undefined && shownToolTipBarInd == barInd && 
+                shownToolTipFoodGroup !== undefined && shownToolTipFoodGroup == foodGroup);
+    }
+
     // drawUpperGraphStackedBars(element, groups, transform, onClick, mult): Draws the stacked bars for the graph
     function drawUpperGraphStackedBars(element, groups, transform, onClick, mult) {
         const groupEntries = Object.entries(groups);
@@ -284,7 +295,7 @@ export function upperGraph(model){
         groupEntries.sort((a, b) => b[1][graphType]- a[1][graphType]);
         let accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
 
-        groupEntries.forEach((d, i) => hoverTooltip(d, mult * 100 + i));
+        let shownToolTipPosY;
 
         element.append("g")
             .attr("transform", transform)
@@ -302,15 +313,36 @@ export function upperGraph(model){
                 .attr("y", (d, i) => {
                     const scaledHeight = GraphDims.upperGraphHeight - upperGraphYAxisScale(isNaN(d[1][graphType]) ? 0 : d[1][graphType]);
                     accumulatedHeight -= scaledHeight;
-                    return (accumulatedHeight) - 
-                        /* So that there arent gaps between bars due to rounding */
-                        (i !== groupEntries.length - 1 ? 1 : 0);
+
+                    let result = (accumulatedHeight) - 
+                    /* So that there arent gaps between bars due to rounding */
+                    (i !== groupEntries.length - 1 ? 1 : 0);
+
+                    // get the y-position of the bar to show the tooltip at the correct height for mobile phones
+                    let foodGroup = d[0];
+                    if (isShownToolTipBar(foodGroup, mult)) {
+                        shownToolTipPosY = result - 100;
+                    }
+
+                    return result;
                 })
 
                 // d[0] references the first element of [food group, intake] in line 281
                 .attr("fill", d => GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)]);
         
         accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
+        
+        // create the tooltips
+        groupEntries.forEach((d, i) => { 
+            hoverTooltip(d, mult * 100 + i);
+
+            // show the tooltip for the clicked bar for mobile phones
+            let foodGroup = d[0];
+            if (shownToolTipPosY !== undefined && isShownToolTipBar(foodGroup, mult)) {
+                onBarHover(d, mult * 100 + i, i, undefined, shownToolTipPosY);
+                shownToolTipHoverInd = mult * 100 + i;
+            }
+        });
         
         /* Since tool tips cover the bars, use another transparent layer on top of everything with the shape of the bars to detect hover positions */
         upperGraphBarHoverDetect.append("g")
@@ -338,6 +370,10 @@ export function upperGraph(model){
                 .on("mousemove", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
                 .on("mouseenter", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
                 .on("mouseleave", (d, index, elements) => onBarUnHover(d, mult * 100 + index, index, elements))
+                .on("touchstart", (d, index, elements) => {                   
+                    shownToolTipFoodGroup = d[0];
+                    shownToolTipBarInd = mult;
+                })
                 .on("click", onClick);
     }
 
@@ -376,19 +412,29 @@ export function upperGraph(model){
     }
 
     /* Set the opacity of the hovered bar's info to be 1 */
-    function onBarHover(d, i, index, elements){
+    function onBarHover(d, i, index, elements, mouseY){
         updateInfoBox({name: d[0]});
+
+        if (shownToolTipHoverInd !== undefined) {
+            d3.select(`#barHover${shownToolTipHoverInd}`).attr("opacity", 0).style("pointer-events", "none");
+        }
 
         const toolTipId = `barHover${i}`
         const mousePos = d3.mouse(upperGraphSvg.node());
+        if (mouseY === undefined) {
+            mouseY = mousePos[1];
+        }
 
         const toolTip = hoverToolTips[toolTipId];
 
         toolTip.group.attr("opacity", 1)
-            .attr("transform", `translate(${mousePos[0]}, ${mousePos[1]})`);
+            .attr("transform", `translate(${mousePos[0]}, ${mouseY})`)
+            .style("pointer-events", "auto");
 
-        const bar = d3.select(elements[index]);
-        bar.style("cursor", MousePointer.Pointer);
+        if (elements !== undefined) {
+            const bar = d3.select(elements[index]);
+            bar.style("cursor", MousePointer.Pointer);
+        }
     }
 
     /* Set the opacity of the previously hovered bar's info to be 0 */
@@ -550,7 +596,7 @@ export function upperGraph(model){
     }
 
     // legendItemOnClick(name, colour): Event function when the user clicks on a key in the legend
-    function legendItemOnClick({name = "", colour = Colours.None} = {}) {
+    function legendItemOnClick({name = "", colour = Colours.None, legendItem = null} = {}) {
         let newFocusedFoodGroup = null;
         const isAllFoodGroups = name == Translation.translate("LegendKeys.All Items")
 
@@ -565,6 +611,9 @@ export function upperGraph(model){
         } else {
             updateGraph(nutrient);
         }
+
+        // show again the infobox when mobile phones click on the legend
+        showInfoBox({name, colour, legendItem});
     }
 
     // Update food group description box
@@ -702,14 +751,18 @@ export function upperGraph(model){
 
             legendItemGroup.on("mouseenter", () => { showInfoBox({name, colour, legendItem}); });
             legendItemGroup.on("mouseleave", () => { legendItemOnMouseLeave({name, colour, legendItem}); });
-            legendItemGroup.on("click", () => { legendItemOnClick({name, colour, legendItem}); });
+            legendItemGroup.on("click", () => { 
+                shownToolTipBarInd = undefined;
+                shownToolTipFoodGroup = undefined;
+                legendItemOnClick({name, colour, legendItem}); 
+            });
             legendItemGroup.on("mouseover", () => { showInfoBox({name, colour, legendItem}); });
         }
     }
 
 
     /* Creates tooltip for hovering over bars */
-    function hoverTooltip(d, i){
+    function hoverTooltip(d, i, hide = true){
         const toolTipId = `barHover${i}`;
         const colour = GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)];
         const title = Translation.translate("upperGraph.toolTipTitle", {name: d[0]});
@@ -746,8 +799,15 @@ export function upperGraph(model){
 
         // draw the container for the tooltip
         toolTip.group = upperGraphTooltips.append("g")
+            .data([toolTipId])
             .attr("id",  toolTipId)
-            .attr("opacity", 0);
+            .attr("opacity", hide ? 0 : 1)
+            .on("touchend", (data, index, element) => {
+                element = d3.select(element[0]);
+                let currentOpacity = element.attr("opacity");
+                let newOpacity = Math.abs(currentOpacity - 1);
+                element.attr("opacity", newOpacity).style("pointer-events", newOpacity ? "auto": "none");
+            });
 
         // draw the background for the tooltip
         toolTip.background = toolTip.group.append("rect")
