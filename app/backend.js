@@ -123,7 +123,7 @@ export class Model {
 
     // loadGraphFoodIngredientsData(): Load the data for all the food ingredients used in the graphs
     async loadGraphFoodIngredientsData(){
-        let data = await d3.csv(`data/Corrected_GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240624-${i18next.language}.csv`);
+        let data = await d3.csv(`data/Corrected_GRAPH_FSCT-data_Food_ingredients CCHS 2015-20240920-${i18next.language}.csv`);
         data = TableTools.numToFloat(data);
 
         this.graphNutrientTablesByDemoGroupLv1 = Object.freeze(d3.nest()
