@@ -427,7 +427,8 @@ export class Model {
         // Retrieve the specific value for each row
         const result = [];
         Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
-            result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
+            const foodLevelGroupName = d[0][FoodIngredientDataColNames.foodGroupLv1];
+            result.push([foodLevelGroupName].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
         });
 
         // create the title for the CSV
