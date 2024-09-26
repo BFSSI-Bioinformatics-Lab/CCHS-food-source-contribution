@@ -232,7 +232,7 @@ export function upperGraph(model){
         upperGraphXAxisLine.selectAll(".tick text").each((data, ind, textElements) => {
             const textGroup = d3.select(textElements[ind]);
             textGroup.text("").attr("dy", null);
-            drawWrappedText({textGroup: textGroup, text: data, width: GraphDims.upperGraphBarWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
+            drawWrappedText({textGroup: textGroup, text: data, width: GraphDims.upperGraphXAxisTickWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
         });
 
         const nutrientTotalByAgeSexGroup = model.findNutrientTotalAmtPerAgeSexGroup(graphType);
