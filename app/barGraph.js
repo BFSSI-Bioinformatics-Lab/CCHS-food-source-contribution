@@ -474,7 +474,7 @@ export function upperGraph(model){
             .data(barGraphTable.subHeadings)
             .enter()
             .append("td")
-                .style("min-width", (d, i) => i === 0 ? "200px" : "40px")
+                .style("min-width", (d, i) => i === 0 ? "200px" : "60px")
                 .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
                 .style("font-size", `${GraphDims.upperGraphTableSubHeadingFontSize}px`)
