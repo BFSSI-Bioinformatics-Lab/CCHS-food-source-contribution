@@ -70,7 +70,6 @@ export const GraphDims = Object.freeze({
     upperGraphTooltipMinWidth: 140,
     upperGraphAxesFontSize: 20,
     upperGraphXAxisTickFontSize: 13,
-    upperGraphXAxisTickWidth: 140,
     upperGraphYAxisTickFontSize: 14,
     upperGraphTooltipFontSize: 14,
     upperGraphTooltipPaddingVert: 8,
@@ -413,7 +412,16 @@ export const TranslationObj = {
                     "{{ percentage}}% {{ interpretationValue }}"
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
-                "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"]
+                "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
+
+                // widths for the labels on the x-axis of the graph
+                "upperGraphXAxisTickWidths": {
+                    "Population1Up": 140,
+                    "Children1To8": 140,
+                    "YouthAndAdolescents": 135,
+                    "AdultMales": 140,
+                    "AdultFemales": 140
+                } 
             },
             "lowerGraph": {
                 "graphTitle": {
@@ -576,7 +584,16 @@ export const TranslationObj = {
                     "{{ percentage }}% {{ interpretationValue }}"
                 ],
                 "tableSubHeadingFirstCol": "Groupe d'Aliments",
-                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"]
+                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
+
+                // widths for the labels on the x-axis of the graph
+                "upperGraphXAxisTickWidths": {
+                    "Population1Up": 140,
+                    "Children1To8": 140,
+                    "YouthAndAdolescents": 140,
+                    "AdultMales": 110,
+                    "AdultFemales": 110
+                } 
             },
             "lowerGraph": {
                 "graphTitle": {

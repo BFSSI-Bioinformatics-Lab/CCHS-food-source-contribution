@@ -230,9 +230,12 @@ export function upperGraph(model){
 
         // draw the wrapped text for the x-axis ticks
         upperGraphXAxisLine.selectAll(".tick text").each((data, ind, textElements) => {
+            const ageSexGroupKey = model.ageSexGroupHeadingKeys[data];
             const textGroup = d3.select(textElements[ind]);
+            const textWidth = Translation.translate(`upperGraph.upperGraphXAxisTickWidths.${ageSexGroupKey}`);
             textGroup.text("").attr("dy", null);
-            drawWrappedText({textGroup: textGroup, text: data, width: GraphDims.upperGraphXAxisTickWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
+
+            drawWrappedText({textGroup: textGroup, text: data, width: textWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
         });
 
         const nutrientTotalByAgeSexGroup = model.findNutrientTotalAmtPerAgeSexGroup(graphType);
