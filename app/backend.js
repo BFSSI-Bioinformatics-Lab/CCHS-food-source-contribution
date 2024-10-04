@@ -49,6 +49,15 @@ export class SetTools {
     }
 }
 
+// DictTools: Class for handling dictionaries
+export class DictTools {
+
+    // invert(dict): Inverts a dictionary (keys become values and values become keys)
+    static invert(dict) {
+        return Object.fromEntries(Object.entries(dict).map(([key, value]) => [value, key]));
+    }
+}
+
 // TableTools: Class for handling any table-like data ex. list of lists/matrices, list of dictionaries
 //    dictionaries of dictionaries, dictionaries of lists, etc...
 export class TableTools {
@@ -95,6 +104,8 @@ export class Model {
     // load(): Setup all the needed data for the user interface
     async load() {
         this.ageSexGroupHeadings = SortedAgeSexGroupKeys.map((ageSexKey) => Translation.translate(`AgeSexGroupHeadings.${ageSexKey}`));
+        this.ageSexGroupHeadingKeys = DictTools.invert(Translation.translate("AgeSexGroupHeadings", { returnObjects: true }));
+
         this.foodDescExeceptions = Translation.translate("FoodDescriptionExceptionKeys", { returnObjects: true });
 
         let result = await Promise.all([this.loadFoodGroupDescriptionData(), this.loadGraphFoodIngredientsData(), this.loadTableFoodIngredientsData()]);
@@ -427,7 +438,8 @@ export class Model {
         // Retrieve the specific value for each row
         const result = [];
         Object.entries(tableRows).forEach(([foodLevelGroup, d]) => {
-            result.push([foodLevelGroup].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
+            const foodLevelGroupName = d[0][FoodIngredientDataColNames.foodGroupLv1];
+            result.push([foodLevelGroupName].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
         });
 
         // create the title for the CSV

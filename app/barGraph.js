@@ -230,9 +230,12 @@ export function upperGraph(model){
 
         // draw the wrapped text for the x-axis ticks
         upperGraphXAxisLine.selectAll(".tick text").each((data, ind, textElements) => {
+            const ageSexGroupKey = model.ageSexGroupHeadingKeys[data];
             const textGroup = d3.select(textElements[ind]);
+            const textWidth = Translation.translate(`upperGraph.upperGraphXAxisTickWidths.${ageSexGroupKey}`);
             textGroup.text("").attr("dy", null);
-            drawWrappedText({textGroup: textGroup, text: data, width: GraphDims.upperGraphBarWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
+
+            drawWrappedText({textGroup: textGroup, text: data, width: textWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
         });
 
         const nutrientTotalByAgeSexGroup = model.findNutrientTotalAmtPerAgeSexGroup(graphType);
@@ -474,7 +477,7 @@ export function upperGraph(model){
             .data(barGraphTable.subHeadings)
             .enter()
             .append("td")
-                .style("min-width", (d, i) => i === 0 ? "200px" : "40px")
+                .style("min-width", (d, i) => i === 0 ? "200px" : "60px")
                 .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
                 .style("border-top", "0px")
                 .style("font-size", `${GraphDims.upperGraphTableSubHeadingFontSize}px`)
