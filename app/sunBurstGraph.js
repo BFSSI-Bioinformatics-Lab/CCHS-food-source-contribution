@@ -1139,10 +1139,6 @@ export function lowerGraph(model){
         colour = colour === undefined ? null : colour;
 
         let foodGroupName = d.data.name;
-        if (mouseOverFoodGroupName !== null && mouseOverFoodGroupName == foodGroupName) {
-            return;
-        }
-
         mouseOverFoodGroupName = foodGroupName;
 
         let desc = "";

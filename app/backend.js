@@ -282,8 +282,8 @@ export class Model {
 
     // getFoodDescription(nutrient, foodGroup): Retrieves the corresponding food description for 'foodGroup' and 'nutrient'
     getFoodDescription(nutrient, foodGroup) {
+        foodGroup = Model.cleanFoodGroupName(foodGroup);
         if (this.foodDescExeceptions[foodGroup] === undefined) {
-            foodGroup = Model.cleanFoodGroupName(foodGroup);
             return this.foodGroupDescriptionData[foodGroup][FoodGroupDescDataColNames.description];
         }
 
