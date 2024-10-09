@@ -418,7 +418,7 @@ export const TranslationObj = {
                 "upperGraphXAxisTickWidths": {
                     "Population1Up": 140,
                     "Children1To8": 140,
-                    "YouthAndAdolescents": 135,
+                    "YouthAndAdolescents": 130,
                     "AdultMales": 140,
                     "AdultFemales": 140
                 } 
