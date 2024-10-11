@@ -300,6 +300,7 @@ export class Model {
     // Note:
     //  Used for French translations
     getFoodGroupArticle(foodGroup) {
+        foodGroup = Model.cleanFoodGroupName(foodGroup);
         const foodGroupData = this.tableNutrientTablesByFoodGroups[foodGroup];
 
         if (foodGroupData === undefined) {
