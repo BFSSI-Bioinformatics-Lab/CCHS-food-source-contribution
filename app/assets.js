@@ -382,7 +382,7 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
+                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
                     "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
                     "switchTypeButton": "Switch to Percentage"
                 },
@@ -392,7 +392,7 @@ export const TranslationObj = {
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
-                "tableTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
+                "tableTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     "Amount: {{amount}} {{ unit }}"
@@ -556,7 +556,7 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{ nutrient }} {{ amountUnit }}/j et % de l'apport total`,
+                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,
                     "yAxisTitle": `Apports en {{nutrient}} ({{ amountUnit }}/j)`,
                     "switchTypeButton": "Afficher les pourcentages "
                 },
@@ -565,7 +565,7 @@ export const TranslationObj = {
                     "yAxisTitle": `% de l'apport total en {{nutrient}}`,
                     "switchTypeButton": "Afficher les nombres"
                 },
-                "tableTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{nutrient}} ({{ amountUnit }}/jour) et % de l'apport total`,   
+                "tableTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     `Quantité: {{amount }} {{ unit }}`
