@@ -368,7 +368,7 @@ export const TranslationObj = {
             // Footnotes used in graphs and tables
             "FootNotes": {
                 "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6% to 33.3%; interpret with caution.", 
-                "FInterpretationNote": "F: Data with a CV greater than 33.3% with a 95% confidence interval not entirely between 0 and 3%; suppressed due to extreme sampling variability.", 
+                "FInterpretationNote": "F: Data with a CV greater than 33.3% suppressed due to extreme sampling variability.",
                 "XInterpretationNote": "X: Food with less than 10 eaters; suppressed to meet confidentiality requirements.", 
                 "excludePregnantAndLactating": "*Excludes pregnant and lactating women",
                 "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
@@ -541,8 +541,8 @@ export const TranslationObj = {
 
             // Footnotes used in graphs and tables
             "FootNotes": {
-                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6 % à 33,3 %; interpréter avec prudence.", 
-                "FInterpretationNote": "F: Données dont le CV est supérieur à 33, 3%, avec un intervalle de confiance de 95% pas entièrement compris ", 
+                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6% à 33,3%; interpréter avec prudence.", 
+                "FInterpretationNote": "F: Données dont le CV est supérieur à 33,3% supprimées en raison de l'extrême variabilité d'échantillonnage.", 
                 "XInterpretationNote": "X: Groupe d’aliment avec moins de 10 mangeurs ; supprimé pour des raisons de confidentialité.", 
                 "excludePregnantAndLactating": "*Exclut les femmes enceintes et allaitantes",
                 "sourceText": "Source des données : Statistique Canada, Enquête sur la santé dans les collectivités canadiennes 2015 - Nutrition, 2015, Fichier partagé.",
