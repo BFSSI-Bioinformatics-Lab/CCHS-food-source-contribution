@@ -351,14 +351,15 @@ export const TranslationObj = {
 
             // certain keys in the graph's food ingredient CSV file that do not map to
             //  any keys in the food description CSV file
-            // Note: Copy the exact food group name from the food description CSV file
+            // Note: Copy the exact food group name from the food description CSV file,
+            //  then convert the name to lowercase without any trailing/leading spaces
             FoodDescriptionExceptionKeys: {
-                "Spices - Seasonings & Other Ingredients": {
+                "spices - seasonings & other ingredients": {
                     "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
                     "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
                 },
 
-                "Vegetables Including Potatoes": {
+                "vegetables including potatoes": {
                     "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
                     "Sodium": "Vegetables Including Potatoes (sodium only)"
                 }
@@ -367,7 +368,7 @@ export const TranslationObj = {
             // Footnotes used in graphs and tables
             "FootNotes": {
                 "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6% to 33.3%; interpret with caution.", 
-                "FInterpretationNote": "F: Data with a CV greater than 33.3% with a 95% confidence interval not entirely between 0 and 3%; suppressed due to extreme sampling variability.", 
+                "FInterpretationNote": "F: Data with a CV greater than 33.3% suppressed due to extreme sampling variability.",
                 "XInterpretationNote": "X: Food with less than 10 eaters; suppressed to meet confidentiality requirements.", 
                 "excludePregnantAndLactating": "*Excludes pregnant and lactating women",
                 "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
@@ -381,7 +382,7 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
+                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
                     "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
                     "switchTypeButton": "Switch to Percentage"
                 },
@@ -391,7 +392,7 @@ export const TranslationObj = {
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
-                "tableTitle": "Contribution of 12 food groups to {{ nutrient }} daily {{ amountUnit }}/d and % of total intake",
+                "tableTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     "Amount: {{amount}} {{ unit }}"
@@ -524,14 +525,15 @@ export const TranslationObj = {
 
             // certain keys in the graph's food ingredient CSV file that do not map to
             //  any keys in the food description CSV file
-            // Note: Copy the exact food group names (for both keys and values) from the food description CSV file
+            // Note: Copy the exact food group names (for both keys and values) from the food description CSV file, 
+            //  then convert the name to lowercase without any trailing/leading spaces
             FoodDescriptionExceptionKeys: {
-                "Épices - assaisonnements et autres ingrédients": {
+                "épices - assaisonnements et autres ingrédients": {
                     "OtherNutrients": "Épices - assaisonnements et autres ingrédients  (tous les nutriments excluant sodium)",
                     "Sodium": "Épices - assaisonnements et autres ingrédients (sodium uniquement)"
                 },
 
-                "Légumes incluant pommes de terre": {
+                "légumes incluant pommes de terre": {
                     "OtherNutrients": "Légumes incluant pommes de terre (tous les nutriments excluant sodium)",
                     "Sodium": "Légumes incluant pommes de terre  (sodium uniquement)"
                 }
@@ -539,8 +541,8 @@ export const TranslationObj = {
 
             // Footnotes used in graphs and tables
             "FootNotes": {
-                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6 % à 33,3 %; interpréter avec prudence.", 
-                "FInterpretationNote": "F: Données dont le CV est supérieur à 33, 3%, avec un intervalle de confiance de 95% pas entièrement compris ", 
+                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6% à 33,3%; interpréter avec prudence.", 
+                "FInterpretationNote": "F: Données dont le CV est supérieur à 33,3% supprimées en raison de l'extrême variabilité d'échantillonnage.", 
                 "XInterpretationNote": "X: Groupe d’aliment avec moins de 10 mangeurs ; supprimé pour des raisons de confidentialité.", 
                 "excludePregnantAndLactating": "*Exclut les femmes enceintes et allaitantes",
                 "sourceText": "Source des données : Statistique Canada, Enquête sur la santé dans les collectivités canadiennes 2015 - Nutrition, 2015, Fichier partagé.",
@@ -554,7 +556,7 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{ nutrient }} {{ amountUnit }}/j et % de l'apport total`,
+                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,
                     "yAxisTitle": `Apports en {{nutrient}} ({{ amountUnit }}/j)`,
                     "switchTypeButton": "Afficher les pourcentages "
                 },
@@ -563,7 +565,7 @@ export const TranslationObj = {
                     "yAxisTitle": `% de l'apport total en {{nutrient}}`,
                     "switchTypeButton": "Afficher les nombres"
                 },
-                "tableTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{nutrient}} ({{ amountUnit }}/jour) et % de l'apport total`,   
+                "tableTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     `Quantité: {{amount }} {{ unit }}`
