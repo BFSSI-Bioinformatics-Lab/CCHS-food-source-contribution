@@ -387,8 +387,7 @@ export const TranslationObj = {
                     "switchTypeButton": "Switch to Percentage"
                 },
                 "percentage": {
-                    "graphTitle": "Percentage of total {{ nutrient }} intake provided by" +
-                        " 12 food groups",
+                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
@@ -561,7 +560,7 @@ export const TranslationObj = {
                     "switchTypeButton": "Afficher les pourcentages "
                 },
                 "percentage": {
-                    "graphTitle": `Contribution de 12 groupes d'aliments à l'apport quotidien en {{ nutrient }} {{ amountUnit }}/j et % de l'apport total`,
+                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,
                     "yAxisTitle": `% de l'apport total en {{nutrient}}`,
                     "switchTypeButton": "Afficher les nombres"
                 },
