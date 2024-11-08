@@ -96,7 +96,7 @@ export const GraphDims = Object.freeze({
     upperGraphFooterPaddingHor: 10,
     upperGraphFootNoteSpacing: 10,
     lowerGraphWidth: 700,
-    lowerGraphHeight: 600,
+    lowerGraphHeight: 700,
     lowerGraphLeft: 60,
     lowerGraphRight: 400,
     lowerGraphTop: 60,
