@@ -565,6 +565,8 @@ export function lowerGraph(model){
             toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth + 2 * GraphDims.lowerGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
             toolTip.background.attr("width", toolTipWidth);
 
+            toolTip.width = toolTipWidth;
+
             // -------------------------------------
 
             hoverToolTips[toolTipId] = toolTip;
@@ -718,8 +720,13 @@ export function lowerGraph(model){
     function positionHoverCard(toolTip, d){
         const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
 
-        const x = GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1);
+        let x = GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1);
         const y = GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth);
+
+        if (x > 0) {
+            x -= toolTip.width;
+        }
+
         toolTip.group.attr("transform", `translate(${x}, ${y})`);
     }
 
