@@ -152,7 +152,7 @@ export function lowerGraph(model){
 
     // group for the info box
     infoBox.group = lowerGraphSvg.append("g")
-        .attr("transform", `translate(${lowerGraphRightXPos}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight})`);
+        .attr("transform", `translate(${lowerGraphRightXPos}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight - GraphDims.lowerGraphInfoBoxMarginBtm})`);
 
     // border line for the info box
     infoBox.highlight = infoBox.group.append("line")
@@ -719,12 +719,14 @@ export function lowerGraph(model){
     /* Positions tool tip according to arc position */
     function positionHoverCard(toolTip, d){
         const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
+        const relativeAngleX =  Math.cos(relativeAngle);
 
-        let x = GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1);
+        let x = GraphDims.lowerGraphArcRadius * relativeAngleX * (d.depth) + (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius) * relativeAngleX;
         const y = GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth);
 
         if (x > 0) {
             x -= toolTip.width;
+            x = Math.max(x, -GraphDims.lowerGraphWidth / 2);
         }
 
         toolTip.group.attr("transform", `translate(${x}, ${y})`);
