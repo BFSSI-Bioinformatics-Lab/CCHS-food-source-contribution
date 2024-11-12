@@ -118,6 +118,7 @@ export const GraphDims = Object.freeze({
     lowerGraphTooltipTitleMarginBtm: 10,
     lowerGraphInfoBoxWidth: 240,
     lowerGraphInfoBoxHeight: 224,
+    lowerGraphInfoBoxMarginBtm: 80,
     lowerGraphArcLabelFontSize: 14,
     lowerGraphArcLabelLetterSpacing: 1,
     lowerGraphArcPadding: 10,
