@@ -718,15 +718,26 @@ export function lowerGraph(model){
 
     /* Positions tool tip according to arc position */
     function positionHoverCard(toolTip, d){
+        // computes the relative angle (in radians) for where the arc is located.
+        // note: 
+        //  - see diagram on the unit circle from trigonometry as a reference:
+        //    https://www.radfordmathematics.com/functions/circular-functions/definition-cosine-sine-tangent/unit-circle-sine-cosine-definition.png
+        //
+        // let 'x' = relative angle
+        // let 'r' = distance from the origin,
+        //
+        // then the coordinate for the arc would be (rcos(x), rsin(x))
         const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
         const relativeAngleX =  Math.cos(relativeAngle);
 
         let x = GraphDims.lowerGraphArcRadius * relativeAngleX * (d.depth) + (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius) * relativeAngleX;
         const y = GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth);
 
+        // move the tooltip to the left side of the arc if the arc is located at the right side of the graph,
+        // so that the tooltip will not block the description box
         if (x > 0) {
             x -= toolTip.width;
-            x = Math.max(x, -GraphDims.lowerGraphWidth / 2);
+            x = Math.max(x, -GraphDims.lowerGraphWidth / 2); // don't want tooltip to move outside of the graph
         }
 
         toolTip.group.attr("transform", `translate(${x}, ${y})`);
