@@ -152,7 +152,7 @@ export function lowerGraph(model){
 
     // group for the info box
     infoBox.group = lowerGraphSvg.append("g")
-        .attr("transform", `translate(${lowerGraphRightXPos}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight})`);
+        .attr("transform", `translate(${lowerGraphRightXPos}, ${GraphDims.lowerGraphTop + GraphDims.lowerGraphHeight - GraphDims.lowerGraphInfoBoxHeight - GraphDims.lowerGraphInfoBoxMarginBtm})`);
 
     // border line for the info box
     infoBox.highlight = infoBox.group.append("line")
@@ -565,6 +565,8 @@ export function lowerGraph(model){
             toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth + 2 * GraphDims.lowerGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
             toolTip.background.attr("width", toolTipWidth);
 
+            toolTip.width = toolTipWidth;
+
             // -------------------------------------
 
             hoverToolTips[toolTipId] = toolTip;
@@ -716,10 +718,28 @@ export function lowerGraph(model){
 
     /* Positions tool tip according to arc position */
     function positionHoverCard(toolTip, d){
+        // computes the relative angle (in radians) for where the arc is located.
+        // note: 
+        //  - see diagram on the unit circle from trigonometry as a reference:
+        //    https://www.radfordmathematics.com/functions/circular-functions/definition-cosine-sine-tangent/unit-circle-sine-cosine-definition.png
+        //
+        // let 'x' = relative angle
+        // let 'r' = distance from the origin,
+        //
+        // then the coordinate for the arc would be (rcos(x), rsin(x))
         const relativeAngle = (d.x1 + d.x0)/2 + 3 * Math.PI / 2;
+        const relativeAngleX =  Math.cos(relativeAngle);
 
-        const x = GraphDims.lowerGraphArcRadius * Math.cos(relativeAngle) * (d.depth + 1);
+        let x = GraphDims.lowerGraphArcRadius * relativeAngleX * (d.depth) + (GraphDims.lowerGraphArcRadius - GraphDims.lowerGraphCenterArcRadius) * relativeAngleX;
         const y = GraphDims.lowerGraphArcRadius * Math.sin(relativeAngle) * (d.depth);
+
+        // move the tooltip to the left side of the arc if the arc is located at the right side of the graph,
+        // so that the tooltip will not block the description box
+        if (x > 0) {
+            x -= toolTip.width;
+            x = Math.max(x, -GraphDims.lowerGraphWidth / 2); // don't want tooltip to move outside of the graph
+        }
+
         toolTip.group.attr("transform", `translate(${x}, ${y})`);
     }
 
