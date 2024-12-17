@@ -368,8 +368,8 @@ export const TranslationObj = {
             
             // Footnotes used in graphs and tables
             "FootNotes": {
-                "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6% to 33.3%; interpret with caution.", 
-                "FInterpretationNote": "F: Data with a CV greater than 33.3% suppressed due to extreme sampling variability.",
+                "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6 % to 33.3 %; interpret with caution.", 
+                "FInterpretationNote": "F: Data with a CV greater than 33.3 % suppressed due to extreme sampling variability.",
                 "XInterpretationNote": "X: Food with less than 10 eaters; suppressed to meet confidentiality requirements.", 
                 "excludePregnantAndLactating": "*Excludes pregnant and lactating women",
                 "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
@@ -383,16 +383,16 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
+                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and percentage (%) of total intake)",
                     "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
                     "switchTypeButton": "Switch to Percentage"
                 },
                 "percentage": {
-                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
+                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and percentage (%) of total intake)",
                     "yAxisTitle": "% of total {{nutrient}} intake",
                     "switchTypeButton": "Switch to Numbers"
                 },
-                "tableTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
+                "tableTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and percentage (%) of total intake)",
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     "Amount: {{amount}} {{ unit }}"
@@ -404,16 +404,16 @@ export const TranslationObj = {
                     "Amount: {{amount}} {{ unit }} {{ interpretationValue }}"
                 ],
                 "toolTip_percentage": [
-                    "{{ percentage}}%"
+                    "{{ percentage}} %"
                 ],
                 "toolTip_percentageOnlyInterpretation": [
                     "{{ interpretationValue }}"
                 ],
                 "toolTip_percentageWithInterpretation": [
-                    "{{ percentage}}% {{ interpretationValue }}"
+                    "{{ percentage}} % {{ interpretationValue }}"
                 ],
                 "tableSubHeadingFirstCol": "Food Group",
-                "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
+                "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "Percentage (%) of total intake", "Percentage (%) SE"],
 
                 // widths for the labels on the x-axis of the graph
                 "upperGraphXAxisTickWidths": {
@@ -457,16 +457,16 @@ export const TranslationObj = {
                 "allFoodGroupsLabel": "All Food Groups",
                 "toolTipTitle": "{{- name }}",
                 "toolTip": [
-                    "{{ percentage }}% of {{ nutrient }} intake"
+                    "{{ percentage }} % of {{ nutrient }} intake"
                 ],
                 "toolTip_OnlyInterpretation": [
                     "{{ interpretationValue }}"
                 ],
                 "toolTip_WithInterpretation": [
-                    "{{ percentage }}% {{ interpretationValue }} of {{ nutrient }} intake"
+                    "{{ percentage }} % {{ interpretationValue }} of {{ nutrient }} intake"
                 ],
-                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
-                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
+                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "Percentage (%) of total intake", "Percentage (%) SE"],
+                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "Percentage (%) of total intake", "Percentage (%) SE"],
                 "allDataCSVFileName": {
                     "All Displayed": "Contribution of food groups and sub-groups to {{nutrient}} intake",
                     "Filter Only Level 2": "Contribution of level 2 food groups to {{nutrient}} intake" 
@@ -541,8 +541,8 @@ export const TranslationObj = {
 
             // Footnotes used in graphs and tables
             "FootNotes": {
-                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6% à 33,3%; interpréter avec prudence.", 
-                "FInterpretationNote": "F: Données dont le CV est supérieur à 33,3% supprimées en raison de l'extrême variabilité d'échantillonnage.", 
+                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6 % à 33,3 %; interpréter avec prudence.", 
+                "FInterpretationNote": "F: Données dont le CV est supérieur à 33,3 % supprimées en raison de l'extrême variabilité d'échantillonnage.", 
                 "XInterpretationNote": "X: Groupe d’aliment avec moins de 10 mangeurs ; supprimé pour des raisons de confidentialité.", 
                 "excludePregnantAndLactating": "*Exclut les femmes enceintes et allaitantes",
                 "sourceText": "Source des données : Statistique Canada, Enquête sur la santé dans les collectivités canadiennes 2015 - Nutrition, 2015, Fichier partagé.",
@@ -556,16 +556,16 @@ export const TranslationObj = {
 
             "upperGraph": {
                 "number": {
-                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,
+                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et pourcentage (%) de l'apport total)`,
                     "yAxisTitle": `Apports en {{nutrient}} ({{ amountUnit }}/j)`,
                     "switchTypeButton": "Afficher les pourcentages "
                 },
                 "percentage": {
-                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,
-                    "yAxisTitle": `% de l'apport total en {{nutrient}}`,
+                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et pourcentage (%) de l'apport total)`,
+                    "yAxisTitle": `pourcentage (%) de l'apport total en {{nutrient}}`,
                     "switchTypeButton": "Afficher les nombres"
                 },
-                "tableTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,   
+                "tableTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et pourcentage (%) de l'apport total)`,   
                 "toolTipTitle": "{{- name }}",
                 "toolTip_number": [
                     `Quantité: {{amount }} {{ unit }}`
@@ -577,16 +577,16 @@ export const TranslationObj = {
                     "Quantité: {{amount}} {{ unit }} {{ interpretationValue }}"
                 ],
                 "toolTip_percentage": [
-                    `{{ percentage }}%`
+                    `{{ percentage }} %`
                 ],
                 "toolTip_percentageOnlyInterpretation": [
                     "{{ interpretationValue }}"
                 ],
                 "toolTip_percentageWithInterpretation": [
-                    "{{ percentage }}% {{ interpretationValue }}"
+                    "{{ percentage }} % {{ interpretationValue }}"
                 ],
                 "tableSubHeadingFirstCol": "Groupe d'Aliments",
-                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
+                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "Pourcentage (%) de l'Apport Total", "ET Pourcentage (%)"],
 
                 // widths for the labels on the x-axis of the graph
                 "upperGraphXAxisTickWidths": {
@@ -629,16 +629,16 @@ export const TranslationObj = {
                 "seeAllGroups": "Afficher tous les groupes",
                 "toolTipTitle": "{{- name }}",
                 "toolTip": [
-                    `{{ percentage }}% de l'apport en {{nutrient}}`
+                    `{{ percentage }} % de l'apport en {{nutrient}}`
                 ],
                 "toolTip_OnlyInterpretation": [
                     "{{ interpretationValue }}"
                 ],
                 "toolTip_WithInterpretation": [
-                    `{{ percentage }}% {{ interpretationValue }} de l'apport en {{nutrient}}`
+                    `{{ percentage }} % {{ interpretationValue }} de l'apport en {{nutrient}}`
                 ],
-                "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
-                "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
+                "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "Pourcentage (%) de l'Apport Total", "ET Pourcentage (%)"],
+                "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "Pourcentage (%) de l'Apport Total", "ET Pourcentage (%)"],
 
                 "allDataCSVFileName": {
                     "All Displayed": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}}`,
