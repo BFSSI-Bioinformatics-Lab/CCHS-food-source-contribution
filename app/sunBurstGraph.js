@@ -823,12 +823,13 @@ export function lowerGraph(model){
         }).transition(s)
             .attr("fill-opacity", (d) => +arcVisible(d.target))
             .attrTween("transform", d => () => `translate(30,0)`)
-            .attr("fill", d => {
+            .attr("fill", "black")
+            .attr("font-weight", d => {
                 if (selectedNode !== null && selectedNode.target.data.name == d.target.data.name) {
-                    return "white";
+                    return FontWeight.Bold;
                 }
 
-                return "black";
+                return FontWeight.Normal;
             });
 
         /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
