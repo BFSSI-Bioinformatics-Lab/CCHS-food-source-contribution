@@ -548,7 +548,7 @@ export function upperGraph(model){
             .enter()
             .append("td")
                 .attr("colspan", 1)
-                .text((d) => Number.isNaN(d) ? "" : d)
+                .text((d) => (Number.isNaN(d) || d === "") ? " - " : d)
                 .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
                 .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
                 .style("font-size", "12px")
