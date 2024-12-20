@@ -36,19 +36,19 @@ export const Colours = {
 
 // GraphColours: Colours specific to the graph
 export const GraphColours = {
-    "Baby Foods": "#BAABDA",
-    "Beverages (Excluding Milks)": "#F8CB2E",
-    "Dairy & Plant-Based Beverages": "#39B7E3",
-    "Fats & Oils": "#D8B384",
-    "Fish & Seafood": "#FF6969",
-    "Fruits & Vegetables": "#3CCF4E",
-    "Grain Products": "#EF5B0C",
-    "Meat & Poultry": "#BB2525",
-    "Meat Alternatives": "#AC7339",
-    "Nutritional Beverages & Bars": "#84F1CD",
-    "Soups - Sauces - Spices & Other Ingredients": "#005DD0",
-    "Sweets - Sugars & Savoury Snacks": "#824BD0",
-    "All Items": "#808080"
+    "Baby Foods": "#CEC3E5",
+    "Beverages (Excluding Milks)": "#FADB51",
+    "Dairy & Plant-Based Beverages": "#5DCCEB",
+    "Fats & Oils": "#E4C9A4",
+    "Fish & Seafood": "#FF8D8D",
+    "Fruits & Vegetables": "#61DD73",
+    "Grain Products": "#F48021",
+    "Meat & Poultry": "#CF4646",
+    "Meat Alternatives": "#C4955D",
+    "Nutritional Beverages & Bars": "#A4F5DC",
+    "Soups - Sauces - Spices & Other Ingredients": "#0082DE",
+    "Sweets - Sugars & Savoury Snacks": "#A270DE",
+    "All Items": "#A1A1A1"
 }
 
 
