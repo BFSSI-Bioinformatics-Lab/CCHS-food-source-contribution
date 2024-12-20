@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates, LowerGraphFoodGroupLv3ColInd, LowerGraphAllDataColInd } from "./assets.js";
+import { AgeSexGroupOrder, Translation, FoodGroupDescDataColNames, FoodIngredientDataColNames, SunBurstStates, LowerGraphFoodGroupLv3ColInd, LowerGraphAllDataColInd, DictTools } from "./assets.js";
 
 
 // ================== CONSTANTS ==========================================
@@ -29,6 +29,31 @@ const FoodGroupDepthToCol = {2 : FoodIngredientDataColNames.foodGroupLv1,
 
 // =======================================================================
 // ================== TOOLS/UTILITIES ====================================
+
+// TextTools: Utility class for handling text
+export class TextTools {
+
+    // capitalizeFirstLetter(txt): Capitalize the first letter of a text
+    static capitalizeFirstLetter(txt) {
+        if (!txt) return txt;
+        return String(txt).charAt(0).toUpperCase() + String(txt).slice(1);
+    }
+
+    // capitalizeOnlyFirstLetter(txt): Only make the first letter of a text capital
+    static capitalizeOnlyFirstLetter(txt) {
+        txt = txt.toLowerCase();
+        return TextTools.capitalizeFirstLetter(txt);
+    }
+
+    // getWebsiteText(txt): Clean the text to be displayed to be friendly displayed on the website
+    // Notes: Does the following operations:
+    // - Replace all "&" symbols with "and"
+    // - Capitalize only the first letter
+    static getWebsiteText(txt) {
+        txt = txt.replace("&", Translation.translate("and"));
+        return TextTools.capitalizeOnlyFirstLetter(txt);
+    }
+}
 
 // SetTools: Class for handling with Sets
 //     This class is mostly used to deal with compatibility issues with older browsers
@@ -46,15 +71,6 @@ export class SetTools {
         }
 
         return result;
-    }
-}
-
-// DictTools: Class for handling dictionaries
-export class DictTools {
-
-    // invert(dict): Inverts a dictionary (keys become values and values become keys)
-    static invert(dict) {
-        return Object.fromEntries(Object.entries(dict).map(([key, value]) => [value, key]));
     }
 }
 
@@ -443,6 +459,18 @@ export class Model {
             result.push([foodLevelGroupName].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
         });
 
+        // Clean the text for only the text columns on the website table
+        const webTableContent = [];
+        for (const row of result) {
+            const colLen = row.length;
+            const newRow = [];
+            for (let i = 0; i < colLen; ++i) {
+                newRow.push(colIsNumbered[i] ? row[i] : TextTools.getWebsiteText(row[i]));
+            }
+
+            webTableContent.push(newRow);
+        }
+
         // create the title for the CSV
         const csvTitle = [];
         for (let i = 0; i < 2; ++i) {
@@ -499,7 +527,7 @@ export class Model {
             else return null;
         });    
 
-        this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: result, headingsPerSexAgeGroup, csvContent, compareFuncs, colIsNumbered};
+        this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: webTableContent, headingsPerSexAgeGroup, csvContent, compareFuncs, colIsNumbered};
         return this.barGraphTable;
     }
 
@@ -629,6 +657,18 @@ export class Model {
             colIsNumbered.push(true);
         }
 
+        // Clean the text for only the text columns on the website table
+        const webTableContent = [];
+        for (const row of result) {
+            const colLen = row.length;
+            const newRow = [];
+            for (let i = 0; i < colLen; ++i) {
+                newRow.push(colIsNumbered[i] ? row[i] : TextTools.getWebsiteText(row[i]));
+            }
+
+            webTableContent.push(newRow);
+        }
+
         // create the title for the CSV
         const csvTitle = [];
         for (let i = 0; i < 2; ++i) {
@@ -672,7 +712,7 @@ export class Model {
 
         compareFuncs = compareFuncs.concat([Model.strNumCompare, null, Model.strNumCompare, null]);
 
-        this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: result, csvContent, compareFuncs, colIsNumbered };
+        this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: webTableContent, csvContent, compareFuncs, colIsNumbered };
         return this.sunburstTable;
     }
 }

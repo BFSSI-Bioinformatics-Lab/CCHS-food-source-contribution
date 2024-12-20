@@ -21,6 +21,7 @@
 
 
 import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation, SortIconClasses, SortStates, FoodIngredientDataColNames } from "./assets.js";
+import { TextTools } from "./backend.js";
 import { drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -626,9 +627,6 @@ export function upperGraph(model){
             return;
         }
 
-        let colour = GraphColours[Translation.translate(`LegendKeyVars.${foodGroupName}`)];
-        colour = colour === undefined ? null : colour;
-
         mouseOverFoodGroupName = foodGroupName;
 
         let desc = "";
@@ -636,6 +634,9 @@ export function upperGraph(model){
         if (!isAllFoodGroups) {
             desc = model.getFoodDescription(nutrient, foodGroupName);
         }
+
+        let colour = GraphColours[Translation.translate(`LegendKeyVars.${foodGroupName}`)];
+        colour = (colour === undefined || isAllFoodGroups) ? null : colour;
 
         // ---------- Updates the infobox --------------
 
@@ -647,7 +648,7 @@ export function upperGraph(model){
                                     fontSize: GraphDims.upperGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change the subtitle
-        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.upperGraphInfoBoxWidth,
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : TextTools.getWebsiteText(foodGroupName), width: GraphDims.upperGraphInfoBoxWidth,
                                        fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change text
@@ -726,7 +727,7 @@ export function upperGraph(model){
                 .attr("x", textX)
                 .attr("font-size", legendItemFontSize);
     
-            drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
+            drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: TextTools.getWebsiteText(legendKeyText), textX, textY});
 
             const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
 
@@ -768,7 +769,7 @@ export function upperGraph(model){
     function hoverTooltip(d, i, hide = true){
         const toolTipId = `barHover${i}`;
         const colour = GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)];
-        const title = Translation.translate("upperGraph.toolTipTitle", {name: d[0]});
+        const title = TextTools.getWebsiteText(Translation.translate("upperGraph.toolTipTitle", {name: d[0]}));
 
         let lineContext = graphType;
         let interpretationValue = d[1][FoodIngredientDataColNames.interpretationNotes];
