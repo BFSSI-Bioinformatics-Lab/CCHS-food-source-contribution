@@ -347,6 +347,15 @@ const LangEN = {
             AdultFemales: "Adult females* 19 y +"
         },
 
+        // The pretty display for the age-sex group
+        ageSexGroupDisplay: {
+            Population1Up: "Population age 1+", 
+            Children1To8: "Children 1 to 8 years", 
+            YouthAndAdolescents: "Youth & adolescents* 9 to 18 years",
+            AdultMales: "Adult males 19 years +",
+            AdultFemales: "Adult females* 19 years +" 
+        },
+
         // certain keys in the graph's food ingredient CSV file that do not map to
         //  any keys in the food description CSV file
         // Note: Copy the exact food group name from the food description CSV file,
@@ -410,7 +419,7 @@ const LangEN = {
                 "{{ percentage}} % {{ interpretationValue }}"
             ],
             "tableSubHeadingFirstCol": "Food group",
-            "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "Percentage (%) of total intake", "Percentage (%) SE"],
+            "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "Percentage of total intake (%)", "Percentage SE (%)"],
 
             // widths for the labels on the x-axis of the graph
             "upperGraphXAxisTickWidths": {
@@ -418,7 +427,7 @@ const LangEN = {
                 "Children1To8": 140,
                 "YouthAndAdolescents": 130,
                 "AdultMales": 140,
-                "AdultFemales": 140
+                "AdultFemales": 100
             } 
         },
         "lowerGraph": {
@@ -449,9 +458,8 @@ const LangEN = {
                 }
             },
             "allItems": "All food groups",
-            "seeLevel2Groups": "Show Sub-groups Only",
+            "seeLevel2Groups": "Show sub-groups Only",
             "seeAllGroups": " Show all food groups",
-            "allFoodGroupsLabel": "All Food Groups",
             "toolTipTitle": "{{- name }}",
             "toolTip": [
                 "{{ percentage }} % of {{ nutrient }} intake"
@@ -462,8 +470,8 @@ const LangEN = {
             "toolTip_WithInterpretation": [
                 "{{ percentage }} % {{ interpretationValue }} of {{ nutrient }} intake"
             ],
-            "tableHeadings": ["Food group level 1", "Food group level 2", "Food group level 3", "Amount ({{unit}})", "Amount SE", "Percentage (%) of total intake", "Percentage (%) SE"],
-            "tableAllDataHeadings": ["Age-sex Group", "Food group level 1", "Food group level 2", "Food group level 3", "Amount ({{unit}})", "Amount SE", "Percentage (%) of total intake", "Percentage (%) SE"],
+            "tableHeadings": ["Food group level 1", "Food group level 2", "Food group level 3", "Amount ({{unit}})", "Amount SE", "Percentage of total intake (%)", "Percentage SE (%)"],
+            "tableAllDataHeadings": ["Age-sex Group", "Food group level 1", "Food group level 2", "Food group level 3", "Amount ({{unit}})", "Amount SE", "Percentage of total intake (%)", "Percentage SE (%)"],
             "allDataCSVFileName": {
                 "All Displayed": "Contribution of food groups and sub-groups to {{nutrient}} intake",
                 "Filter Only Level 2": "Contribution of level 2 food groups to {{nutrient}} intake" 
@@ -515,6 +523,15 @@ const LangFR = {
             AdultFemales: "Femmes adultes* 19 ans +"
         },
 
+        // The pretty display for the age-sex group
+        ageSexGroupDisplay: {
+            Population1Up: "Population 1 an et +", 
+            Children1To8: "Enfants 1 à 8 ans", 
+            YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans",
+            AdultMales: "Hommes adultes 19 ans +",
+            AdultFemales: "Femmes adultes* 19 ans +"
+        },
+
         // certain keys in the graph's food ingredient CSV file that do not map to
         //  any keys in the food description CSV file
         // Note: Copy the exact food group names (for both keys and values) from the food description CSV file, 
@@ -544,7 +561,7 @@ const LangFR = {
         "popUpTableTitle": `Tableau: {{title}}`,
 
         // title for the infobox
-        "infoBoxTitle": "Description des Groupes d'Aliments",
+        "infoBoxTitle": "Description des groupes d'aliments",
 
         "upperGraph": {
             "number": {
@@ -578,7 +595,7 @@ const LangFR = {
                 "{{ percentage }} % {{ interpretationValue }}"
             ],
             "tableSubHeadingFirstCol": "Groupe d'aliments",
-            "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "Pourcentage (%) de l'apport total", "ET Pourcentage (%)"],
+            "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "Pourcentage de l'apport total (%)", "ET pourcentage (%)"],
 
             // widths for the labels on the x-axis of the graph
             "upperGraphXAxisTickWidths": {
@@ -629,8 +646,8 @@ const LangFR = {
                 "toolTip_WithInterpretation": [
                     `{{ percentage }} % {{ interpretationValue }} de l'apport en {{nutrient}}`
                 ],
-                "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "Pourcentage (%) de l'Apport Total", "ET Pourcentage (%)"],
-                "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "Pourcentage (%) de l'Apport Total", "ET Pourcentage (%)"],
+                "tableHeadings": ["Groupe d'aliments niveau 1", "Groupe d'aliments niveau 2", "Groupe d'aliments niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "Pourcentage de l'apport total (%)", "ET pourcentage (%)"],
+                "tableAllDataHeadings": ["Groupe âge-sexe", "Groupe d'aliments Niveau 1", "Groupe d'aliments niveau 2", "Groupe d'aliments niveau 3", "Moyenne ({{unit}})", "ET moyenne", "Pourcentage de l'apport total (%)", "ET pourcentage (%)"],
 
             "allDataCSVFileName": {
                 "All Displayed": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}}`,

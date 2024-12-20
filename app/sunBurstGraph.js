@@ -229,7 +229,7 @@ export function lowerGraph(model){
             .attr("x", textX)
             .attr("font-size", legendItemFontSize);
 
-        drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: TextTools.getWebsiteText(legendKeyText), textX, textY});
+        drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: TextTools.getDisplayText(legendKeyText), textX, textY});
 
         const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
 
@@ -490,7 +490,7 @@ export function lowerGraph(model){
             }
 
             /* Content of tooltip */
-            const title = TextTools.getWebsiteText(Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name}));
+            const title = TextTools.getDisplayText(Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name}));
             const lines = Translation.translate("lowerGraph.toolTip", { 
                 context: context,
                 returnObjects: true, 
@@ -824,12 +824,13 @@ export function lowerGraph(model){
         }).transition(s)
             .attr("fill-opacity", (d) => +arcVisible(d.target))
             .attrTween("transform", d => () => `translate(30,0)`)
-            .attr("fill", d => {
+            .attr("fill", "black")
+            .attr("font-weight", d => {
                 if (selectedNode !== null && selectedNode.target.data.name == d.target.data.name) {
-                    return "white";
+                    return FontWeight.Bold;
                 }
 
-                return "black";
+                return FontWeight.Normal;
             });
 
         /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
@@ -884,8 +885,8 @@ export function lowerGraph(model){
         const foodGroup = selectedNode !== null ? selectedNode.data.name : "";
         const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
 
-        graphTitleText = Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
-                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle});
+        graphTitleText = TextTools.getDisplayText(Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
+                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle}));
 
         drawWrappedText({textGroup: lowerGraphChartHeading, text: graphTitleText, width: GraphDims.lowerGraphWidth, 
                          textX: GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2, fontSize: GraphDims.lowerGraphChartHeadingFontSize});    
@@ -900,7 +901,7 @@ export function lowerGraph(model){
         const foodGroup = sunBurstNode.data.name;
         const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
 
-        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle });
+        tableTitleText = TextTools.getDisplayText(Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle }));
         
         const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, tableTitleText) : model.sunburstTable;
 
@@ -1115,7 +1116,7 @@ export function lowerGraph(model){
         if (!element.node()) return;
         const elementNode = element.node();
         const availableLength = labelAvailableLength(d, midRadius); 
-        let text = TextTools.getWebsiteText(d.data.name);
+        let text = TextTools.getDisplayText(d.data.name);
 
         element.attr("startOffset", 0);
         element.text(text);
@@ -1178,7 +1179,7 @@ export function lowerGraph(model){
                                     fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change the subtitle
-        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : TextTools.getWebsiteText(foodGroupName), width: GraphDims.lowerGraphInfoBoxWidth,
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : TextTools.getDisplayText(foodGroupName), width: GraphDims.lowerGraphInfoBoxWidth,
                                        fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change text

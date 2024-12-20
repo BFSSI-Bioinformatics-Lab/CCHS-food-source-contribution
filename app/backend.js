@@ -45,11 +45,11 @@ export class TextTools {
         return TextTools.capitalizeFirstLetter(txt);
     }
 
-    // getWebsiteText(txt): Clean the text to be displayed to be friendly displayed on the website
+    // getDisplayText(txt): Clean the text to be displayed to be friendly displayed on the website/CSV
     // Notes: Does the following operations:
     // - Replace all "&" symbols with "and"
-    // - Capitalize only the first letter
-    static getWebsiteText(txt) {
+    // - Capitalize only the first lettesr
+    static getDisplayText(txt) {
         txt = txt.replace("&", Translation.translate("and"));
         return TextTools.capitalizeOnlyFirstLetter(txt);
     }
@@ -423,7 +423,9 @@ export class Model {
         const nutrientAgeGroups = Object.keys(nutrientData);
 
         // headings for the top most level of the table
-        const tableHeadings = ["", ...this.ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g))];
+        let ageSexGroupHeadings = this.ageSexGroupHeadings.filter(g => nutrientAgeGroups.includes(g));
+        ageSexGroupHeadings = ageSexGroupHeadings.map((heading) => Translation.translate(`ageSexGroupDisplay.${this.ageSexGroupHeadingKeys[heading]}`));
+        const tableHeadings = ["", ...ageSexGroupHeadings];
 
         // sub-headings of the table
         const subHeadings = [Translation.translate("upperGraph.tableSubHeadingFirstCol")].concat(Object.keys(nutrientData).map(() => headingsPerSexAgeGroup).flat());
@@ -459,16 +461,14 @@ export class Model {
             result.push([foodLevelGroupName].concat(d.map(g => headingsPerSexAgeGroupKeys.map(key => Model.getFoodIngredientNumberedCell(g, key))).flat()));
         });
 
-        // Clean the text for only the text columns on the website table
-        const webTableContent = [];
+        // Clean the text by replacing all "&" and make only first letter capital (for both website and CSV)
         for (const row of result) {
             const colLen = row.length;
-            const newRow = [];
             for (let i = 0; i < colLen; ++i) {
-                newRow.push(colIsNumbered[i] ? row[i] : TextTools.getWebsiteText(row[i]));
+                if (!colIsNumbered[i]) {
+                    row[i] = TextTools.getDisplayText(row[i]);
+                }
             }
-
-            webTableContent.push(newRow);
         }
 
         // create the title for the CSV
@@ -527,7 +527,7 @@ export class Model {
             else return null;
         });    
 
-        this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: webTableContent, headingsPerSexAgeGroup, csvContent, compareFuncs, colIsNumbered};
+        this.barGraphTable = { headings: tableHeadings, subHeadings: subHeadings.map((heading, ind) => { return {heading, ind} }), table: result, headingsPerSexAgeGroup, csvContent, compareFuncs, colIsNumbered};
         return this.barGraphTable;
     }
 
@@ -542,8 +542,9 @@ export class Model {
         // create the data rows for the table
         let sunBurstData = [];
         for (const row of nutrientData) {
-            let newRow = [row[FoodIngredientDataColNames.ageSexGroup], row[FoodIngredientDataColNames.foodGroupLv1], row[FoodIngredientDataColNames.foodGroupLv2], row[FoodIngredientDataColNames.foodGroupLv3]];
-            newRow = newRow.map((cellValue) => { return Number.isNaN(cellValue) ? "" : cellValue});
+            const ageSexGroupDisplay = Translation.translate(`ageSexGroupDisplay.${this.ageSexGroupHeadingKeys[row[FoodIngredientDataColNames.ageSexGroup]]}`);
+            let newRow = [ageSexGroupDisplay, row[FoodIngredientDataColNames.foodGroupLv1], row[FoodIngredientDataColNames.foodGroupLv2], row[FoodIngredientDataColNames.foodGroupLv3]];
+            newRow = newRow.map((cellValue) => { return Number.isNaN(cellValue) ? "" : TextTools.getDisplayText(cellValue)});
 
             const amountData = headingsPerSexAgeGroupKeys.map(key => Translation.translateNum(Model.getFoodIngredientNumberedCell(row, key)));
             sunBurstData.push(newRow.concat(amountData));
@@ -657,16 +658,14 @@ export class Model {
             colIsNumbered.push(true);
         }
 
-        // Clean the text for only the text columns on the website table
-        const webTableContent = [];
+        // Clean the text by replacing all "&" and make only first letter capital (for both website and CSV)
         for (const row of result) {
             const colLen = row.length;
-            const newRow = [];
             for (let i = 0; i < colLen; ++i) {
-                newRow.push(colIsNumbered[i] ? row[i] : TextTools.getWebsiteText(row[i]));
+                if (!colIsNumbered[i]) {
+                    row[i] = TextTools.getDisplayText(row[i]);
+                }
             }
-
-            webTableContent.push(newRow);
         }
 
         // create the title for the CSV
@@ -712,7 +711,7 @@ export class Model {
 
         compareFuncs = compareFuncs.concat([Model.strNumCompare, null, Model.strNumCompare, null]);
 
-        this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: webTableContent, csvContent, compareFuncs, colIsNumbered };
+        this.sunburstTable = { headings: tableHeadings.map((heading, ind) => { return {heading, ind} }), table: result, csvContent, compareFuncs, colIsNumbered };
         return this.sunburstTable;
     }
 }

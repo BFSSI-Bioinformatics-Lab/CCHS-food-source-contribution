@@ -236,7 +236,8 @@ export function upperGraph(model){
             const textWidth = Translation.translate(`upperGraph.upperGraphXAxisTickWidths.${ageSexGroupKey}`);
             textGroup.text("").attr("dy", null);
 
-            drawWrappedText({textGroup: textGroup, text: data, width: textWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
+            const ageSexGroupText = Translation.translate(`ageSexGroupDisplay.${model.ageSexGroupHeadingKeys[data]}`);
+            drawWrappedText({textGroup: textGroup, text: ageSexGroupText, width: textWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
         });
 
         const nutrientTotalByAgeSexGroup = model.findNutrientTotalAmtPerAgeSexGroup(graphType);
@@ -268,7 +269,7 @@ export function upperGraph(model){
             )
 
         // draw the graph title
-        graphTitleText = Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit});
+        graphTitleText = TextTools.getDisplayText(Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit}));
         upperGraphHeading.attr("font-weight", FontWeight.Bold);
 
         drawWrappedText({textGroup: upperGraphHeading, text: graphTitleText, width: upperGraphSvgWidth - GraphDims.upperGraphLeft - GraphDims.upperGraphRight, fontSize: GraphDims.upperGraphChartHeadingFontSize,
@@ -452,7 +453,7 @@ export function upperGraph(model){
 
     // drawTable(nutrient): Draws the table for the graph
     function drawTable(nutrient, reloadData = true){
-        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
+        tableTitleText = TextTools.getDisplayText(Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient }));
         const barGraphTable = reloadData ? model.createBarGraphTable(tableTitleText) : model.barGraphTable;
         const amountLeftIndex = 1;
 
@@ -648,7 +649,7 @@ export function upperGraph(model){
                                     fontSize: GraphDims.upperGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change the subtitle
-        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : TextTools.getWebsiteText(foodGroupName), width: GraphDims.upperGraphInfoBoxWidth,
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : TextTools.getDisplayText(foodGroupName), width: GraphDims.upperGraphInfoBoxWidth,
                                        fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change text
@@ -727,7 +728,7 @@ export function upperGraph(model){
                 .attr("x", textX)
                 .attr("font-size", legendItemFontSize);
     
-            drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: TextTools.getWebsiteText(legendKeyText), textX, textY});
+            drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: TextTools.getDisplayText(legendKeyText), textX, textY});
 
             const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
 
@@ -769,7 +770,7 @@ export function upperGraph(model){
     function hoverTooltip(d, i, hide = true){
         const toolTipId = `barHover${i}`;
         const colour = GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)];
-        const title = TextTools.getWebsiteText(Translation.translate("upperGraph.toolTipTitle", {name: d[0]}));
+        const title = TextTools.getDisplayText(Translation.translate("upperGraph.toolTipTitle", {name: d[0]}));
 
         let lineContext = graphType;
         let interpretationValue = d[1][FoodIngredientDataColNames.interpretationNotes];
