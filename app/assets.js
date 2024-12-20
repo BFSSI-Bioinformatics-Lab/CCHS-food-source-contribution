@@ -10,7 +10,18 @@
 /////////////////////////////////////////////////////////
 
 
+// ================== TOOLS/UTILITIES ====================================
 
+// DictTools: Class for handling dictionaries
+export class DictTools {
+
+    // invert(dict): Inverts a dictionary (keys become values and values become keys)
+    static invert(dict) {
+        return Object.fromEntries(Object.entries(dict).map(([key, value]) => [value, key]));
+    }
+}
+
+// =======================================================================
 
 // =================================================
 // == Colours                                     ==
@@ -296,327 +307,325 @@ export class Translation {
 }
 
 
+// ================= ENGLISH TRANSLATIONS =======================
+
+// Names used for the legend
+// Note: Copy the exact food group lv1 name from the food ingredient CSV file
+const LegendKeysEN = {
+    "Baby Foods": "Baby Foods",
+    "Beverages (Excluding Milks)": "Beverages (Excluding Milks)",
+    "Dairy & Plant-Based Beverages": "Dairy & Plant-Based Beverages",
+    "Fats & Oils": "Fats & Oils",
+    "Fish & Seafood": "Fish & Seafood",
+    "Fruits & Vegetables": "Fruits & Vegetables",
+    "Grain Products": "Grain Products",
+    "Meat & Poultry": "Meat & Poultry",
+    "Meat Alternatives": "Meat Alternatives",
+    "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
+    "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
+    "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
+    "All Items": "All Food Groups (Reset)"
+}
+
+const LegendKeyVarsEN = DictTools.invert(LegendKeysEN);
+
+
+const LangEN = {
+    translation: {
+        Number: "{{num, number}}",
+        LegendKeys: LegendKeysEN,
+        LegendKeyVars: LegendKeyVarsEN,
+        "and": "and",
+
+        // Names for the age-sex groups
+        // Note: Copy the exact age-sex group name from the food description CSV file
+        AgeSexGroupHeadings: {
+            Population1Up: "Population age 1+", 
+            Children1To8: "Children 1 to 8 y", 
+            YouthAndAdolescents: "Youth & adolescents* 9 to 18 y",
+            AdultMales: "Adult males 19 y +",
+            AdultFemales: "Adult females* 19 y +"
+        },
+
+        // The pretty display for the age-sex group
+        ageSexGroupDisplay: {
+            Population1Up: "Population age 1+", 
+            Children1To8: "Children 1 to 8 years", 
+            YouthAndAdolescents: "Youth & adolescents* 9 to 18 years",
+            AdultMales: "Adult males 19 years +",
+            AdultFemales: "Adult females* 19 years +" 
+        },
+
+        // certain keys in the graph's food ingredient CSV file that do not map to
+        //  any keys in the food description CSV file
+        // Note: Copy the exact food group name from the food description CSV file,
+        //  then convert the name to lowercase without any trailing/leading spaces
+        FoodDescriptionExceptionKeys: {
+            "spices - seasonings & other ingredients": {
+                "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
+                "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
+            },
+
+            "vegetables including potatoes": {
+                "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
+                "Sodium": "Vegetables Including Potatoes (sodium only)"
+            }
+        },
+        
+        // Footnotes used in graphs and tables
+        "FootNotes": {
+            "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6 % to 33.3 %; interpret with caution.", 
+            "FInterpretationNote": "F: Data with a CV greater than 33.3 % suppressed due to extreme sampling variability.",
+            "XInterpretationNote": "X: Food with less than 10 eaters; suppressed to meet confidentiality requirements.", 
+            "excludePregnantAndLactating": "*Excludes pregnant and lactating women",
+            "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
+        },
+
+        // title for the popup tables on the website
+        "popUpTableTitle": "Table: {{title}}",
+
+        // title for the infobox
+        "infoBoxTitle": "Food group description",
+
+        "upperGraph": {
+            "number": {
+                "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and percentage (%) of total intake)",
+                "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
+                "switchTypeButton": "Switch to percentage"
+            },
+            "percentage": {
+                "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and percentage (%) of total intake)",
+                "yAxisTitle": "% of total {{nutrient}} intake",
+                "switchTypeButton": "Switch to numbers"
+            },
+            "tableTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and percentage (%) of total intake)",
+            "toolTipTitle": "{{- name }}",
+            "toolTip_number": [
+                "Amount: {{amount}} {{ unit }}"
+            ],
+            "toolTip_numberOnlyInterpretation": [
+                "Amount: {{ interpretationValue }}"
+            ],
+            "toolTip_numberWithInterpretation": [
+                "Amount: {{amount}} {{ unit }} {{ interpretationValue }}"
+            ],
+            "toolTip_percentage": [
+                "{{ percentage}} %"
+            ],
+            "toolTip_percentageOnlyInterpretation": [
+                "{{ interpretationValue }}"
+            ],
+            "toolTip_percentageWithInterpretation": [
+                "{{ percentage}} % {{ interpretationValue }}"
+            ],
+            "tableSubHeadingFirstCol": "Food group",
+            "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "Percentage of total intake (%)", "Percentage SE (%)"],
+
+            // widths for the labels on the x-axis of the graph
+            "upperGraphXAxisTickWidths": {
+                "Population1Up": 140,
+                "Children1To8": 140,
+                "YouthAndAdolescents": 130,
+                "AdultMales": 140,
+                "AdultFemales": 100
+            } 
+        },
+        "lowerGraph": {
+            "graphTitle": {
+                "OtherAgeGroups": {
+                    "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in {{ ageSexGroup }}",
+                    "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in {{ ageSexGroup }}",
+                    "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in {{ ageSexGroup }}"
+                },
+
+                "Population1Up": {
+                    "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
+                    "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
+                    "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
+                }
+            },
+            "tableTitle": {
+                "OtherAgeGroups": {
+                    "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in {{ ageSexGroup }}",
+                    "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in {{ ageSexGroup }}",
+                    "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in {{ ageSexGroup }}"
+                },
+
+                "Population1Up": {
+                    "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
+                    "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
+                    "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
+                }
+            },
+            "allItems": "All food groups",
+            "seeLevel2Groups": "Show sub-groups Only",
+            "seeAllGroups": " Show all food groups",
+            "toolTipTitle": "{{- name }}",
+            "toolTip": [
+                "{{ percentage }} % of {{ nutrient }} intake"
+            ],
+            "toolTip_OnlyInterpretation": [
+                "{{ interpretationValue }}"
+            ],
+            "toolTip_WithInterpretation": [
+                "{{ percentage }} % {{ interpretationValue }} of {{ nutrient }} intake"
+            ],
+            "tableHeadings": ["Food group level 1", "Food group level 2", "Food group level 3", "Amount ({{unit}})", "Amount SE", "Percentage of total intake (%)", "Percentage SE (%)"],
+            "tableAllDataHeadings": ["Age-sex Group", "Food group level 1", "Food group level 2", "Food group level 3", "Amount ({{unit}})", "Amount SE", "Percentage of total intake (%)", "Percentage SE (%)"],
+            "allDataCSVFileName": {
+                "All Displayed": "Contribution of food groups and sub-groups to {{nutrient}} intake",
+                "Filter Only Level 2": "Contribution of level 2 food groups to {{nutrient}} intake" 
+            }
+        }
+    }
+}
+
+// ==============================================================
+// ============== FRENCH TRANSLATIONS ===========================
+
 const REMPLACER_MOI = "REMPLACER MOI"
 const REMPLACER_MOI_AVEC_ARGUMENTS = `${REMPLACER_MOI} - les arguments du texte: `
 
-// translations for certain text used in the project
-export const TranslationObj = {
-    en: {
-        translation: {
-            Number: "{{num, number}}",
+// Names used for the legend
+// Note: Copy the exact food group lv1 name from the source CSV files
+const LegendKeysFR = {
+    "Baby Foods": "Aliments pour bébés",
+    "Beverages (Excluding Milks)": "Boissons (excluant laits)",
+    "Dairy & Plant-Based Beverages": "Produits laitiers et Boissons à base de plantes",
+    "Fats & Oils": "Graisses et huiles",
+    "Fish & Seafood": "Poissons et fruits de mer",
+    "Fruits & Vegetables": "Fruits et légumes",
+    "Grain Products": "Produits céréaliers",
+    "Meat & Poultry": "Viandes et volailles",
+    "Meat Alternatives": "Substituts de viande",
+    "Nutritional Beverages & Bars": "Boissons et barres nutritionnelles",
+    "Soups - Sauces - Spices & Other Ingredients": "Soupes - sauces - épices et autres ingrédients",
+    "Sweets - Sugars & Savoury Snacks": "Confiserie - sucres et grignotines salées",
+    "All Items": "Tous les groupes d’aliments (réinitialiser)"
+}
 
-            // Names used for the legend
-            // Note: Copy the exact food group lv1 name from the food ingredient CSV file
-            LegendKeys: {
-                "Baby Foods": "Baby Foods",
-                "Beverages (Excluding Milks)": "Beverages (Excluding Milks)",
-                "Dairy & Plant-Based Beverages": "Dairy & Plant-Based Beverages",
-                "Fats & Oils": "Fats & Oils",
-                "Fish & Seafood": "Fish & Seafood",
-                "Fruits & Vegetables": "Fruits & Vegetables",
-                "Grain Products": "Grain Products",
-                "Meat & Poultry": "Meat & Poultry",
-                "Meat Alternatives": "Meat Alternatives",
-                "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
-                "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
-                "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
-                "All Items": "All Food Groups (Reset)"
+const LegendKeyVarsFR = DictTools.invert(LegendKeysFR);
+
+const LangFR = { 
+    translation: {
+        Number: "{{num, number}}",
+        LegendKeys: LegendKeysFR,
+        LegendKeyVars: LegendKeyVarsFR,
+        "and": "et",
+
+        // Names for the age-sex groups
+        // Note: Copy the exact age-sex group name from the food description CSV file
+        AgeSexGroupHeadings: {
+            Population1Up: "Population 1 an et +", 
+            Children1To8: "Enfants 1 à 8 ans", 
+            YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans",
+            AdultMales: "Hommes adultes 19 ans +",
+            AdultFemales: "Femmes adultes* 19 ans +"
+        },
+
+        // The pretty display for the age-sex group
+        ageSexGroupDisplay: {
+            Population1Up: "Population 1 an et +", 
+            Children1To8: "Enfants 1 à 8 ans", 
+            YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans",
+            AdultMales: "Hommes adultes 19 ans +",
+            AdultFemales: "Femmes adultes* 19 ans +"
+        },
+
+        // certain keys in the graph's food ingredient CSV file that do not map to
+        //  any keys in the food description CSV file
+        // Note: Copy the exact food group names (for both keys and values) from the food description CSV file, 
+        //  then convert the name to lowercase without any trailing/leading spaces
+        FoodDescriptionExceptionKeys: {
+            "épices - assaisonnements et autres ingrédients": {
+                "OtherNutrients": "Épices - assaisonnements et autres ingrédients  (tous les nutriments excluant sodium)",
+                "Sodium": "Épices - assaisonnements et autres ingrédients (sodium uniquement)"
             },
 
-            // Variable names for the legend
-            // Note: Copy the exact food group lv1 name from from the food ingredient CSV file to the keys of the dictionary
-            LegendKeyVars: {
-                "Baby Foods": "Baby Foods",
-                "Beverages (Excluding Milks)": "Beverages (Excluding Milks)",
-                "Dairy & Plant-Based Beverages": "Dairy & Plant-Based Beverages",
-                "Fats & Oils": "Fats & Oils",
-                "Fish & Seafood": "Fish & Seafood",
-                "Fruits & Vegetables": "Fruits & Vegetables",
-                "Grain Products": "Grain Products",
-                "Meat & Poultry": "Meat & Poultry",
-                "Meat Alternatives": "Meat Alternatives",
-                "Nutritional Beverages & Bars": "Nutritional Beverages & Bars",
-                "Soups - Sauces - Spices & Other Ingredients": "Soups - Sauces - Spices & Other Ingredients",
-                "Sweets - Sugars & Savoury Snacks": "Sweets - Sugars & Savoury Snacks",
-            },
-
-            // Names for the age-sex groups
-            // Note: Copy the exact age-sex group name from the food description CSV file
-            AgeSexGroupHeadings: {
-                Population1Up: "Population age 1+", 
-                Children1To8: "Children 1 to 8 y", 
-                YouthAndAdolescents: "Youth & adolescents* 9 to 18 y",
-                AdultMales: "Adult males 19 y +",
-                AdultFemales: "Adult females* 19 y +"
-            },
-
-            // certain keys in the graph's food ingredient CSV file that do not map to
-            //  any keys in the food description CSV file
-            // Note: Copy the exact food group name from the food description CSV file,
-            //  then convert the name to lowercase without any trailing/leading spaces
-            FoodDescriptionExceptionKeys: {
-                "spices - seasonings & other ingredients": {
-                    "OtherNutrients": "Spices - Seasonings & Other Ingredients (all nutrients excluding sodium)",
-                    "Sodium": "Spices - Seasonings & Other Ingredients (sodium only)"
-                },
-
-                "vegetables including potatoes": {
-                    "OtherNutrients": "Vegetables Including Potatoes (all nutrients excluding sodium)",
-                    "Sodium": "Vegetables Including Potatoes (sodium only)"
-                }
-            },
-            
-            // Footnotes used in graphs and tables
-            "FootNotes": {
-                "EInterpretationNote": "E: Data with a coefficient of variation (CV) from 16.6% to 33.3%; interpret with caution.", 
-                "FInterpretationNote": "F: Data with a CV greater than 33.3% suppressed due to extreme sampling variability.",
-                "XInterpretationNote": "X: Food with less than 10 eaters; suppressed to meet confidentiality requirements.", 
-                "excludePregnantAndLactating": "*Excludes pregnant and lactating women",
-                "sourceText": "Data Source: Statistics Canada, 2015 Canadian Community Health Survey - Nutrition, 2015, Share File.",
-            },
-
-            // title for the popup tables on the website
-            "popUpTableTitle": "Table: {{title}}",
-
-            // title for the infobox
-            "infoBoxTitle": "Food Group Description",
-
-            "upperGraph": {
-                "number": {
-                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
-                    "yAxisTitle": "{{nutrient}} Intake ({{ amountUnit }}/d)",
-                    "switchTypeButton": "Switch to Percentage"
-                },
-                "percentage": {
-                    "graphTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
-                    "yAxisTitle": "% of total {{nutrient}} intake",
-                    "switchTypeButton": "Switch to Numbers"
-                },
-                "tableTitle": "Contribution of 12 food groups to daily intakes of {{ nutrient }} ({{ amountUnit }}/d and % of total intake)",
-                "toolTipTitle": "{{- name }}",
-                "toolTip_number": [
-                    "Amount: {{amount}} {{ unit }}"
-                ],
-                "toolTip_numberOnlyInterpretation": [
-                    "Amount: {{ interpretationValue }}"
-                ],
-                "toolTip_numberWithInterpretation": [
-                    "Amount: {{amount}} {{ unit }} {{ interpretationValue }}"
-                ],
-                "toolTip_percentage": [
-                    "{{ percentage}}%"
-                ],
-                "toolTip_percentageOnlyInterpretation": [
-                    "{{ interpretationValue }}"
-                ],
-                "toolTip_percentageWithInterpretation": [
-                    "{{ percentage}}% {{ interpretationValue }}"
-                ],
-                "tableSubHeadingFirstCol": "Food Group",
-                "tableSubHeadings": ["Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
-
-                // widths for the labels on the x-axis of the graph
-                "upperGraphXAxisTickWidths": {
-                    "Population1Up": 140,
-                    "Children1To8": 140,
-                    "YouthAndAdolescents": 130,
-                    "AdultMales": 140,
-                    "AdultFemales": 140
-                } 
-            },
-            "lowerGraph": {
-                "graphTitle": {
-                    "OtherAgeGroups": {
-                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in {{ ageSexGroup }}",
-                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in {{ ageSexGroup }}",
-                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in {{ ageSexGroup }}"
-                    },
-
-                    "Population1Up": {
-                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
-                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
-                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
-                    }
-                },
-                "tableTitle": {
-                    "OtherAgeGroups": {
-                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in {{ ageSexGroup }}",
-                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in {{ ageSexGroup }}",
-                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in {{ ageSexGroup }}"
-                    },
-
-                    "Population1Up": {
-                        "All Items": "Contribution of food groups and sub-groups to {{nutrient}} intake in Canadians, 1 year and over",
-                        "Filtered Data": "Contribution of {{ foodGroup }} to {{nutrient}} intake in Canadians, 1 year and over",
-                        "Filter Only Level 2": "Level 2 sub-groups contribution to {{nutrient}} intake in Canadians, 1 year and over"
-                    }
-                },
-                "allItems": "All Food Groups",
-                "seeLevel2Groups": "Show Sub-groups Only",
-                "seeAllGroups": "Show All Food Groups",
-                "allFoodGroupsLabel": "All Food Groups",
-                "toolTipTitle": "{{- name }}",
-                "toolTip": [
-                    "{{ percentage }}% of {{ nutrient }} intake"
-                ],
-                "toolTip_OnlyInterpretation": [
-                    "{{ interpretationValue }}"
-                ],
-                "toolTip_WithInterpretation": [
-                    "{{ percentage }}% {{ interpretationValue }} of {{ nutrient }} intake"
-                ],
-                "tableHeadings": ["Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
-                "tableAllDataHeadings": ["Age-sex Group", "Food Group Level 1", "Food Group Level 2", "Food Group Level 3", "Amount ({{unit}})", "Amount SE", "% of total intake", "% SE"],
-                "allDataCSVFileName": {
-                    "All Displayed": "Contribution of food groups and sub-groups to {{nutrient}} intake",
-                    "Filter Only Level 2": "Contribution of level 2 food groups to {{nutrient}} intake" 
-                }
+            "légumes incluant pommes de terre": {
+                "OtherNutrients": "Légumes incluant pommes de terre (tous les nutriments excluant sodium)",
+                "Sodium": "Légumes incluant pommes de terre  (sodium uniquement)"
             }
-        }
-    },
-    fr: { 
-        translation: {
-            Number: "{{num, number}}",
+        },
 
-            // Names used for the legend
-            // Note: Copy the exact food group lv1 name from the source CSV files
-            LegendKeys: {
-                "Baby Foods": "Aliments pour bébés",
-                "Beverages (Excluding Milks)": "Boissons (excluant laits)",
-                "Dairy & Plant-Based Beverages": "Produits laitiers et Boissons à base de plantes",
-                "Fats & Oils": "Graisses et huiles",
-                "Fish & Seafood": "Poissons et fruits de mer",
-                "Fruits & Vegetables": "Fruits et légumes",
-                "Grain Products": "Produits céréaliers",
-                "Meat & Poultry": "Viandes et volailles",
-                "Meat Alternatives": "Substituts de viande",
-                "Nutritional Beverages & Bars": "Boissons et barres nutritionnelles",
-                "Soups - Sauces - Spices & Other Ingredients": "Soupes - sauces - épices et autres ingrédients",
-                "Sweets - Sugars & Savoury Snacks": "Confiserie - sucres et grignotines salées",
-                "All Items": "Tous les groupes d’aliments (réinitialiser)"
+        // Footnotes used in graphs and tables
+        "FootNotes": {
+            "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6 % à 33,3 %; interpréter avec prudence.", 
+            "FInterpretationNote": "F: Données dont le CV est supérieur à 33,3 % supprimées en raison de l'extrême variabilité d'échantillonnage.", 
+            "XInterpretationNote": "X: Groupe d’aliment avec moins de 10 mangeurs ; supprimé pour des raisons de confidentialité.", 
+            "excludePregnantAndLactating": "*Exclut les femmes enceintes et allaitantes",
+            "sourceText": "Source des données : Statistique Canada, Enquête sur la santé dans les collectivités canadiennes 2015 - Nutrition, 2015, Fichier partagé.",
+        },
+
+        // title for the popup tables on the website
+        "popUpTableTitle": `Tableau: {{title}}`,
+
+        // title for the infobox
+        "infoBoxTitle": "Description des groupes d'aliments",
+
+        "upperGraph": {
+            "number": {
+                "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et pourcentage (%) de l'apport total)`,
+                "yAxisTitle": `Apports en {{nutrient}} ({{ amountUnit }}/j)`,
+                "switchTypeButton": "Afficher les pourcentages "
             },
-
-            // Variable names for the legend
-            // Note: Copy the exact food group lv1 name from from the food ingredient CSV file to the keys of the dictionary
-            LegendKeyVars: {
-                "Aliments pour bébés": "Baby Foods",
-                "Boissons (excluant laits)": "Beverages (Excluding Milks)",
-                "Produits laitiers et Boissons à base de plantes": "Dairy & Plant-Based Beverages",
-                "Graisses et huiles": "Fats & Oils",
-                "Poissons et fruits de mer": "Fish & Seafood",
-                "Fruits et légumes": "Fruits & Vegetables",
-                "Produits céréaliers": "Grain Products",
-                "Viandes et volailles": "Meat & Poultry",
-                "Substituts de viande": "Meat Alternatives",
-                "Boissons et barres nutritionnelles": "Nutritional Beverages & Bars",
-                "Soupes - sauces - épices et autres ingrédients": "Soups - Sauces - Spices & Other Ingredients",
-                "Confiserie - sucres et grignotines salées": "Sweets - Sugars & Savoury Snacks",
+            "percentage": {
+                "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et pourcentage (%) de l'apport total)`,
+                "yAxisTitle": `pourcentage (%) de l'apport total en {{nutrient}}`,
+                "switchTypeButton": "Afficher les nombres"
             },
+            "tableTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et pourcentage (%) de l'apport total)`,   
+            "toolTipTitle": "{{- name }}",
+            "toolTip_number": [
+                `Quantité: {{amount }} {{ unit }}`
+            ],
+            "toolTip_numberOnlyInterpretation": [
+                "Quantité: {{ interpretationValue }}"
+            ],
+            "toolTip_numberWithInterpretation": [
+                "Quantité: {{amount}} {{ unit }} {{ interpretationValue }}"
+            ],
+            "toolTip_percentage": [
+                `{{ percentage }} %`
+            ],
+            "toolTip_percentageOnlyInterpretation": [
+                "{{ interpretationValue }}"
+            ],
+            "toolTip_percentageWithInterpretation": [
+                "{{ percentage }} % {{ interpretationValue }}"
+            ],
+            "tableSubHeadingFirstCol": "Groupe d'aliments",
+            "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "Pourcentage de l'apport total (%)", "ET pourcentage (%)"],
 
-            // Names for the age-sex groups
-            // Note: Copy the exact age-sex group name from the food description CSV file
-            AgeSexGroupHeadings: {
-                Population1Up: "Population 1 an et +", 
-                Children1To8: "Enfants 1 à 8 ans", 
-                YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans",
-                AdultMales: "Hommes adultes 19 ans +",
-                AdultFemales: "Femmes adultes* 19 ans +"
-            },
-
-            // certain keys in the graph's food ingredient CSV file that do not map to
-            //  any keys in the food description CSV file
-            // Note: Copy the exact food group names (for both keys and values) from the food description CSV file, 
-            //  then convert the name to lowercase without any trailing/leading spaces
-            FoodDescriptionExceptionKeys: {
-                "épices - assaisonnements et autres ingrédients": {
-                    "OtherNutrients": "Épices - assaisonnements et autres ingrédients  (tous les nutriments excluant sodium)",
-                    "Sodium": "Épices - assaisonnements et autres ingrédients (sodium uniquement)"
+            // widths for the labels on the x-axis of the graph
+            "upperGraphXAxisTickWidths": {
+                "Population1Up": 140,
+                "Children1To8": 140,
+                "YouthAndAdolescents": 140,
+                "AdultMales": 110,
+                "AdultFemales": 110
+            } 
+        },
+        "lowerGraph": {
+            "graphTitle": {
+                "OtherAgeGroups": {
+                    "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                    "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                    "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
                 },
 
-                "légumes incluant pommes de terre": {
-                    "OtherNutrients": "Légumes incluant pommes de terre (tous les nutriments excluant sodium)",
-                    "Sodium": "Légumes incluant pommes de terre  (sodium uniquement)"
+                "Population1Up": {
+                    "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
+                    "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
+                    "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`
                 }
             },
-
-            // Footnotes used in graphs and tables
-            "FootNotes": {
-                "EInterpretationNote": "E: Données dont le coefficient de variation (CV) se situe entre 16,6% à 33,3%; interpréter avec prudence.", 
-                "FInterpretationNote": "F: Données dont le CV est supérieur à 33,3% supprimées en raison de l'extrême variabilité d'échantillonnage.", 
-                "XInterpretationNote": "X: Groupe d’aliment avec moins de 10 mangeurs ; supprimé pour des raisons de confidentialité.", 
-                "excludePregnantAndLactating": "*Exclut les femmes enceintes et allaitantes",
-                "sourceText": "Source des données : Statistique Canada, Enquête sur la santé dans les collectivités canadiennes 2015 - Nutrition, 2015, Fichier partagé.",
-            },
-
-            // title for the popup tables on the website
-            "popUpTableTitle": `Tableau: {{title}}`,
-
-            // title for the infobox
-            "infoBoxTitle": "Description des Groupes d'Aliments",
-
-            "upperGraph": {
-                "number": {
-                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,
-                    "yAxisTitle": `Apports en {{nutrient}} ({{ amountUnit }}/j)`,
-                    "switchTypeButton": "Afficher les pourcentages "
+            "tableTitle": {
+                "OtherAgeGroups": {
+                    "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                    "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
+                    "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
                 },
-                "percentage": {
-                    "graphTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,
-                    "yAxisTitle": `% de l'apport total en {{nutrient}}`,
-                    "switchTypeButton": "Afficher les nombres"
-                },
-                "tableTitle": `Contribution de 12 groupes d’aliments à l’apport quotidien en {{ nutrient }} ({{ amountUnit }}/j et % de l'apport total)`,   
-                "toolTipTitle": "{{- name }}",
-                "toolTip_number": [
-                    `Quantité: {{amount }} {{ unit }}`
-                ],
-                "toolTip_numberOnlyInterpretation": [
-                    "Quantité: {{ interpretationValue }}"
-                ],
-                "toolTip_numberWithInterpretation": [
-                    "Quantité: {{amount}} {{ unit }} {{ interpretationValue }}"
-                ],
-                "toolTip_percentage": [
-                    `{{ percentage }}%`
-                ],
-                "toolTip_percentageOnlyInterpretation": [
-                    "{{ interpretationValue }}"
-                ],
-                "toolTip_percentageWithInterpretation": [
-                    "{{ percentage }}% {{ interpretationValue }}"
-                ],
-                "tableSubHeadingFirstCol": "Groupe d'Aliments",
-                "tableSubHeadings": ["Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
-
-                // widths for the labels on the x-axis of the graph
-                "upperGraphXAxisTickWidths": {
-                    "Population1Up": 140,
-                    "Children1To8": 140,
-                    "YouthAndAdolescents": 140,
-                    "AdultMales": 110,
-                    "AdultFemales": 110
-                } 
-            },
-            "lowerGraph": {
-                "graphTitle": {
-                    "OtherAgeGroups": {
-                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
-                    },
-
-                    "Population1Up": {
-                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
-                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
-                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`
-                    }
-                },
-                "tableTitle": {
-                    "OtherAgeGroups": {
-                        "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filtered Data": `Contribution {{article}} {{ foodGroup }} à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`,
-                        "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}} chez les {{ ageSexGroup }}`
-                    },
 
                     "Population1Up": {
                         "All Items": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}} chez les Canadiens âgés de 1 an et plus`,
@@ -629,22 +638,29 @@ export const TranslationObj = {
                 "seeAllGroups": "Afficher tous les groupes",
                 "toolTipTitle": "{{- name }}",
                 "toolTip": [
-                    `{{ percentage }}% de l'apport en {{nutrient}}`
+                    `{{ percentage }} % de l'apport en {{nutrient}}`
                 ],
                 "toolTip_OnlyInterpretation": [
                     "{{ interpretationValue }}"
                 ],
                 "toolTip_WithInterpretation": [
-                    `{{ percentage }}% {{ interpretationValue }} de l'apport en {{nutrient}}`
+                    `{{ percentage }} % {{ interpretationValue }} de l'apport en {{nutrient}}`
                 ],
-                "tableHeadings": ["Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
-                "tableAllDataHeadings": ["Groupe Âge-sexe", "Groupe d'Aliments Niveau 1", "Groupe d'Aliments Niveau 2", "Groupe d'Aliments Niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "% de l'Apport Total", "ET %"],
+                "tableHeadings": ["Groupe d'aliments niveau 1", "Groupe d'aliments niveau 2", "Groupe d'aliments niveau 3", "Moyenne ({{unit}})", "ET Moyenne", "Pourcentage de l'apport total (%)", "ET pourcentage (%)"],
+                "tableAllDataHeadings": ["Groupe âge-sexe", "Groupe d'aliments Niveau 1", "Groupe d'aliments niveau 2", "Groupe d'aliments niveau 3", "Moyenne ({{unit}})", "ET moyenne", "Pourcentage de l'apport total (%)", "ET pourcentage (%)"],
 
-                "allDataCSVFileName": {
-                    "All Displayed": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}}`,
-                    "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}}`
-                }
+            "allDataCSVFileName": {
+                "All Displayed": `Contribution des groupes et sous-groupes d’aliments à l'apport en {{nutrient}}`,
+                "Filter Only Level 2": `Contribution des sous-groupes de niveau 2 à l'apport en {{nutrient}}`
             }
         }
     }
+}
+
+// ==============================================================
+
+// translations for certain text used in the project
+export const TranslationObj = {
+    en: LangEN,
+    fr: LangFR
 }
