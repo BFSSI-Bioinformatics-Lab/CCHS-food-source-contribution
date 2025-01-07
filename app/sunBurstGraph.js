@@ -1188,7 +1188,7 @@ export function lowerGraph(model){
 
         // update the position of the title
         lowerGraphInfoBox.titleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
-        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm;
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm + GraphDims.lowerGraphInfoBoxPadding;
 
         // update the position of the subtitle
         lowerGraphInfoBox.subTitleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
@@ -1203,7 +1203,9 @@ export function lowerGraph(model){
 
         // update the height of the info box to be larger than the height of the text
         let infoBoxHeight = Math.max(GraphDims.lowerGraphInfoBoxHeight,  currentTextGroupPosY + GraphDims.lowerGraphInfoBoxPadding);
-        lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
+        lowerGraphInfoBox.highlight
+            .attr("y1", GraphDims.lowerGraphInfoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm)
+            .attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
     }
