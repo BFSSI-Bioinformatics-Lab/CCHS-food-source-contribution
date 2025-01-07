@@ -658,7 +658,7 @@ export function upperGraph(model){
         
         // update the position of the title
         upperGraphInfoBox.titleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`)
-        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm;
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm + GraphDims.upperGraphInfoBoxPadding;
         
         // update the position of the subtitle
         upperGraphInfoBox.subTitleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
@@ -673,7 +673,9 @@ export function upperGraph(model){
 
         // update the height of the info box to be larger than the height of the text
         let infoBoxHeight = Math.max(GraphDims.upperGraphInfoBoxHeight, infoBoxTextGroupHeight,  currentTextGroupPosY + GraphDims.upperGraphInfoBoxPadding);
-        upperGraphInfoBox.highlight.attr("y2", infoBoxHeight);
+        upperGraphInfoBox.highlight
+            .attr("y1", GraphDims.upperGraphInfoBoxPadding + titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm)
+            .attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
     }
