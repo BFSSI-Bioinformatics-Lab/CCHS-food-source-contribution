@@ -85,3 +85,7 @@
     height: 70px;
     float: right;
 }
+
+.hoverPath:focus {
+    outline: none;
+}

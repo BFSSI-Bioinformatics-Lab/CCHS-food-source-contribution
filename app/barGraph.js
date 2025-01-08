@@ -344,7 +344,10 @@ export function upperGraph(model){
             // show the tooltip for the clicked bar for mobile phones
             let foodGroup = d[0];
             if (shownToolTipPosY !== undefined && isShownToolTipBar(foodGroup, mult)) {
-                onBarHover(d, mult * 100 + i, i, undefined, shownToolTipPosY);
+                let barX = parseFloat(transform.match(/(?<=\().*(?=,)/g));
+                barX += 75
+
+                onBarHover(d, mult * 100 + i, i, undefined, shownToolTipPosY, barX);
                 shownToolTipHoverInd = mult * 100 + i;
             }
         });
@@ -371,6 +374,7 @@ export function upperGraph(model){
                         (i !== groupEntries.length - 1 ? 1 : 0);
                 })
                 .attr("fill-opacity", 0)
+                .attr("tabindex", "0")
                 .on("mouseover", (d, index, elements) => {onBarHover(d, mult * 100 + index, index, elements)})
                 .on("mousemove", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
                 .on("mouseenter", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
@@ -379,7 +383,13 @@ export function upperGraph(model){
                     shownToolTipFoodGroup = d[0];
                     shownToolTipBarInd = mult;
                 })
-                .on("click", onClick);
+                .on("click", onClick)
+                .on("keypress", (d) => {
+                    if (d3.event.key != "Enter") return;
+                    shownToolTipFoodGroup = d[0];
+                    shownToolTipBarInd = mult;
+                    onClick(d);
+                });
     }
 
     // barOnClick(dt): Focus on a particular food group when a bar is clicked
@@ -417,7 +427,7 @@ export function upperGraph(model){
     }
 
     /* Set the opacity of the hovered bar's info to be 1 */
-    function onBarHover(d, i, index, elements, mouseY){
+    function onBarHover(d, i, index, elements, mouseY, mouseX){
         updateInfoBox({name: d[0]});
 
         if (shownToolTipHoverInd !== undefined) {
@@ -425,15 +435,24 @@ export function upperGraph(model){
         }
 
         const toolTipId = `barHover${i}`
-        const mousePos = d3.mouse(upperGraphSvg.node());
-        if (mouseY === undefined) {
+        let mousePos = undefined;
+        
+        try {
+            mousePos = d3.mouse(upperGraphSvg.node());
+        } catch (error) {}
+
+        if (mouseY === undefined && mousePos !== undefined) {
             mouseY = mousePos[1];
+        }
+
+        if (mousePos !== undefined) {
+            mouseX = mousePos[0];
         }
 
         const toolTip = hoverToolTips[toolTipId];
 
         toolTip.group.attr("opacity", 1)
-            .attr("transform", `translate(${mousePos[0]}, ${mouseY})`)
+            .attr("transform", `translate(${mouseX}, ${mouseY})`)
             .style("pointer-events", "auto");
 
         if (elements !== undefined) {
@@ -712,7 +731,8 @@ export function upperGraph(model){
             // ***************** draws a key in the legend *********************
             
             const legendItemGroup = legendGroup.append("g")
-            .attr("transform", `translate(0, ${currentLegendItemYPos})`);
+                .attr("transform", `translate(0, ${currentLegendItemYPos})`)
+                .attr("tabindex", "0");
     
             // draw the coloured box
             const colourBox = legendItemGroup.append("rect")
@@ -759,6 +779,12 @@ export function upperGraph(model){
             legendItemGroup.on("mouseenter", () => { showInfoBox({name, colour, legendItem}); });
             legendItemGroup.on("mouseleave", () => { legendItemOnMouseLeave({name, colour, legendItem}); });
             legendItemGroup.on("click", () => { 
+                shownToolTipBarInd = undefined;
+                shownToolTipFoodGroup = undefined;
+                legendItemOnClick({name, colour, legendItem}); 
+            })
+            legendItemGroup.on("keypress", () => {
+                if (d3.event.key != "Enter") return; 
                 shownToolTipBarInd = undefined;
                 shownToolTipFoodGroup = undefined;
                 legendItemOnClick({name, colour, legendItem}); 

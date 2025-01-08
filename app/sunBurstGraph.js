@@ -211,7 +211,8 @@ export function lowerGraph(model){
         // ***************** draws a key in the legend *********************
         
         const legendItemGroup = legendGroup.append("g")
-        .attr("transform", `translate(0, ${currentLegendItemYPos})`);
+            .attr("transform", `translate(0, ${currentLegendItemYPos})`)
+            .attr("tabindex", "0");
 
         // draw the coloured box
         const colourBox = legendItemGroup.append("rect")
@@ -268,23 +269,8 @@ export function lowerGraph(model){
             legendItemGroup.style("cursor", MousePointer.Default);
             hideInfoBox(); 
         });
-        legendItemGroup.on("click", () => {
-            if (!isAllItems && (clickedLegendKey === null || clickedLegendKey != name)) {
-                clickedLegendKey = name;
-            } else {
-                clickedLegendKey = null;
-            }
-
-            if (clickedLegendKey === null && graphState !== SunBurstStates.FilterOnlyLevel2) {
-                arcOnClick(null, legendNodeIndices[allFoodGroupsName]);
-            } else if (graphState == SunBurstStates.AllDisplayed) {
-                arcOnClick(null, legendNodeIndices[name]);
-            }
-
-            // on mobile phones, hide the last shown tooltip and show the infobox when clicking on the legend item
-            arcUnHover();
-            updateInfoBox(dummyArcData);
-        });
+        legendItemGroup.on("click", () => onLegendKeyClick(name, isAllItems, dummyArcData));
+        legendItemGroup.on("keypress", () => onLegendKeyClick(name, isAllItems, dummyArcData));
         legendItemGroup.on("mouseover", () => { 
             legendItemGroup.style("cursor", MousePointer.Pointer);
             updateInfoBox(dummyArcData); 
@@ -339,6 +325,25 @@ export function lowerGraph(model){
         drawSunburst(nutrient);
     }
 
+    // onLegendKeyClick(name, isAllItems, dummyArcData): When the user clicks on a key of the legend
+    function onLegendKeyClick(name, isAllItems, dummyArcData) {
+        if (!isAllItems && (clickedLegendKey === null || clickedLegendKey != name)) {
+            clickedLegendKey = name;
+        } else {
+            clickedLegendKey = null;
+        }
+
+        if (clickedLegendKey === null && graphState !== SunBurstStates.FilterOnlyLevel2) {
+            arcOnClick(null, legendNodeIndices[allFoodGroupsName]);
+        } else if (graphState == SunBurstStates.AllDisplayed) {
+            arcOnClick(null, legendNodeIndices[name]);
+        }
+
+        // on mobile phones, hide the last shown tooltip and show the infobox when clicking on the legend item
+        arcUnHover();
+        updateInfoBox(dummyArcData);
+    }
+
     // Source reference: https://observablehq.com/@d3/zoomable-sunburst
     function drawSunburst(nutrient){
         // reset the selected arc that was clicked
@@ -385,7 +390,7 @@ export function lowerGraph(model){
             .attr("fill", d => getArcColour(d))
             .attr("fill-opacity", d => arcVisible(d.current) ? 1 : 0)
             .property("id", (d, i) => `arcPath${i}`)
-            .attr("d", d => arc(d.current))
+            .attr("d", d => arc(d.current));
     
         /* Update title of each individual arc, which appears when hovering over label */
         const format = d3.format(",d");
@@ -443,13 +448,23 @@ export function lowerGraph(model){
             .attr("fill-opacity", 0)
             .attr("pointer-events", "auto")
             .attr("d", d => arc(d.current))
-            .style("cursor", "pointer");
+            .style("cursor", "pointer")
+            .attr("tabindex", "0")
+            .classed("hoverPath", true);
     
         hoverPath.on("mousemove", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseover", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseout", (data, index) => { arcUnHover(data, index) });
         hoverPath.on("touchstart", (data, index) => { arcUnHover(data, index) });
+        hoverPath.on("focus", (data, index) => { 
+            arcFocus(data, index);
+            arcHover(data, index);
+        });
+        hoverPath.on("focusout", (data, index) => { 
+            arcUnfocus(data, index); 
+            arcUnHover(data, index);
+        });
 
         // update the node indices for the food groups referenced by the legend
         legendNodeIndices = {};
@@ -637,6 +652,7 @@ export function lowerGraph(model){
 
         // disable the on-click event for the arcs
         hoverPath.on("click", null);
+        hoverPath.on("keypress", null);
 
         // increase the thickness of the arcs
         updateArcThickness();
@@ -669,6 +685,11 @@ export function lowerGraph(model){
 
         // enable the on-click event for the arcs
         hoverPath.on("click", (e, i) => { arcOnClick(e,i + 1); });
+        hoverPath.on("keypress", (e, i) => {
+            if (d3.event.key != "Enter") return;
+            arcOnClick(e,i + 1);
+            arcHover(e, i);
+        });
 
         // set back the thickness of the arcs back to its original thickness
         updateArcThickness();
@@ -814,6 +835,20 @@ export function lowerGraph(model){
         hideInfoBox();
     }
 
+    // arcFocus(d, i): When the arc is being focused on
+    function arcFocus(d, i) {
+        d3.select(`#arcPath${i}`)
+            .attr("stroke", "black")
+            .attr("stroke-width", 2);
+    }
+
+    // arcUnfocuse(d, i): When the arc is not being focused anymore
+    function arcUnfocus(d, i) {
+        d3.select(`#arcPath${i}`)
+            .attr("stroke", "none")
+            .attr("stroke-width", 0);
+    }
+
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
     function transitionArcs(duration = 750){
         const t = lowerGraphSunburst.transition().duration(duration);
@@ -860,6 +895,7 @@ export function lowerGraph(model){
                 return t => d.current = i(t);
             })
             .attrTween("d", d => () => arc(d.current))
+            .attr("tabindex", d => arcVisible(d.target) ? "0" : "-1")
     }
 
     // getTitleTranslateKeys(): Retrieves the translation keys used for picking the correct title for the sunburst
