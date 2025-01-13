@@ -21,6 +21,7 @@
 
 
 import { Colours, GraphColours, GraphDims, TextWrap, FontWeight, MousePointer, Translation, SortIconClasses, SortStates, FoodIngredientDataColNames } from "./assets.js";
+import { TextTools } from "./backend.js";
 import { drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -235,7 +236,8 @@ export function upperGraph(model){
             const textWidth = Translation.translate(`upperGraph.upperGraphXAxisTickWidths.${ageSexGroupKey}`);
             textGroup.text("").attr("dy", null);
 
-            drawWrappedText({textGroup: textGroup, text: data, width: textWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
+            const ageSexGroupText = Translation.translate(`ageSexGroupDisplay.${model.ageSexGroupHeadingKeys[data]}`);
+            drawWrappedText({textGroup: textGroup, text: ageSexGroupText, width: textWidth, fontSize: GraphDims.upperGraphXAxisTickFontSize, textY: 10});
         });
 
         const nutrientTotalByAgeSexGroup = model.findNutrientTotalAmtPerAgeSexGroup(graphType);
@@ -267,7 +269,7 @@ export function upperGraph(model){
             )
 
         // draw the graph title
-        graphTitleText = Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit});
+        graphTitleText = TextTools.getDisplayText(Translation.translate(`upperGraph.${graphType}.graphTitle`, { nutrient, amountUnit: nutrientUnit}));
         upperGraphHeading.attr("font-weight", FontWeight.Bold);
 
         drawWrappedText({textGroup: upperGraphHeading, text: graphTitleText, width: upperGraphSvgWidth - GraphDims.upperGraphLeft - GraphDims.upperGraphRight, fontSize: GraphDims.upperGraphChartHeadingFontSize,
@@ -342,7 +344,10 @@ export function upperGraph(model){
             // show the tooltip for the clicked bar for mobile phones
             let foodGroup = d[0];
             if (shownToolTipPosY !== undefined && isShownToolTipBar(foodGroup, mult)) {
-                onBarHover(d, mult * 100 + i, i, undefined, shownToolTipPosY);
+                let barX = parseFloat(transform.match(/(?<=\().*(?=,)/g));
+                barX += 75
+
+                onBarHover(d, mult * 100 + i, i, undefined, shownToolTipPosY, barX);
                 shownToolTipHoverInd = mult * 100 + i;
             }
         });
@@ -369,6 +374,7 @@ export function upperGraph(model){
                         (i !== groupEntries.length - 1 ? 1 : 0);
                 })
                 .attr("fill-opacity", 0)
+                .attr("tabindex", "0")
                 .on("mouseover", (d, index, elements) => {onBarHover(d, mult * 100 + index, index, elements)})
                 .on("mousemove", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
                 .on("mouseenter", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
@@ -377,7 +383,13 @@ export function upperGraph(model){
                     shownToolTipFoodGroup = d[0];
                     shownToolTipBarInd = mult;
                 })
-                .on("click", onClick);
+                .on("click", onClick)
+                .on("keypress", (d) => {
+                    if (d3.event.key != "Enter") return;
+                    shownToolTipFoodGroup = d[0];
+                    shownToolTipBarInd = mult;
+                    onClick(d);
+                });
     }
 
     // barOnClick(dt): Focus on a particular food group when a bar is clicked
@@ -415,7 +427,7 @@ export function upperGraph(model){
     }
 
     /* Set the opacity of the hovered bar's info to be 1 */
-    function onBarHover(d, i, index, elements, mouseY){
+    function onBarHover(d, i, index, elements, mouseY, mouseX){
         updateInfoBox({name: d[0]});
 
         if (shownToolTipHoverInd !== undefined) {
@@ -423,15 +435,24 @@ export function upperGraph(model){
         }
 
         const toolTipId = `barHover${i}`
-        const mousePos = d3.mouse(upperGraphSvg.node());
-        if (mouseY === undefined) {
+        let mousePos = undefined;
+        
+        try {
+            mousePos = d3.mouse(upperGraphSvg.node());
+        } catch (error) {}
+
+        if (mouseY === undefined && mousePos !== undefined) {
             mouseY = mousePos[1];
+        }
+
+        if (mousePos !== undefined) {
+            mouseX = mousePos[0];
         }
 
         const toolTip = hoverToolTips[toolTipId];
 
         toolTip.group.attr("opacity", 1)
-            .attr("transform", `translate(${mousePos[0]}, ${mouseY})`)
+            .attr("transform", `translate(${mouseX}, ${mouseY})`)
             .style("pointer-events", "auto");
 
         if (elements !== undefined) {
@@ -451,7 +472,7 @@ export function upperGraph(model){
 
     // drawTable(nutrient): Draws the table for the graph
     function drawTable(nutrient, reloadData = true){
-        tableTitleText = Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient });
+        tableTitleText = TextTools.getDisplayText(Translation.translate("upperGraph.tableTitle", { amountUnit: nutrientUnit, nutrient }));
         const barGraphTable = reloadData ? model.createBarGraphTable(tableTitleText) : model.barGraphTable;
         const amountLeftIndex = 1;
 
@@ -548,7 +569,7 @@ export function upperGraph(model){
             .enter()
             .append("td")
                 .attr("colspan", 1)
-                .text((d) => Number.isNaN(d) ? "" : d)
+                .text((d) => (Number.isNaN(d) || d === "") ? " - " : d)
                 .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
                 .style("border-left", (d, i) => (i + 1) % 4 === 2 ? GraphDims.tableSectionBorderLeft : "")
                 .style("font-size", "12px")
@@ -626,9 +647,6 @@ export function upperGraph(model){
             return;
         }
 
-        let colour = GraphColours[Translation.translate(`LegendKeyVars.${foodGroupName}`)];
-        colour = colour === undefined ? null : colour;
-
         mouseOverFoodGroupName = foodGroupName;
 
         let desc = "";
@@ -636,6 +654,9 @@ export function upperGraph(model){
         if (!isAllFoodGroups) {
             desc = model.getFoodDescription(nutrient, foodGroupName);
         }
+
+        let colour = GraphColours[Translation.translate(`LegendKeyVars.${foodGroupName}`)];
+        colour = (colour === undefined || isAllFoodGroups) ? null : colour;
 
         // ---------- Updates the infobox --------------
 
@@ -647,7 +668,7 @@ export function upperGraph(model){
                                     fontSize: GraphDims.upperGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change the subtitle
-        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.upperGraphInfoBoxWidth,
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : TextTools.getDisplayText(foodGroupName), width: GraphDims.upperGraphInfoBoxWidth,
                                        fontSize: GraphDims.upperGraphInfoBoxFontSize, lineSpacing: GraphDims.upperGraphInfoBoxLineSpacing, paddingLeft: GraphDims.upperGraphInfoBoxPadding, paddingRight: GraphDims.upperGraphInfoBoxPadding});
 
         // change text
@@ -656,7 +677,7 @@ export function upperGraph(model){
         
         // update the position of the title
         upperGraphInfoBox.titleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`)
-        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm;
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm + GraphDims.upperGraphInfoBoxPadding;
         
         // update the position of the subtitle
         upperGraphInfoBox.subTitleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
@@ -671,7 +692,9 @@ export function upperGraph(model){
 
         // update the height of the info box to be larger than the height of the text
         let infoBoxHeight = Math.max(GraphDims.upperGraphInfoBoxHeight, infoBoxTextGroupHeight,  currentTextGroupPosY + GraphDims.upperGraphInfoBoxPadding);
-        upperGraphInfoBox.highlight.attr("y2", infoBoxHeight);
+        upperGraphInfoBox.highlight
+            .attr("y1", GraphDims.upperGraphInfoBoxPadding + titleDims.textBottomYPos + GraphDims.upperGraphInfoBoxTitleMarginBtm)
+            .attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
     }
@@ -708,7 +731,8 @@ export function upperGraph(model){
             // ***************** draws a key in the legend *********************
             
             const legendItemGroup = legendGroup.append("g")
-            .attr("transform", `translate(0, ${currentLegendItemYPos})`);
+                .attr("transform", `translate(0, ${currentLegendItemYPos})`)
+                .attr("tabindex", "0");
     
             // draw the coloured box
             const colourBox = legendItemGroup.append("rect")
@@ -726,7 +750,7 @@ export function upperGraph(model){
                 .attr("x", textX)
                 .attr("font-size", legendItemFontSize);
     
-            drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
+            drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: TextTools.getDisplayText(legendKeyText), textX, textY});
 
             const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
 
@@ -758,6 +782,12 @@ export function upperGraph(model){
                 shownToolTipBarInd = undefined;
                 shownToolTipFoodGroup = undefined;
                 legendItemOnClick({name, colour, legendItem}); 
+            })
+            legendItemGroup.on("keypress", () => {
+                if (d3.event.key != "Enter") return; 
+                shownToolTipBarInd = undefined;
+                shownToolTipFoodGroup = undefined;
+                legendItemOnClick({name, colour, legendItem}); 
             });
             legendItemGroup.on("mouseover", () => { showInfoBox({name, colour, legendItem}); });
         }
@@ -768,7 +798,7 @@ export function upperGraph(model){
     function hoverTooltip(d, i, hide = true){
         const toolTipId = `barHover${i}`;
         const colour = GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)];
-        const title = Translation.translate("upperGraph.toolTipTitle", {name: d[0]});
+        const title = TextTools.getDisplayText(Translation.translate("upperGraph.toolTipTitle", {name: d[0]}));
 
         let lineContext = graphType;
         let interpretationValue = d[1][FoodIngredientDataColNames.interpretationNotes];

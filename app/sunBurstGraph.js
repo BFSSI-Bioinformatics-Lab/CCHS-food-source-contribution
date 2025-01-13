@@ -21,6 +21,7 @@
 
 
 import { GraphColours, GraphDims, TextAnchor, FontWeight, TextWrap, SunBurstStates, Colours, Translation, FoodIngredientDataColNames, MousePointer, SortIconClasses, SortStates, LowerGraphFoodGroupLv3ColInd } from "./assets.js";
+import { TextTools } from "./backend.js";
 import { getSelector, getTextWidth, drawWrappedText, drawText } from "./visuals.js";
 
 
@@ -210,7 +211,8 @@ export function lowerGraph(model){
         // ***************** draws a key in the legend *********************
         
         const legendItemGroup = legendGroup.append("g")
-        .attr("transform", `translate(0, ${currentLegendItemYPos})`);
+            .attr("transform", `translate(0, ${currentLegendItemYPos})`)
+            .attr("tabindex", "0");
 
         // draw the coloured box
         const colourBox = legendItemGroup.append("rect")
@@ -228,7 +230,7 @@ export function lowerGraph(model){
             .attr("x", textX)
             .attr("font-size", legendItemFontSize);
 
-        drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: legendKeyText, textX, textY});
+        drawText({textGroup, fontSize: legendItemFontSize, textWrap: TextWrap.NoWrap, text: TextTools.getDisplayText(legendKeyText), textX, textY});
 
         const legendItem = {group: legendItemGroup, colourBox, textGroup, name: legendKeyText, colour: legendKeyColour};
 
@@ -267,23 +269,8 @@ export function lowerGraph(model){
             legendItemGroup.style("cursor", MousePointer.Default);
             hideInfoBox(); 
         });
-        legendItemGroup.on("click", () => {
-            if (!isAllItems && (clickedLegendKey === null || clickedLegendKey != name)) {
-                clickedLegendKey = name;
-            } else {
-                clickedLegendKey = null;
-            }
-
-            if (clickedLegendKey === null && graphState !== SunBurstStates.FilterOnlyLevel2) {
-                arcOnClick(null, legendNodeIndices[allFoodGroupsName]);
-            } else if (graphState == SunBurstStates.AllDisplayed) {
-                arcOnClick(null, legendNodeIndices[name]);
-            }
-
-            // on mobile phones, hide the last shown tooltip and show the infobox when clicking on the legend item
-            arcUnHover();
-            updateInfoBox(dummyArcData);
-        });
+        legendItemGroup.on("click", () => onLegendKeyClick(name, isAllItems, dummyArcData));
+        legendItemGroup.on("keypress", () => onLegendKeyClick(name, isAllItems, dummyArcData));
         legendItemGroup.on("mouseover", () => { 
             legendItemGroup.style("cursor", MousePointer.Pointer);
             updateInfoBox(dummyArcData); 
@@ -338,6 +325,25 @@ export function lowerGraph(model){
         drawSunburst(nutrient);
     }
 
+    // onLegendKeyClick(name, isAllItems, dummyArcData): When the user clicks on a key of the legend
+    function onLegendKeyClick(name, isAllItems, dummyArcData) {
+        if (!isAllItems && (clickedLegendKey === null || clickedLegendKey != name)) {
+            clickedLegendKey = name;
+        } else {
+            clickedLegendKey = null;
+        }
+
+        if (clickedLegendKey === null && graphState !== SunBurstStates.FilterOnlyLevel2) {
+            arcOnClick(null, legendNodeIndices[allFoodGroupsName]);
+        } else if (graphState == SunBurstStates.AllDisplayed) {
+            arcOnClick(null, legendNodeIndices[name]);
+        }
+
+        // on mobile phones, hide the last shown tooltip and show the infobox when clicking on the legend item
+        arcUnHover();
+        updateInfoBox(dummyArcData);
+    }
+
     // Source reference: https://observablehq.com/@d3/zoomable-sunburst
     function drawSunburst(nutrient){
         // reset the selected arc that was clicked
@@ -384,7 +390,7 @@ export function lowerGraph(model){
             .attr("fill", d => getArcColour(d))
             .attr("fill-opacity", d => arcVisible(d.current) ? 1 : 0)
             .property("id", (d, i) => `arcPath${i}`)
-            .attr("d", d => arc(d.current))
+            .attr("d", d => arc(d.current));
     
         /* Update title of each individual arc, which appears when hovering over label */
         const format = d3.format(",d");
@@ -442,13 +448,23 @@ export function lowerGraph(model){
             .attr("fill-opacity", 0)
             .attr("pointer-events", "auto")
             .attr("d", d => arc(d.current))
-            .style("cursor", "pointer");
+            .style("cursor", "pointer")
+            .attr("tabindex", "0")
+            .classed("hoverPath", true);
     
         hoverPath.on("mousemove", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseover", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseout", (data, index) => { arcUnHover(data, index) });
         hoverPath.on("touchstart", (data, index) => { arcUnHover(data, index) });
+        hoverPath.on("focus", (data, index) => { 
+            arcFocus(data, index);
+            arcHover(data, index);
+        });
+        hoverPath.on("focusout", (data, index) => { 
+            arcUnfocus(data, index); 
+            arcUnHover(data, index);
+        });
 
         // update the node indices for the food groups referenced by the legend
         legendNodeIndices = {};
@@ -456,12 +472,12 @@ export function lowerGraph(model){
         let legendKeys = Translation.translate("LegendKeys", { returnObjects: true });
         const sunBurstLegendAllItemsName = legendKeys["All Items"];
 
-        legendKeys = new Set(Object.values(legendKeys));
+        legendKeys = new Set(Object.values(legendKeys).map((legendKeyName) => legendKeyName.toLowerCase()));
         const childrenLen = children.length;
 
         for (let i = 0; i < childrenLen; ++i) {
             const name = children[i].data.name;
-            if (legendKeys.has(name)) {
+            if (legendKeys.has(name.toLowerCase())) {
                 legendNodeIndices[name] = i;
             } else if (name == sunBurstAllItemsName) {
                 legendNodeIndices[sunBurstLegendAllItemsName] = i;
@@ -489,7 +505,7 @@ export function lowerGraph(model){
             }
 
             /* Content of tooltip */
-            const title = Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name})
+            const title = TextTools.getDisplayText(Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name}));
             const lines = Translation.translate("lowerGraph.toolTip", { 
                 context: context,
                 returnObjects: true, 
@@ -636,6 +652,7 @@ export function lowerGraph(model){
 
         // disable the on-click event for the arcs
         hoverPath.on("click", null);
+        hoverPath.on("keypress", null);
 
         // increase the thickness of the arcs
         updateArcThickness();
@@ -668,6 +685,11 @@ export function lowerGraph(model){
 
         // enable the on-click event for the arcs
         hoverPath.on("click", (e, i) => { arcOnClick(e,i + 1); });
+        hoverPath.on("keypress", (e, i) => {
+            if (d3.event.key != "Enter") return;
+            arcOnClick(e,i + 1);
+            arcHover(e, i);
+        });
 
         // set back the thickness of the arcs back to its original thickness
         updateArcThickness();
@@ -813,6 +835,20 @@ export function lowerGraph(model){
         hideInfoBox();
     }
 
+    // arcFocus(d, i): When the arc is being focused on
+    function arcFocus(d, i) {
+        d3.select(`#arcPath${i}`)
+            .attr("stroke", "black")
+            .attr("stroke-width", 2);
+    }
+
+    // arcUnfocuse(d, i): When the arc is not being focused anymore
+    function arcUnfocus(d, i) {
+        d3.select(`#arcPath${i}`)
+            .attr("stroke", "none")
+            .attr("stroke-width", 0);
+    }
+
     // transitionArcs(duration): Sets the transition animations when the arcs move in the Sun Burst graph
     function transitionArcs(duration = 750){
         const t = lowerGraphSunburst.transition().duration(duration);
@@ -823,12 +859,13 @@ export function lowerGraph(model){
         }).transition(s)
             .attr("fill-opacity", (d) => +arcVisible(d.target))
             .attrTween("transform", d => () => `translate(30,0)`)
-            .attr("fill", d => {
+            .attr("fill", "black")
+            .attr("font-weight", d => {
                 if (selectedNode !== null && selectedNode.target.data.name == d.target.data.name) {
-                    return "white";
+                    return FontWeight.Bold;
                 }
 
-                return "black";
+                return FontWeight.Normal;
             });
 
         /* Checks whether an arc is visible / have a width > 0 and makes labels/arcs transparent accordingly */
@@ -858,6 +895,7 @@ export function lowerGraph(model){
                 return t => d.current = i(t);
             })
             .attrTween("d", d => () => arc(d.current))
+            .attr("tabindex", d => arcVisible(d.target) ? "0" : "-1")
     }
 
     // getTitleTranslateKeys(): Retrieves the translation keys used for picking the correct title for the sunburst
@@ -883,8 +921,8 @@ export function lowerGraph(model){
         const foodGroup = selectedNode !== null ? selectedNode.data.name : "";
         const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
 
-        graphTitleText = Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
-                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle});
+        graphTitleText = TextTools.getDisplayText(Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
+                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle}));
 
         drawWrappedText({textGroup: lowerGraphChartHeading, text: graphTitleText, width: GraphDims.lowerGraphWidth, 
                          textX: GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2, fontSize: GraphDims.lowerGraphChartHeadingFontSize});    
@@ -899,7 +937,7 @@ export function lowerGraph(model){
         const foodGroup = sunBurstNode.data.name;
         const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
 
-        tableTitleText = Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle });
+        tableTitleText = TextTools.getDisplayText(Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle }));
         
         const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, tableTitleText) : model.sunburstTable;
 
@@ -987,7 +1025,7 @@ export function lowerGraph(model){
                 .enter()
                 .append("td")
                     .attr("colspan", 1)
-                    .text((d) => Number.isNaN(d) ? "" : d)
+                    .text((d) => (Number.isNaN(d) || d === "") ? " - " : d)
                     .attr("class", (d, i) => i !== 0 ? "brdr-lft" : "")
                     .style("border-left", (d, i) => i == amountLeftIndex ? GraphDims.tableSectionBorderLeft : "") 
                     .style("font-size", "12px")
@@ -1114,7 +1152,7 @@ export function lowerGraph(model){
         if (!element.node()) return;
         const elementNode = element.node();
         const availableLength = labelAvailableLength(d, midRadius); 
-        let text = d.data.name;
+        let text = TextTools.getDisplayText(d.data.name);
 
         element.attr("startOffset", 0);
         element.text(text);
@@ -1155,9 +1193,6 @@ export function lowerGraph(model){
 
     /* Update food group description box */
     function updateInfoBox(d){
-        let colour = GraphColours[Translation.translate(`LegendKeyVars.${d.data.row[FoodIngredientDataColNames.foodGroupLv1]}`)];
-        colour = colour === undefined ? null : colour;
-
         let foodGroupName = d.data.name;
         mouseOverFoodGroupName = foodGroupName;
 
@@ -1166,6 +1201,9 @@ export function lowerGraph(model){
         if (!isAllFoodGroups) {
             desc = model.getFoodDescription(nutrient, foodGroupName);
         }
+
+        let colour = GraphColours[Translation.translate(`LegendKeyVars.${d.data.row[FoodIngredientDataColNames.foodGroupLv1]}`)];
+        colour = (colour === undefined || isAllFoodGroups) ? null : colour;
 
         // ---------- Updates the infobox --------------
 
@@ -1177,7 +1215,7 @@ export function lowerGraph(model){
                                     fontSize: GraphDims.lowerGraphInfoBoxTitleFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change the subtitle
-        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : foodGroupName, width: GraphDims.lowerGraphInfoBoxWidth,
+        const subTitleDims = drawText({textGroup: infoBox.subTitleGroup, text: isAllFoodGroups ? "" : TextTools.getDisplayText(foodGroupName), width: GraphDims.lowerGraphInfoBoxWidth,
                                        fontSize: GraphDims.lowerGraphInfoBoxFontSize, lineSpacing: GraphDims.lowerGraphInfoBoxLineSpacing, paddingLeft: GraphDims.lowerGraphInfoBoxPadding, paddingRight: GraphDims.lowerGraphInfoBoxPadding});
 
         // change text
@@ -1186,7 +1224,7 @@ export function lowerGraph(model){
 
         // update the position of the title
         lowerGraphInfoBox.titleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
-        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm;
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm + GraphDims.lowerGraphInfoBoxPadding;
 
         // update the position of the subtitle
         lowerGraphInfoBox.subTitleGroup.attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
@@ -1201,7 +1239,9 @@ export function lowerGraph(model){
 
         // update the height of the info box to be larger than the height of the text
         let infoBoxHeight = Math.max(GraphDims.lowerGraphInfoBoxHeight,  currentTextGroupPosY + GraphDims.lowerGraphInfoBoxPadding);
-        lowerGraphInfoBox.highlight.attr("y2", infoBoxHeight);
+        lowerGraphInfoBox.highlight
+            .attr("y1", GraphDims.lowerGraphInfoBoxPadding + titleDims.textBottomYPos + GraphDims.lowerGraphInfoBoxTitleMarginBtm)
+            .attr("y2", infoBoxHeight);
 
         // ---------------------------------------------
     }

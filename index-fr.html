@@ -43,7 +43,6 @@ What it contains:
         <![endif]-->
         <!--[if lte IE 9]>
         <![endif]-->
-        <script src="js/d3-interpolate-path.js"></script>
         <noscript>
             <link rel="stylesheet" href=".static/wet-boew/css/noscript.min.css"/>
         </noscript>
@@ -293,154 +292,141 @@ What it contains:
     
             <div class="row" id="notes-section">
                 <section class="alert alert-info chart-legend">
-                    <h3>Notes et Légende</h3>
-                    <table class="table table-condensed table-responsive" id="notes-table">
+                    <h3>Notes et légende</h3>
+                    <table class="table table-condensed table-responsive notes-table-wide" id="notes-table">
                         <tbody>
                         <tr >
-                            <td style=" padding-top: 15px; padding-bottom:10px "><strong>Sources des données</strong></td>
                             <td style=" padding-top: 15px; padding-bottom:10px ">
-                                Statistique Canada, Enquête sur la santé dans les collectivités canadiennes 2015 - Nutrition, 2015, Fichier partagé.
+                                <h4 id="NotesAndLegendDataSourceSubtitle"></h4></td>
+                            <td id="NotesAndLegendDataSourceDesc" style=" padding-top: 15px; padding-bottom:10px "></td>
+                        </tr>
+                        <tr >
+                            <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px">
+                                <h4 id="NotesAndLegendOpenDataSubTitle"></h4></td>
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <p id="NotesAndLegendOpenDataDesc"></p>
                             </td>
                         </tr>
                         <tr >
                             <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px">
-                                <strong>Tableau de contribution des sources d'alimentation sur les données ouvertes</strong></td>
-                            <td style=" padding-top: 15px; padding-bottom:10px ">
-                                <p>
-                                    Les données pour d'autres groupes d'âge et de sexe se trouvent
-                                    dans le
-                                    <a
-                                    href="https://ouvert.canada.ca/data/fr/dataset/b166b1c1-0313-4706-8cca-f464f6fc7086"
-                                    target="_blank">tableau de contribution des sources alimentaires</a>
-                                    disponible sur le portail de données ouvertes du gouvernement du Canada.
-                                </p>
-                            </td>
-                        </tr>
-                        <tr >
-                            <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px">
-                                <strong>Notes d’interprétation</strong></td>
+                                <h4 id="NotesAndLegendDataInterpretationSubtitle"></h4></td>
                             <td style=" padding-top: 15px; padding-bottom:10px ">
                                 <section class="alert alert-warning">
-                                    <p>
-                                        Les aliments connus pour être de riches sources d'un nutriment peuvent ne pas contribuer de manière significative 
-                                        aux apports de ce nutriment dans la population s'ils sont consommés en faibles quantités. En revanche, certains aliments 
-                                        moins riches en nutriments peuvent contribuer de manière importante aux apports de la population simplement parce qu'ils sont 
-                                        largement consommés et/ou consommés en grandes quantités.                     
-                                    </p>
+                                    <p id="NotesAndLegendDataInterpretationDesc"></p>
                                 </section>
                             </td>
                         </tr>
                         <tr >
                             <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px">
-                                <strong>À propos des diagrammes et des tableaux</strong></td>
+                                <h4 id="NotesAndLegendDataAboutGraphSubtitle"></h4></td>
                             <td style=" padding-top: 15px; padding-bottom:10px ">
-                                <strong>Analyse des recettes:</strong>
-                                <p>
-                                    Les groupes d'aliments de l'outil de contribution des sources alimentaires ont été générés en combinant les aliments consommés 
-                                    en tant qu'aliment seul ou en tant qu'ingrédient. Par exemple, dans la catégorie des œufs, la contribution des œufs est basée sur 
-                                    la consommation totale d'œufs durs (aliment) et d'œufs utilisés dans des recettes telles que les quiches, les gâteaux maison, etc. 
-                                    La contribution de certains ingrédients tels que les œufs, le sucre, la farine, etc. peut être sous-estimée en raison de l'impossibilité 
-                                    de décomposer certains aliments qui représentent des produits alimentaires commerciaux.
-                                </p>
-                                <p class="mrgn-tp-lg">
-                                    Si vous êtes intéressé, un deuxième ensemble de données
-                                    analysant les recettes dans leur ensemble ainsi que les
-                                    aliments consommés seuls est également disponible sur le
-                                    <a
-                                    href="https://ouvert.canada.ca/data/fr/dataset/b166b1c1-0313-4706-8cca-f464f6fc7086"
-                                    target="_blank">portail de données ouvertes du gouvernement du Canada</a>.
-                                </p>
-                                <strong class="mrgn-tp-lg">Groupes d'aliments:</strong>
-                                <p>
-                                    Les estimations ont été générées pour trois niveaux différents de regroupement d’aliments, basé sur la liste des groupes 
-                                    d’aliments du Bureau des sciences de la nutrition (BSN), avec quelques modifications. 
-                                </p>
-                                <strong class="mrgn-tp-lg">Estimations:</strong>
-                                <p>
-                                    Toutes les estimations ont été obtenues à partir du premier
-                                    rappel alimentaire de 24 heures. L'estimation 0,0% fait
-                                    référence à des valeurs inférieures à 0,1%
-                                </p>
-                                <p class="mrgn-tp-lg">
-                                    Pour plus d’informations, veuillez consulter le
-                                    <a
-                                    href="https://ouvert.canada.ca/data/fr/dataset/b166b1c1-0313-4706-8cca-f464f6fc7086/resource/e21437a5-4e40-4598-bd22-abc36e06114d"
-                                    target="_blank">guide de l’utilisateur</a>
-                                    du Tableau de contribution des sources alimentaires.
-                                </p>
+                                <h5 id="NotesAndLegendDataAboutGraphDescHeadingRecipe"></h5>
+                                <p id="NotesAndLegendDataAboutGraphDescRecipe1"></p>
+                                <p id="NotesAndLegendDataAboutGraphDescRecipe2" class="mrgn-tp-lg"></p>
+                                <h5 id="NotesAndLegendDataAboutGraphDescHeadingFood" class="mrgn-tp-lg">Groupes d'aliments:</h5>
+                                <p id="NotesAndLegendDataAboutGraphDescFood"></p>
+                                <h5 id="NotesAndLegendDataAboutGraphDescHeadingEstimate" class="mrgn-tp-lg"></h5>
+                                <p id="NotesAndLegendDataAboutGraphDescEstimate1"></p>
+                                <p id="NotesAndLegendDataAboutGraphDescEstimate2" class="mrgn-tp-lg"></p>
                             </td>
                         </tr>
                         <tr >
                             <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px">
-                                <strong>À propos de l'Enquête sur la santé dans les collectivités canadiennes - Nutrition (ESCC - Nutrition) de 2015</strong></td>
+                                <h4 id="NotesAndLegendDataAboutCCHSSubtitle"></h4></td>
                             <td style=" padding-top: 15px; padding-bottom:10px ">
-                                <p>
-                                    L'ESCC-Nutrition 2015 est une enquête nationale au sujet de la nutrition des personnes vivant au Canada . L'enquête fournit des informations détaillées sur 
-                                    l’apport alimentaire en utilisant un rappel alimentaire de 24 heures effectué chez l’ensemble du groupe et d’un deuxième rappel effectué auprès d’un échantillon, 
-                                    la consommation de suppléments nutritionnels, les mesures physiques, l’insécurité alimentaire des ménages ainsi que d’autres sujets permettant de mieux interpréter 
-                                    les données des rappels de 24 heures.. L'enquête exclut les personnes vivant dans les trois territoires, les personnes vivant dans les réserves, la population vivant en 
-                                    établissement, les membres à temps plein des Forces armées canadiennes et les résidents de certaines régions éloignées.
-                                </p>
-                                <p>
-                                    Pour plus d’information sur l’Enquête sur la santé dans les collectivités canadiennes (ESCC) – Nutrition, 2015, veuillez consulter
-                                    <a
-                                    href="https://www.canada.ca/fr/sante-canada/services/aliments-nutrition/surveillance-aliments-nutrition/sondages-sante-nutrition/enquete-sante-collectivites-canadiennes-escc/guide-reference-comprendre-utiliser-donnees-2015.html"
-                                    target="_blank">le guide de référence pour comprendre et utiliser les données</a>.
-                                </p>
+                                <p id="NotesAndLegendDataAboutCCHSDesc1"></p>
+                                <p id="NotesAndLegendDataAboutCCHSDesc2"></p>
                             </td>
                         </tr>
                         <tr>
                             <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px" id='legend'>
-                                <strong>Légende</strong></td>
+                                <h4 id="NotesAndLegendDataLegendSubtitle"></h4></td>
                             <td style=" padding-top: 15px; padding-bottom:10px ">
-                                <!--<ul style="list-style-type: none">-->
-                                    <p>
-                                        <strong>E:</strong> Données dont le coefficient de variation (CV) se situe entre 16,6% à 33,3%; interpréter avec prudence.
-                                    </p>
-                                    <p class="mrgn-tp-sm">
-                                        <strong>F:</strong> Données dont le CV est supérieur à 33,3% supprimées en raison de l'extrême variabilité d'échantillonnage.
-                                    </p>
-                                    <p class="mrgn-tp-sm">
-                                        <strong>X:</strong> groupe d’aliment avec moins de 10 mangeurs ; supprimé pour des raisons de confidentialité.
-                                    </p>
-                                    <p class="mrgn-tp-sm"><strong>J:</strong> Jour</p>
-                                    <p class="mrgn-tp-sm"><strong>EFA:</strong> Équivalent de
-                                        folate alimentaire</p>
-                                    <p class="mrgn-tp-sm"><strong>g:</strong> Gramme</p>
-                                    <p class="mrgn-tp-sm"><strong>kcal:</strong> Kilocalories</p>
-                                    <p class="mrgn-tp-sm"><strong>mcg:</strong> Microgramme</p>
-                                    <p class="mrgn-tp-sm"><strong>mg:</strong> Milligramme</p>
-                                    <p class="mrgn-tp-sm"><strong>n:</strong> Taille de
-                                        l'échantillon</p>
-                                    <p class="mrgn-tp-sm"><strong>ET:</strong> Erreur type</p>
-
-                                    <p class="mrgn-tp-md">
-                                        <i>* Exclut les femmes enceintes et allaitantes</i>
-                                    </p>
+                                <dl id="NotesAndLegendDataLegendDesc1"></dl>
+                                <p id="NotesAndLegendDataLegendDesc2" class="mrgn-tp-md"></p>
                             </td>
                         </tr>
                         <tr >
                             <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px">
-                                <strong>Citation suggérée</strong></td>
+                                <h4 id="NotesAndLegendDataCitationSubtitle"></h4></td>
                             <td style=" padding-top: 15px; padding-bottom:10px ">
-                                <p>
-                                    Santé Canada (2023). Tableau de contribution des sources
-                                    alimentaires dérivé de l'Enquête sur la santé dans les
-                                    collectivités canadiennes 2015 de Statistique Canada, Nutrition, fichier partagé, Ottawa.
-                                </p>
+                                <p id="NotesAndLegendDataCitationDesc"></p>
                             </td>
                         </tr>
                         <tr >
                             <td style="min-width: 180px; padding-top: 15px; padding-bottom:10px">
-                                <strong>Correspondance</strong></td>
+                                <h4 id="NotesAndLegendDataCorrespondenceSubtitle"></h4></td>
                             <td style=" padding-top: 15px; padding-bottom:10px ">
-                                <p>
-                                    Bureau de l'intégration des données, de la science et des connaissances, Direction des aliments, Santé Canada, 251 Sir Frederick Banting Driveway, A.L. 2201E, Ottawa, ON K1A 0K9; Courriel : nutrition.surveillance-nutritionnelle@hc-sc.gc.ca
-                                </p>
+                                <p id="NotesAndLegendDataCorrespondenceDesc"></p>
                             </td>
                         </tr>
                         </tbody>
                     </table>
+
+                    <table class="table table-condensed table-responsive notes-table-xl" id="notes-table">
+                        <tbody>
+                        <tr >
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendDataSourceSubtitle"></h4>
+                                <p id="NotesAndLegendDataSourceDesc"></p>
+                            </td>
+                        </tr>
+                        <tr >
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendOpenDataSubTitle"></h4>
+                                <p id="NotesAndLegendOpenDataDesc"></p>
+                            </td>
+                        </tr>
+                        <tr >
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendDataInterpretationSubtitle"></h4>
+                                <section class="alert alert-warning">
+                                    <p id="NotesAndLegendDataInterpretationDesc"></p>
+                                </section>
+                            </td>
+                        </tr>
+                        <tr >
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendDataAboutGraphSubtitle"></h4>
+                                <h5 id="NotesAndLegendDataAboutGraphDescHeadingRecipe"></h5>
+                                <p id="NotesAndLegendDataAboutGraphDescRecipe1"></p>
+                                <p id="NotesAndLegendDataAboutGraphDescRecipe2" class="mrgn-tp-lg"></p>
+                                <h5 id="NotesAndLegendDataAboutGraphDescHeadingFood" class="mrgn-tp-lg"></h5>
+                                <p id="NotesAndLegendDataAboutGraphDescFood"></p>
+                                <h5 id="NotesAndLegendDataAboutGraphDescHeadingEstimate" class="mrgn-tp-lg"></h5>
+                                <p id="NotesAndLegendDataAboutGraphDescEstimate1"></p>
+                                <p id="NotesAndLegendDataAboutGraphDescEstimate2" class="mrgn-tp-xl"></p>
+                            </td>
+                        </tr>
+                        <tr >
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendDataAboutCCHSSubtitle"></h4>
+                                <p id="NotesAndLegendDataAboutCCHSDesc1"></p>
+                                <p id="NotesAndLegendDataAboutCCHSDesc2"></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendDataLegendSubtitle"></h4>
+                                <dl id="NotesAndLegendDataLegendDesc1"></dl>
+                                <p id="NotesAndLegendDataLegendDesc2" class="mrgn-tp-md"></p>
+                            </td>
+                        </tr>
+                        <tr >
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendDataCitationSubtitle"></h4>
+                                <p id="NotesAndLegendDataCitationDesc"></p>
+                            </td>
+                        </tr>
+                        <tr >
+                            <td style=" padding-top: 15px; padding-bottom:10px ">
+                                <h4 id="NotesAndLegendDataCorrespondenceSubtitle"></h4>
+                                <p id="NotesAndLegendDataCorrespondenceDesc"></p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
                     <div class="text-right mrgn-tp-lg">
                         <a href="#top">Haut de la page <span class="glyphicon glyphicon-chevron-up"></span></a>
                     </div>
@@ -619,6 +605,8 @@ What it contains:
     <!--{# d3 #}-->
     <script src="./static/js/d3.v5.min.js"></script>
     <!--<script src="https://d3js.org/d3.v5.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/npm/d3-interpolate-path@2.3.0/build/d3-interpolate-path.min.js"></script>
+
     <script src="./static/js/textures.js"></script>
     <script src="./static/js/saveSvgAsPng.js"></script>
     
