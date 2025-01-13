@@ -45,6 +45,14 @@
     .interestedLinkIcon {
         height: calc(2.5em + 1vw) !important;
     }
+
+    .notes-table-wide {
+        display: none !important;
+    }
+
+    .notes-table-xl {
+        display: block !important;
+    }
 }
 
 .graphExtra {
@@ -88,4 +96,12 @@
 
 .hoverPath:focus {
     outline: none;
+}
+
+.notes-table-wide {
+    display: block;
+}
+
+.notes-table-xl {
+    display: none;
 }

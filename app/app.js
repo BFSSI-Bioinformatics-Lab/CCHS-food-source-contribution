@@ -23,6 +23,12 @@ function setup(model) {
     const updateBarGraph = upperGraph(model);
     const updateSunburst = lowerGraph(model);
 
+    // update all the text in the legend
+    const legendTranslations = Translation.translate("NotesAndLegend", { returnObjects: true });
+    for (const translationId in legendTranslations) {
+        d3.selectAll(`#${translationId}`).html(legendTranslations[translationId]);
+    }
+
     const nutrientOptions = Object.keys(model.graphNutrientTablesByDemoGroupLv1).sort(Intl.Collator().compare);
     d3.select(nutrientSelectorId)
         .on("change", () => { update() })
