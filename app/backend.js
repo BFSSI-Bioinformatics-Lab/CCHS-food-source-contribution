@@ -50,7 +50,7 @@ export class TextTools {
     // - Replace all "&" symbols with "and"
     // - Capitalize only the first lettesr
     static getDisplayText(txt) {
-        txt = txt.replace("&", Translation.translate("and"));
+        txt = txt.replaceAll("&", Translation.translate("and"));
         return TextTools.capitalizeOnlyFirstLetter(txt);
     }
 }

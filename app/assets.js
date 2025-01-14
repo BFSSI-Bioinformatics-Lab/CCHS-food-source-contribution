@@ -351,7 +351,7 @@ const LangEN = {
         ageSexGroupDisplay: {
             Population1Up: "Population age 1+", 
             Children1To8: "Children 1 to 8 years", 
-            YouthAndAdolescents: "Youth & adolescents* 9 to 18 years",
+            YouthAndAdolescents: "Youth and adolescents* 9 to 18 years",
             AdultMales: "Adult males 19 years +",
             AdultFemales: "Adult females* 19 years +" 
         },
