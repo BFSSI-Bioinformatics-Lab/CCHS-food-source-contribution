@@ -349,11 +349,11 @@ const LangEN = {
 
         // The pretty display for the age-sex group
         ageSexGroupDisplay: {
-            Population1Up: "Population age 1+", 
+            Population1Up: "Population 1 year and over", 
             Children1To8: "Children 1 to 8 years", 
             YouthAndAdolescents: "Youth and adolescents* 9 to 18 years",
-            AdultMales: "Adult males 19 years +",
-            AdultFemales: "Adult females* 19 years +" 
+            AdultMales: "Adult males 19 years and over",
+            AdultFemales: "Adult females* 19 years and over" 
         },
 
         // certain keys in the graph's food ingredient CSV file that do not map to
@@ -423,7 +423,7 @@ const LangEN = {
 
             // widths for the labels on the x-axis of the graph
             "upperGraphXAxisTickWidths": {
-                "Population1Up": 140,
+                "Population1Up": 120,
                 "Children1To8": 140,
                 "YouthAndAdolescents": 130,
                 "AdultMales": 140,
@@ -632,11 +632,11 @@ const LangFR = {
 
         // The pretty display for the age-sex group
         ageSexGroupDisplay: {
-            Population1Up: "Population 1 an et +", 
+            Population1Up: "Population 1 an et plus", 
             Children1To8: "Enfants 1 à 8 ans", 
             YouthAndAdolescents: "Jeunes et adolescents* 9 à 18 ans",
-            AdultMales: "Hommes adultes 19 ans +",
-            AdultFemales: "Femmes adultes* 19 ans +"
+            AdultMales: "Hommes adultes 19 ans et plus",
+            AdultFemales: "Femmes adultes* 19 ans et plus"
         },
 
         // certain keys in the graph's food ingredient CSV file that do not map to
