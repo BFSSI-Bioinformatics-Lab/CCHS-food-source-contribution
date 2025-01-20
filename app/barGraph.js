@@ -377,7 +377,6 @@ export function upperGraph(model){
                 .attr("fill-opacity", 0)
                 .attr("tabindex", "0")
                 .classed("noFocusOutline", true)
-                .attr("stroke-width", 2)
                 .attr("id", (d, i) => `barRectHoverDetect${mult * 100 + i}`)
                 .on("mouseover", (d, index, elements) => {onBarHover(d, mult * 100 + index, index, elements)})
                 .on("mousemove", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
@@ -390,16 +389,16 @@ export function upperGraph(model){
                 .on("click", onClick)
                 .on("focus", (d, index, elements) => { 
                     const currentId = mult * 100 + index;
-                    const hoveredBar = d3.select(`#barRectHoverDetect${currentId}`);
+                    const hoveredBar = d3.select(`#barRect${currentId}`);
                     const toolTipX = parseFloat(transform.match(/(?<=\().*(?=,)/g)) + 75;
                     const toolTipY = hoveredBar.attr("y") - 100;
 
-                    d3.select(elements[index]).attr("stroke", "black");
+                    hoveredBar.style("outline", "2px solid black");
                     onBarHover(d, currentId, index, elements, toolTipY, toolTipX);
                 })
                 .on("focusout", (d, index, elements) => {
                     const currentId = mult * 100 + index;
-                    d3.select(elements[index]).attr("stroke", "none");
+                    d3.select(`#barRect${currentId}`).style("outline", "none");
                     onBarUnHover(d, currentId, index, elements);
                 })
                 .on("keypress", (d) => {
