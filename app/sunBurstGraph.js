@@ -213,7 +213,14 @@ export function lowerGraph(model){
         
         const legendItemGroup = legendGroup.append("g")
             .attr("transform", `translate(0, ${currentLegendItemYPos})`)
-            .attr("tabindex", "0");
+            .attr("tabindex", "0")
+            .style("outline-offset", "2px")
+            .on("focus", (d, index, elements) => {
+                d3.select(elements[index]).style("outline", "2px solid black");
+            })
+            .on("focusout", (d, index, elements) => {
+                d3.select(elements[index]).style("outline", "none");
+            });
 
         // draw the coloured box
         const colourBox = legendItemGroup.append("rect")
@@ -453,7 +460,7 @@ export function lowerGraph(model){
             .attr("d", d => arc(d.current))
             .style("cursor", "pointer")
             .attr("tabindex", "0")
-            .classed("hoverPath", true);
+            .classed("noFocusOutline", true);
     
         hoverPath.on("mousemove", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
