@@ -333,7 +333,8 @@ export function upperGraph(model){
                 })
 
                 // d[0] references the first element of [food group, intake] in line 281
-                .attr("fill", d => GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)]);
+                .attr("fill", d => GraphColours[Translation.translate(`LegendKeyVars.${d[0]}`)])
+                .attr("id", (d, i) => `barRect${mult * 100 + i}`);
         
         accumulatedHeight = GraphDims.upperGraphHeight + GraphDims.upperGraphTop;
         
@@ -375,6 +376,8 @@ export function upperGraph(model){
                 })
                 .attr("fill-opacity", 0)
                 .attr("tabindex", "0")
+                .classed("noFocusOutline", true)
+                .attr("id", (d, i) => `barRectHoverDetect${mult * 100 + i}`)
                 .on("mouseover", (d, index, elements) => {onBarHover(d, mult * 100 + index, index, elements)})
                 .on("mousemove", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
                 .on("mouseenter", (d, index, elements) => onBarHover(d, mult * 100 + index, index, elements))
@@ -384,6 +387,20 @@ export function upperGraph(model){
                     shownToolTipBarInd = mult;
                 })
                 .on("click", onClick)
+                .on("focus", (d, index, elements) => { 
+                    const currentId = mult * 100 + index;
+                    const hoveredBar = d3.select(`#barRect${currentId}`);
+                    const toolTipX = parseFloat(transform.match(/(?<=\().*(?=,)/g)) + 75;
+                    const toolTipY = hoveredBar.attr("y") - 100;
+
+                    hoveredBar.style("outline", "2px solid black");
+                    onBarHover(d, currentId, index, elements, toolTipY, toolTipX);
+                })
+                .on("focusout", (d, index, elements) => {
+                    const currentId = mult * 100 + index;
+                    d3.select(`#barRect${currentId}`).style("outline", "none");
+                    onBarUnHover(d, currentId, index, elements);
+                })
                 .on("keypress", (d) => {
                     if (d3.event.key != "Enter") return;
                     shownToolTipFoodGroup = d[0];
@@ -732,7 +749,14 @@ export function upperGraph(model){
             
             const legendItemGroup = legendGroup.append("g")
                 .attr("transform", `translate(0, ${currentLegendItemYPos})`)
-                .attr("tabindex", "0");
+                .attr("tabindex", "0")
+                .style("outline-offset", "2px")
+                .on("focus", (d, index, elements) => {
+                    d3.select(elements[index]).style("outline", "2px solid black");
+                })
+                .on("focusout", (d, index, elements) => {
+                    d3.select(elements[index]).style("outline", "none");
+                });
     
             // draw the coloured box
             const colourBox = legendItemGroup.append("rect")

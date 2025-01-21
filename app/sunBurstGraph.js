@@ -67,6 +67,7 @@ export function lowerGraph(model){
 
     // age-sex group for the sunburst
     let ageSexGroup;
+    let ageSexGroupDisplay;
 
     // arcs for the sunburst
     let arc;            // arcs for the graph
@@ -212,7 +213,14 @@ export function lowerGraph(model){
         
         const legendItemGroup = legendGroup.append("g")
             .attr("transform", `translate(0, ${currentLegendItemYPos})`)
-            .attr("tabindex", "0");
+            .attr("tabindex", "0")
+            .style("outline-offset", "2px")
+            .on("focus", (d, index, elements) => {
+                d3.select(elements[index]).style("outline", "2px solid black");
+            })
+            .on("focusout", (d, index, elements) => {
+                d3.select(elements[index]).style("outline", "none");
+            });
 
         // draw the coloured box
         const colourBox = legendItemGroup.append("rect")
@@ -313,9 +321,11 @@ export function lowerGraph(model){
             .enter()
             .append("option")
                 .property("value", d => d)
-                .text(d => d);
+                .text(d => Translation.translate(`ageSexGroupDisplay.${model.ageSexGroupHeadingKeys[d]}`));
     
         ageSexGroup = getSelector("#lowerGraphAgeSexSelect");
+        ageSexGroupDisplay = Translation.translate(`ageSexGroupDisplay.${model.ageSexGroupHeadingKeys[ageSexGroup]}`);
+
         updateGraphTitle();
 
         // update the CSV table for all the data to the nutrient (includes all age-sex groups)
@@ -450,7 +460,7 @@ export function lowerGraph(model){
             .attr("d", d => arc(d.current))
             .style("cursor", "pointer")
             .attr("tabindex", "0")
-            .classed("hoverPath", true);
+            .classed("noFocusOutline", true);
     
         hoverPath.on("mousemove", (data, index) => { arcHover(data, index) });
         hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
@@ -922,7 +932,7 @@ export function lowerGraph(model){
         const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
 
         graphTitleText = TextTools.getDisplayText(Translation.translate(`lowerGraph.graphTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, 
-                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle}));
+                                                { amountUnit: nutrientUnit, nutrient, ageSexGroup: ageSexGroupDisplay, foodGroup, article: foodGroupArticle}));
 
         drawWrappedText({textGroup: lowerGraphChartHeading, text: graphTitleText, width: GraphDims.lowerGraphWidth, 
                          textX: GraphDims.lowerGraphLeft + GraphDims.lowerGraphWidth / 2, fontSize: GraphDims.lowerGraphChartHeadingFontSize});    
@@ -937,7 +947,7 @@ export function lowerGraph(model){
         const foodGroup = sunBurstNode.data.name;
         const foodGroupArticle = model.getFoodGroupArticle(foodGroup);
 
-        tableTitleText = TextTools.getDisplayText(Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup, foodGroup, article: foodGroupArticle }));
+        tableTitleText = TextTools.getDisplayText(Translation.translate(`lowerGraph.tableTitle.${titleKeys.ageGroupTranslateKey}.${titleKeys.filterTranslateKey}`, { amountUnit: nutrientUnit, nutrient, ageSexGroup: ageSexGroupDisplay, foodGroup, article: foodGroupArticle }));
         
         const sunBurstTable = reloadData ? model.createSunburstDisplayedTable(ageSexGroup, graphState, sunBurstNode.depth, sunBurstNode.data.name, tableTitleText) : model.sunburstTable;
 
