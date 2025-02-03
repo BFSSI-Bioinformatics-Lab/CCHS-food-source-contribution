@@ -53,7 +53,7 @@ export function lowerGraph(model){
     const details = d3.select("#lowerTableDetails");
 
     // all the hover tooltips for the graph
-    const hoverToolTips = {};
+    let hoverToolTips = {};
 
     // unit for the nutrient
     let nutrientUnit = "";
@@ -354,6 +354,185 @@ export function lowerGraph(model){
         updateInfoBox(dummyArcData);
     }
 
+
+    // destorySunburstGraph(): Removes only the graph of the sunburst
+    function destroySunburstGraph() {
+        if (path !== undefined) path.remove();
+        if (label !== undefined) label.remove();
+        if (hoverPath !== undefined) hoverPath.remove();
+
+        // remove the tooltips
+        for (const hoverCardId in hoverToolTips) {
+            hoverToolTips[hoverCardId].group.remove();
+        }
+
+        hoverToolTips = {};
+    }
+
+
+    // drawSunburstGraph(): Draws only the graph of the sunburst
+    function drawSunburstGraph(sunburstData) {
+        // Append the arcs and pass in the data
+        path = lowerGraphSunburst.append("g")
+            .selectAll("path")
+            .data(sunburstData)
+            .join("path")
+            .attr("fill", d => getArcColour(d))
+            .attr("fill-opacity", d => arcVisible(d.current) ? 1 : 0)
+            .property("id", (d, i) => `arcPath${i}`)
+            .attr("d", d => arc(d.current));
+    
+        /* Update title of each individual arc, which appears when hovering over label */
+        const format = d3.format(",d");
+        path.append("title")
+            .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${format(d.value)}`);
+        
+        /* Name of each arc */
+        label = lowerGraphSunburst.append("g")
+            .attr("pointer-events", "none")
+            .style("user-select", "none")
+            .selectAll("text")
+            .data(sunburstData)
+            .join("text")
+            .attr("dy", d => getLabelDY(d))
+            .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
+            .attr("letter-spacing", GraphDims.lowerGraphArcLabelLetterSpacing)
+            .attr("fill-opacity", d => +labelVisible(d.current))
+                .append("textPath") // make the text following the shape of the arc
+                .attr("id", (d, i) => `arcLabel${i}`)
+                .attr("href", (d, i) => `#arcPath${i}`);
+
+        /* Create invisible arc paths on top of graph in order to detect hovering */
+        hoverPath = lowerGraphSunburst.append("g")
+            .selectAll("path")
+            .data(sunburstData)
+            .join("path")
+            .attr("fill-opacity", 0)
+            .attr("pointer-events", "auto")
+            .attr("d", d => arc(d.current))
+            .style("cursor", "pointer")
+            .attr("tabindex", "0")
+            .classed("noFocusOutline", true);
+    
+        hoverPath.on("mousemove", (data, index) => { arcHover(data, index) });
+        hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
+        hoverPath.on("mouseover", (data, index) => { arcHover(data, index) });
+        hoverPath.on("mouseout", (data, index) => { arcUnHover(data, index) });
+        hoverPath.on("touchstart", (data, index) => { arcUnHover(data, index) });
+        hoverPath.on("focus", (data, index) => { 
+            arcFocus(data, index);
+            arcHover(data, index);
+        });
+        hoverPath.on("focusout", (data, index) => { 
+            arcUnfocus(data, index); 
+            arcUnHover(data, index);
+        });
+        
+        // Draw the tooltips on top of the graph
+        const mouseOverBoxes = lowerGraphSunburst.append("g");
+        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i, nutrient));
+    }
+
+
+    /* Creation of tooltip */
+    function hoverCard(d, root, i, nutrient){
+        const arcColour = d3.select(`#arcPath${i}`).attr("fill");
+
+        let interpretationValue = d.data.interpretationValue;
+        let context = undefined;
+
+        if (interpretationValue == "F" || interpretationValue == "X") {
+            context = "OnlyInterpretation";
+        } else if (typeof interpretationValue === "string") {
+            context = "WithInterpretation"
+        }
+
+        /* Content of tooltip */
+        const title = TextTools.getDisplayText(Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name}));
+        const lines = Translation.translate("lowerGraph.toolTip", { 
+            context: context,
+            returnObjects: true, 
+            percentage: Translation.translateNum(d.data.row.Percentage),
+            parentGroup: d.depth > 1 ? d.parent.data.name : "",
+            parentPercentage: Translation.translateNum(d.depth > 1 ? d.data.row.Percentage / d.parent.data.row.Percentage * 100 : 0),
+            nutrient,
+            interpretationValue
+        });
+
+        const toolTipId = `arcHover${i}`;
+
+        // ------- draw the tooltip ------------
+
+        // attributes for the tool tip
+        const toolTip = {};
+        let toolTipWidth = GraphDims.lowerGraphTooltipMinWidth;
+        let toolTipHeight = GraphDims.lowerGraphTooltipHeight;
+        let currentTextGroupPosY = GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert;
+        const textGroupPosX = GraphDims.lowerGraphTooltipBorderWidth + GraphDims.lowerGraphTooltipPaddingHor +  GraphDims.lowerGraphTooltipTextPaddingHor;
+
+        const toolTipHighlightXPos = GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth / 2;
+
+        // draw the container for the tooltip
+        toolTip.group = root.append("g")
+            .attr("id",  toolTipId)
+            .attr("opacity", 0)
+            .style("pointer-events", "none");
+
+        // draw the background for the tooltip
+        toolTip.background = toolTip.group.append("rect")
+            .attr("fill", Colours.White)
+            .attr("stroke", arcColour)
+            .attr("stroke-width", 1)
+            .attr("rx", 5);
+
+        // draw the highlight
+        toolTip.highlight = toolTip.group.append("line")
+            .attr("x1", toolTipHighlightXPos)
+            .attr("x2", toolTipHighlightXPos)
+            .attr("y1", GraphDims.lowerGraphTooltipPaddingVert)
+            .attr("stroke", arcColour) 
+            .attr("stroke-width", GraphDims.lowerGraphTooltipBorderWidth)
+            .attr("stroke-linecap", "round");
+
+        // draw the title
+        toolTip.titleGroup = toolTip.group.append("text")
+            .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
+            .attr("font-weight", FontWeight.Bold)
+            .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+
+        const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+                                    textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
+
+        currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphTooltipTitleMarginBtm;
+
+        // draw the text
+        toolTip.textGroup = toolTip.group.append("text")
+            .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
+            .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
+
+        const textDims = drawText({textGroup: toolTip.textGroup, text: lines, fontSize: GraphDims.lowerGraphTooltipFontSize, 
+                                    textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
+
+        currentTextGroupPosY += textDims.textBottomYPos;
+
+        // update the height of the tooltip to be larger than the height of all the text
+        toolTipHeight = Math.max(toolTipHeight, currentTextGroupPosY + GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert);
+        toolTip.background.attr("height", toolTipHeight);
+        toolTip.highlight.attr("y2", toolTipHeight - GraphDims.lowerGraphTooltipPaddingVert);
+
+        // update the width of the tooltip to be larger than the width of all the text
+        toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth + 2 * GraphDims.lowerGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
+        toolTip.background.attr("width", toolTipWidth);
+
+        toolTip.width = toolTipWidth;
+
+        // -------------------------------------
+
+        hoverToolTips[toolTipId] = toolTip;
+        positionHoverCard(toolTip, d);
+    }
+
+
     // Source reference: https://observablehq.com/@d3/zoomable-sunburst
     function drawSunburst(nutrient){
         // reset the selected arc that was clicked
@@ -391,38 +570,6 @@ export function lowerGraph(model){
             .padRadius(d => getRadius(d) * 1.5)
             .innerRadius(d => getArcInnerRadius(d))
             .outerRadius(d => getArcOuterRadius(d));
-    
-        // Append the arcs and pass in the data
-        path = lowerGraphSunburst.append("g")
-            .selectAll("path")
-            .data(root.descendants().slice(1))
-            .join("path")
-            .attr("fill", d => getArcColour(d))
-            .attr("fill-opacity", d => arcVisible(d.current) ? 1 : 0)
-            .property("id", (d, i) => `arcPath${i}`)
-            .attr("d", d => arc(d.current));
-    
-        /* Update title of each individual arc, which appears when hovering over label */
-        const format = d3.format(",d");
-        path.append("title")
-            .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${format(d.value)}`);
-        
-        /* Name of each arc */
-        label = lowerGraphSunburst.append("g")
-            .attr("pointer-events", "none")
-            .style("user-select", "none")
-            .selectAll("text")
-            .data(root.descendants().slice(1))
-            .join("text")
-            .attr("dy", d => getLabelDY(d))
-            .attr("font-size", GraphDims.lowerGraphArcLabelFontSize)
-            .attr("letter-spacing", GraphDims.lowerGraphArcLabelLetterSpacing)
-            .attr("fill-opacity", d => +labelVisible(d.current))
-                .append("textPath") // make the text following the shape of the arc
-                .attr("id", (d, i) => `arcLabel${i}`)
-                .attr("href", (d, i) => `#arcPath${i}`);
-    
-        label.each((d, i) => labelTextFit(d, i));
 
         // add the nutrient title in the middle of the sunburst
         if (nutrientTextBox === undefined) {
@@ -435,7 +582,7 @@ export function lowerGraph(model){
         
         drawWrappedText({textGroup: nutrientTextBox, text: nutrient, width: GraphDims.centerOuterRadius, 
                          textY: -GraphDims.lowerGraphCenterArcRadius, fontSize: GraphDims.lowerGraphCenterFontSize});
-    
+
         // TODO: check what this does, copied from the reference 
         sunBurstGroup = lowerGraphSunburst.append("circle")
             .datum(root.descendants())
@@ -445,36 +592,6 @@ export function lowerGraph(model){
     
         // filter on level 2 groups on button click
         lowerGraphFilterGroupsButton.on("click", filterOnLevel2Groups);
-    
-        const mouseOverBoxes = lowerGraphSunburst.append("g");
-    
-        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i, nutrient));
-    
-        /* Create invisible arc paths on top of graph in order to detect hovering */
-        hoverPath = lowerGraphSunburst.append("g")
-            .selectAll("path")
-            .data(root.descendants().slice(1))
-            .join("path")
-            .attr("fill-opacity", 0)
-            .attr("pointer-events", "auto")
-            .attr("d", d => arc(d.current))
-            .style("cursor", "pointer")
-            .attr("tabindex", "0")
-            .classed("noFocusOutline", true);
-    
-        hoverPath.on("mousemove", (data, index) => { arcHover(data, index) });
-        hoverPath.on("mouseenter", (data, index) => { arcHover(data, index) });
-        hoverPath.on("mouseover", (data, index) => { arcHover(data, index) });
-        hoverPath.on("mouseout", (data, index) => { arcUnHover(data, index) });
-        hoverPath.on("touchstart", (data, index) => { arcUnHover(data, index) });
-        hoverPath.on("focus", (data, index) => { 
-            arcFocus(data, index);
-            arcHover(data, index);
-        });
-        hoverPath.on("focusout", (data, index) => { 
-            arcUnfocus(data, index); 
-            arcUnHover(data, index);
-        });
 
         // update the node indices for the food groups referenced by the legend
         legendNodeIndices = {};
@@ -499,104 +616,6 @@ export function lowerGraph(model){
             filterAllFoodGroups();
         } else {
             filterOnLevel2Groups();
-        }
-    
-        /* Creation of tooltip */
-        function hoverCard(d, root, i, nutrient){
-            const arcColour = d3.select(`#arcPath${i}`).attr("fill");
-
-            let interpretationValue = d.data.interpretationValue;
-            let context = undefined;
-
-            if (interpretationValue == "F" || interpretationValue == "X") {
-                context = "OnlyInterpretation";
-            } else if (typeof interpretationValue === "string") {
-                context = "WithInterpretation"
-            }
-
-            /* Content of tooltip */
-            const title = TextTools.getDisplayText(Translation.translate("lowerGraph.toolTipTitle", {name: d.data.name}));
-            const lines = Translation.translate("lowerGraph.toolTip", { 
-                context: context,
-                returnObjects: true, 
-                percentage: Translation.translateNum(d.data.row.Percentage),
-                parentGroup: d.depth > 1 ? d.parent.data.name : "",
-                parentPercentage: Translation.translateNum(d.depth > 1 ? d.data.row.Percentage / d.parent.data.row.Percentage * 100 : 0),
-                nutrient,
-                interpretationValue
-            });
-
-            const toolTipId = `arcHover${i}`;
-
-            // ------- draw the tooltip ------------
-
-            // attributes for the tool tip
-            const toolTip = {};
-            let toolTipWidth = GraphDims.lowerGraphTooltipMinWidth;
-            let toolTipHeight = GraphDims.lowerGraphTooltipHeight;
-            let currentTextGroupPosY = GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert;
-            const textGroupPosX = GraphDims.lowerGraphTooltipBorderWidth + GraphDims.lowerGraphTooltipPaddingHor +  GraphDims.lowerGraphTooltipTextPaddingHor;
-
-            const toolTipHighlightXPos = GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth / 2;
-
-            // draw the container for the tooltip
-            toolTip.group = root.append("g")
-                .attr("id",  toolTipId)
-                .attr("opacity", 0)
-                .style("pointer-events", "none");
-
-            // draw the background for the tooltip
-            toolTip.background = toolTip.group.append("rect")
-                .attr("fill", Colours.White)
-                .attr("stroke", arcColour)
-                .attr("stroke-width", 1)
-                .attr("rx", 5);
-
-            // draw the highlight
-            toolTip.highlight = toolTip.group.append("line")
-                .attr("x1", toolTipHighlightXPos)
-                .attr("x2", toolTipHighlightXPos)
-                .attr("y1", GraphDims.lowerGraphTooltipPaddingVert)
-                .attr("stroke", arcColour) 
-                .attr("stroke-width", GraphDims.lowerGraphTooltipBorderWidth)
-                .attr("stroke-linecap", "round");
-
-            // draw the title
-            toolTip.titleGroup = toolTip.group.append("text")
-                .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                .attr("font-weight", FontWeight.Bold)
-                .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
-
-            const titleDims = drawText({textGroup: toolTip.titleGroup, text: title, fontSize: GraphDims.lowerGraphTooltipFontSize, 
-                                        textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
-
-            currentTextGroupPosY += titleDims.textBottomYPos + GraphDims.lowerGraphTooltipTitleMarginBtm;
-
-            // draw the text
-            toolTip.textGroup = toolTip.group.append("text")
-                .attr("font-size", GraphDims.lowerGraphTooltipFontSize)
-                .attr("transform", `translate(${textGroupPosX}, ${currentTextGroupPosY})`);
-
-            const textDims = drawText({textGroup: toolTip.textGroup, text: lines, fontSize: GraphDims.lowerGraphTooltipFontSize, 
-                                       textWrap: TextWrap.NoWrap, paddingLeft: GraphDims.lowerGraphTooltipPaddingHor, paddingRight: GraphDims.lowerGraphTooltipPaddingHor});
-
-            currentTextGroupPosY += textDims.textBottomYPos;
-
-            // update the height of the tooltip to be larger than the height of all the text
-            toolTipHeight = Math.max(toolTipHeight, currentTextGroupPosY + GraphDims.lowerGraphTooltipPaddingVert + GraphDims.lowerGraphTooltipTextPaddingVert);
-            toolTip.background.attr("height", toolTipHeight);
-            toolTip.highlight.attr("y2", toolTipHeight - GraphDims.lowerGraphTooltipPaddingVert);
-
-            // update the width of the tooltip to be larger than the width of all the text
-            toolTipWidth = Math.max(toolTipWidth, 2 * GraphDims.lowerGraphTooltipPaddingHor + GraphDims.lowerGraphTooltipBorderWidth + 2 * GraphDims.lowerGraphTooltipTextPaddingHor + Math.max(titleDims.width, textDims.width));
-            toolTip.background.attr("width", toolTipWidth);
-
-            toolTip.width = toolTipWidth;
-
-            // -------------------------------------
-
-            hoverToolTips[toolTipId] = toolTip;
-            positionHoverCard(toolTip, d);
         }
     }
 
@@ -647,6 +666,14 @@ export function lowerGraph(model){
 
         /* Sort level 2 arcs by value amount */
         const sortedGroups = root.descendants().slice(1).sort((a, b) => d3.descending(a.value, b.value));
+
+        destroySunburstGraph();
+        drawSunburstGraph(sortedGroups);
+
+        // disable the on-click event for the arcs
+        hoverPath.on("click", null);
+        hoverPath.on("keypress", null);
+
         sortedGroups.forEach((d, i) => {
             root.descendants().find(r => r.data.name === d.data.name).target = {
                 depth: d.depth,
@@ -659,10 +686,6 @@ export function lowerGraph(model){
             }
             acc += d.depth === highestDepth ? (d.x1 - d.x0) : 0;
         });
-
-        // disable the on-click event for the arcs
-        hoverPath.on("click", null);
-        hoverPath.on("keypress", null);
 
         // increase the thickness of the arcs
         updateArcThickness();
@@ -692,6 +715,9 @@ export function lowerGraph(model){
             y0: d.y0,
             y1: d.y1,
         });
+
+        destroySunburstGraph();
+        drawSunburstGraph(root.descendants().slice(1));
 
         // enable the on-click event for the arcs
         hoverPath.on("click", (e, i) => { arcOnClick(e,i + 1); });
