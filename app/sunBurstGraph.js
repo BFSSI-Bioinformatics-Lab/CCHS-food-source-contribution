@@ -357,6 +357,8 @@ export function lowerGraph(model){
 
     // destorySunburstGraph(): Removes only the graph of the sunburst
     function destroySunburstGraph() {
+        lowerGraphSunburst.selectAll("g").remove();
+
         if (path !== undefined) path.remove();
         if (label !== undefined) label.remove();
         if (hoverPath !== undefined) hoverPath.remove();
@@ -430,7 +432,7 @@ export function lowerGraph(model){
         
         // Draw the tooltips on top of the graph
         const mouseOverBoxes = lowerGraphSunburst.append("g");
-        root.descendants().slice(1).forEach((d, i) => hoverCard(d, mouseOverBoxes, i, nutrient));
+        sunburstData.forEach((d, i) => hoverCard(d, mouseOverBoxes, i, nutrient));
     }
 
 
